@@ -1,0 +1,15 @@
+# requirements-web.txt
+django>=3.2,<4.0
+channels[daphne]>=4.0.0
+python-decouple
+psycopg2-binary
+websockets
+llama-cpp-python
+azure-cognitiveservices-speech==1.40.0
+whitenoise
+librosa
+numpy
+react
+axios
+tailwindcss
+vite

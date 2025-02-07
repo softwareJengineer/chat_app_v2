@@ -1,0 +1,62 @@
+{
+    "Pragmatic": {
+        "description": "Pragmatic description",
+        "details": {
+            "Excellent": "Excellent description",
+            "Good": "Good description",
+            "Fair": "Fair description",
+            "Poor": "Poor description",
+            "Very Poor": "Very Poor description"
+        }
+    },
+    "Grammar": {
+        "description": "Grammar description",
+        "details": {
+            "Excellent": "Excellent description",
+            "Good": "Good description",
+            "Fair": "Fair description",
+            "Poor": "Poor description",
+            "Very Poor": "Very Poor description"
+        }
+    },
+    "Anomia": {
+        "description": "Anomia description",
+        "details": {
+            "Excellent": "Excellent description",
+            "Good": "Good description",
+            "Fair": "Fair description",
+            "Poor": "Poor description",
+            "Very Poor": "Very Poor description"
+        }
+    },
+    "Turn Taking": {
+        "description": "Turn taking description",
+        "details": {
+            "Excellent": "Excellent description",
+            "Good": "Good description",
+            "Fair": "Fair description",
+            "Poor": "Poor description",
+            "Very Poor": "Very Poor description"
+        }
+    },
+    "Prosody": {
+        "description": "Prosody description",
+        "details": {
+            "Excellent": "Excellent description",
+            "Good": "Good description",
+            "Fair": "Fair description",
+            "Poor": "Poor description",
+            "Very Poor": "Very Poor description"
+        }
+    },
+    "Pronounciation": {
+        "description": "Pronounciation description",
+        "details": {
+            "Excellent": "Excellent description",
+            "Good": "Good description",
+            "Fair": "Fair description",
+            "Poor": "Poor description",
+            "Very Poor": "Very Poor description"
+        }
+    }
+}
