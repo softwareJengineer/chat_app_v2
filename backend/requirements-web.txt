@@ -13,3 +13,4 @@ react
 axios
 tailwindcss
 vite
+three
