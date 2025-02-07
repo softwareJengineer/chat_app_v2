@@ -49,8 +49,8 @@
             "Very Poor": "Very Poor description"
         }
     },
-    "Pronounciation": {
-        "description": "Pronounciation description",
+    "Pronunciation": {
+        "description": "Pronunciation description",
         "details": {
             "Excellent": "Excellent description",
             "Good": "Good description",

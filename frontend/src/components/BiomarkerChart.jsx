@@ -1,8 +1,8 @@
 import React, {useState} from "react";
 import ReactApexChart from "react-apexcharts";
 
-const BiomarkerChart = ({biomarkerData1}) => {
-    const biomarkerData = [
+const BiomarkerChart = ({biomarkerData}) => {
+    const biomarkerData1 = [
         {
             name: "Pragmatic",
             data: [1.5, 1, 2, 2.2, 0.8]
@@ -12,6 +12,14 @@ const BiomarkerChart = ({biomarkerData1}) => {
             data: [2, 1, 3, 2, 2]
         },
         {
+            name: "Prosody",
+            data: [1, 1, 1, 1, 1]
+        },
+        {
+            name: "Pronunciation",
+            data: [7, 6, 9, 5, 6]
+        },
+        {
             name: "Anomia",
             data: [7, 8, 6, 8, 6]
         },
@@ -19,17 +27,9 @@ const BiomarkerChart = ({biomarkerData1}) => {
             name: "Turn Taking",
             data: [3, 2, 4, 2, 4]
         },
-        {
-            name: "Prosody",
-            data: [1, 1, 1, 1, 1]
-        },
-        {
-            name: "Pronounciation",
-            data: [7, 6, 9, 5, 6]
-        },
     ]
-    const [state, setState] = React.useState ({
-       options: {
+
+    const options = {
         chart: {
             height: 350,
             type: 'line',
@@ -41,7 +41,7 @@ const BiomarkerChart = ({biomarkerData1}) => {
             },
             stroke: {
                 width: [5,5,4],
-                curve: 'smooth'
+                curve: 'straight'
             },
             labels: [1, 2, 3, 4, 5],
             title: {
@@ -49,15 +49,22 @@ const BiomarkerChart = ({biomarkerData1}) => {
             },
             xaxis: {
 
+            },
+            yaxis: {
+                min: 0,
+                max: 10,
+                tickAmount: 20,
+                stepSize: 0.5,
+                forceNiceScale: true,
+                decimalsInFloat: 3
             }
         }
-       } 
-    })
+    }
 
     return (
         <div className="flex flex-col space-y-4 ml-4 mr-4 mb-4">
             <h1 className="text-2xl font-bold">Biomarker Chart</h1>
-            <ReactApexChart options={state.options} series={biomarkerData} type="line" height={350}/>
+            <ReactApexChart options={options} series={biomarkerData} type="line" height={350}/>
         </div>
     );
 

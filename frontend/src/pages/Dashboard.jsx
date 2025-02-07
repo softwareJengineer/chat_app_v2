@@ -12,7 +12,7 @@ const Dashboard = ({biomarkerScores1}) => {
         "Anomia": 7,
         "Turn Taking": 3,
         "Prosody": 1,
-        "Pronounciation": 7
+        "Pronunciation": 7
     }
 
     const [displayedBiomarker, setDisplayedBiomarker] = useState("Pragmatic");
@@ -74,6 +74,20 @@ const Dashboard = ({biomarkerScores1}) => {
                     </Button>
                     <Button
                         className="p-4 shadow-md w-[20vw] mb-2"
+                        variant={getActive("Prosody")}
+                        onClick={() => setDisplayedBiomarker("Prosody")}
+                    >
+                        Prosody
+                    </Button>
+                    <Button
+                        className="p-4 shadow-md w-[20vw] mb-2"
+                        variant={getActive("Pronunciation")}
+                        onClick={() => setDisplayedBiomarker("Pronunciation")}
+                    >
+                        Pronunciation
+                    </Button>
+                    <Button
+                        className="p-4 shadow-md w-[20vw] mb-2"
                         variant={getActive("Anomia")}
                         onClick={() => setDisplayedBiomarker("Anomia")}
                     >
@@ -85,20 +99,6 @@ const Dashboard = ({biomarkerScores1}) => {
                         onClick={() => setDisplayedBiomarker("Turn Taking")}
                     >
                         Turn Taking
-                    </Button>
-                    <Button
-                        className="p-4 shadow-md w-[20vw] mb-2"
-                        variant={getActive("Prosody")}
-                        onClick={() => setDisplayedBiomarker("Prosody")}
-                    >
-                        Prosody
-                    </Button>
-                    <Button
-                        className="p-4 shadow-md w-[20vw] mb-2"
-                        variant={getActive("Pronounciation")}
-                        onClick={() => setDisplayedBiomarker("Pronounciation")}
-                    >
-                        Pronounciation
                     </Button>
                 </div>
                 <BiomarkerDetails 

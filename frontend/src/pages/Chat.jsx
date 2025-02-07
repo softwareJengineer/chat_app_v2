@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Button } from "react-bootstrap";
 import Header from '../components/Header';
 import ChatHistory from "../components/ChatHistory";
 import Avatar from "../components/Avatar";
 import { BsStopCircle, BsPlayCircle } from "react-icons/bs";
 import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
+import { useNavigate } from "react-router-dom";
 
 const SPEECH_KEY = "3249fb4e6d8248569b42d5dbf693c259";
 const SPEECH_REGION = "eastus";
@@ -24,18 +26,32 @@ function Chat() {
     const audioConfig = useRef(null);
     const recognizer = useRef(null);
     const synthesizer = useRef(null);
-    const [biomarkerData, setBiomarkerData] = useState({
-        labels: [],
-        datasets: [
-            { label: 'Pragmatic', data: [], borderColor: 'red', fill: false },
-            { label: 'Grammar', data: [], borderColor: 'blue', fill: false },
-            { label: 'Turntaking', data: [], borderColor: 'green', fill: false },
-            { label: 'Anomia', data: [], borderColor: 'yellow', fill: false },
-            { label: 'Prosody', data: [], borderColor: 'purple', fill: false },
-            { label: 'Pronunciation', data: [], borderColor: 'orange', fill: false }
-        ]}
-    )
-    const [lastScores, setLastScores] = useState({});
+    const [biomarkerData, setBiomarkerData] = useState([
+        {
+            name: "Pragmatic",
+            data: []
+        },
+        {
+            name: "Grammar",
+            data: []
+        },
+        {
+            name: "Prosody",
+            data: []
+        },
+        {
+            name: "Pronunciation",
+            data: []
+        },
+        {
+            name: "Anomia",
+            data: []
+        },
+        {
+            name: "Turn Taking",
+            data: []
+        },
+    ]);
 
     let audioContext, audioProcessor;
 
@@ -55,14 +71,12 @@ function Chat() {
 
     ws.onmessage = (event) => {
         const response = JSON.parse(event.data);
+        if (!recording) return;
         if (response.type === 'llm_response') {
-            if (!recording) return;
             addMessageToChat('AI', response.data);
             speakResponse(response.data);
-        } else if (response.type === 'biomarker_scores') {
-            updateChart(response.data);
-        } else if (response.type === 'periodic_scores') {
-            updatePeriodicScores(response.data);
+        } else if (response.type.includes("scores")) {
+            updateScores(response);
         }
     }
 
@@ -87,7 +101,7 @@ function Chat() {
     
         const processRecognizedTranscript = (event) => {
             const result = event.result;
-            console.log('Recognition result:', result);
+            // console.log('Recognition result:', result);
         
             if (result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
                 setUserSpeaking(false);
@@ -114,7 +128,9 @@ function Chat() {
             recognizer.current.startContinuousRecognitionAsync(() => {
                 console.log('Speech recognition started.');
             });
+            initAudioProcessing();
         }
+        
         return () => {
             recognizer.current.stopContinuousRecognitionAsync(() => {
                 console.log('Speech recognition stopped.');
@@ -207,7 +223,7 @@ function Chat() {
                         const base64Data = arrayBufferToBase64(intData.buffer);
                         
                         // Send to server
-                        if (ws && ws.readyState === WebSocket.OPEN) {
+                        if (ws && ws.readyState === WebSocket.OPEN && recording) {
                             const timestamp = Date.now();
                             ws.send(JSON.stringify({
                                 type: 'audio_data',
@@ -240,50 +256,52 @@ function Chat() {
         }
     }
 
+    function updateScores(scores) {
+        var prevData = biomarkerData;
+        if (scores.type === "biomarker_scores") {
+            prevData[0].data.push(scores.data["pragmatic"]);
+            prevData[1].data.push(scores.data["grammar"]);
+            prevData[2].data.push(scores.data["prosody"]);
+            prevData[3].data.push(scores.data["pronunciation"]);
+        } else if (scores.type === "periodic_scores") {
+            if (prevData[0].data.length <= prevData[4].data.length) return;
+            prevData[4].data.push(scores.data["anomia"]);
+            prevData[5].data.push(scores.data["turntaking"]);
+        }
+        setBiomarkerData(prevData);
+    }
+
     function addMessageToChat(sender, message) {
         setMessages((prevMessages) => [...prevMessages, { sender, message }]);
     };
 
-    function updateChart(newData) {
-        if (!recording) return;
+    const navigate = useNavigate();
 
-        if (newData) {
-            setLastScores({ ...lastScores, ...newData });
-        }
-
-        const timestamp = biomarkerData.labels.length;
-        biomarkerData.labels.push(timestamp);
-
-        biomarkerData.datasets.forEach((dataset) => {
-            const value = lastScores[dataset.label.toLowerCase()] || dataset.data[dataset.data.length - 1]?.y || 0;
-            dataset.data.push({ x: timestamp, y: value });
-
-            if (dataset.data.length > 60) {
-                dataset.data.shift();
-            }
-        });
-
-    }
-
-    function updatePeriodicScores(scores) {
-        if (!recording) return;
-
-        setLastScores((prevScores) => ({ ...prevScores, ...scores }));
-        updateChart();
+    const toNew = () => {
+        navigate('/new', {state: biomarkerData});
     }
 
     return (
         <>
             <Header />
-            <div className="flex h-[65vh] mt-[1em]">
+            <div className="flex h-[75vh] mt-[1em]">
                 <ChatHistory messages={messages} />
                 <Avatar />
             </div> 
-            <button className="flex justify-center mx-auto items-center pb-[2em] pt-4"
-                variant="outline-primary"
-                onClick={() => setRecording(!recording) }>
-                {recording ? <BsStopCircle size={50} color="red"/> : <BsPlayCircle size={50} color="lightskyblue"/>}
-            </button>
+            <div className="flex flex-row justify-center mb-[2em] pt-[3em] gap-[4em] items-center">
+                <button
+                    variant="outline-primary"
+                    onClick={() => setRecording(!recording) }>
+                    {recording ? <BsStopCircle size={50} color="red"/> : <BsPlayCircle size={50} color="lightskyblue"/>}
+                </button>
+                <Button
+                    className="border-1 p-[1em] rounded-med"
+                    variant="outline-primary"
+                    onClick={() => toNew()}
+                >
+                    Finish
+                </Button>
+            </div>
         </>
     );
 }
