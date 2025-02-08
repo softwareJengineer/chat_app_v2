@@ -1,15 +1,19 @@
-import React from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import BiomarkerChart from "../components/BiomarkerChart";
-import { Button } from "react-bootstrap";
+import { Button, Modal } from "react-bootstrap";
 import ChatHistory from "../components/ChatHistory";
 
 function NewEntry() {
+    const [show, setShow] = useState(false);
     const location = useLocation();
     const biomarkerData = location.state ? location.state.biomarkerData : [];
     const messages = location.state ? location.state.messages : [];
 
     const labelStyling = "text-xl my-[1em]";
+    const current = new Date();
+    const date = `${current.getDate()}/${current.getMonth()+1}/${current.getFullYear()}`;
+    const time = current.getHours() + ':' + current.getMinutes() + ":" + current.getSeconds();
 
     const navigate = useNavigate();
 
@@ -17,9 +21,9 @@ function NewEntry() {
         navigate('/dashboard', {state: biomarkerData});
     }
 
-    const current = new Date();
-    const date = `${current.getDate()}/${current.getMonth()+1}/${current.getFullYear()}`;
-    const time = current.getHours() + ':' + current.getMinutes() + ":" + current.getSeconds();
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
+
 
     return (
         <>
@@ -54,10 +58,29 @@ function NewEntry() {
             </div>
             <div className="flex justify-center items-center gap-[2em]">
                 <Button onClick={() => toDashboard()} variant="outline-primary" size="lg">Save</Button>
-                <Link to="/">
-                    <Button variant="outline-danger" size="lg">Cancel</Button>
-                </Link>
+                <Button variant="outline-danger" onClick={() => handleShow()} size="lg">Cancel</Button>
             </div>
+
+            <Modal
+                show={show}
+                onHide={handleClose}
+                backdrop="static"
+                keyboard={false}
+                centered
+            >
+                <Modal.Header closeButton>
+                <Modal.Title>Unsaved Changes</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    Are you sure you want to exit without saving this session data?
+                </Modal.Body>
+                <Modal.Footer>
+                <Button variant="outline-primary" onClick={handleClose}>
+                    No
+                </Button>
+                <Button onClick={() => toDashboard()} variant="danger">Yes</Button>
+                </Modal.Footer>
+            </Modal>
         </>
     )
 }
