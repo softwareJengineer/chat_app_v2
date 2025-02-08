@@ -13,12 +13,14 @@ function ScoreChart({score}) {
             return "bg-orange-500";
         } else if (score > 8.0) {
             return "bg-red-500";
+        } else {
+            return "bg-gray-400";
         }
     }
 
     return (
         <>
-            <div className={getColor(score) +" text-2xl w-[25vh] h-[25vh] flex rounded-full justify-center items-center mx-auto"}>
+            <div className={getColor(score) +" text-4xl w-[25vh] h-[25vh] flex rounded-full justify-center items-center mx-auto"}>
                 {score}
             </div>
         </>

@@ -1,12 +1,13 @@
 {
     "Pragmatic": {
-        "description": "Pragmatic description",
+        "description": "Pragmatic Description",
         "details": {
             "Excellent": "Excellent description",
             "Good": "Good description",
             "Fair": "Fair description",
             "Poor": "Poor description",
-            "Very Poor": "Very Poor description"
+            "Very Poor": "Very Poor description",
+            "N/A": "Your Pragmatic score is not available."
         }
     },
     "Grammar": {
@@ -16,7 +17,8 @@
             "Good": "Good description",
             "Fair": "Fair description",
             "Poor": "Poor description",
-            "Very Poor": "Very Poor description"
+            "Very Poor": "Very Poor description",
+            "N/A": "Your Grammar score is not available."
         }
     },
     "Anomia": {
@@ -26,7 +28,8 @@
             "Good": "Good description",
             "Fair": "Fair description",
             "Poor": "Poor description",
-            "Very Poor": "Very Poor description"
+            "Very Poor": "Very Poor description",
+            "N/A": "Your Anomia score is not available."
         }
     },
     "Turn Taking": {
@@ -36,7 +39,8 @@
             "Good": "Good description",
             "Fair": "Fair description",
             "Poor": "Poor description",
-            "Very Poor": "Very Poor description"
+            "Very Poor": "Very Poor description",
+            "N/A": "Your Turn Taking score is not available."
         }
     },
     "Prosody": {
@@ -46,7 +50,8 @@
             "Good": "Good description",
             "Fair": "Fair description",
             "Poor": "Poor description",
-            "Very Poor": "Very Poor description"
+            "Very Poor": "Very Poor description",
+            "N/A": "Your Prosody score is not available."
         }
     },
     "Pronunciation": {
@@ -56,7 +61,8 @@
             "Good": "Good description",
             "Fair": "Fair description",
             "Poor": "Poor description",
-            "Very Poor": "Very Poor description"
+            "Very Poor": "Very Poor description",
+            "N/A": "Your Pronunciation score is not available."
         }
     }
 }

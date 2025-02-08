@@ -2,32 +2,6 @@ import React, {useState} from "react";
 import ReactApexChart from "react-apexcharts";
 
 const BiomarkerChart = ({biomarkerData}) => {
-    const biomarkerData1 = [
-        {
-            name: "Pragmatic",
-            data: [1.5, 1, 2, 2.2, 0.8]
-        },
-        {
-            name: "Grammar",
-            data: [2, 1, 3, 2, 2]
-        },
-        {
-            name: "Prosody",
-            data: [1, 1, 1, 1, 1]
-        },
-        {
-            name: "Pronunciation",
-            data: [7, 6, 9, 5, 6]
-        },
-        {
-            name: "Anomia",
-            data: [7, 8, 6, 8, 6]
-        },
-        {
-            name: "Turn Taking",
-            data: [3, 2, 4, 2, 4]
-        },
-    ]
 
     const options = {
         chart: {
@@ -64,7 +38,7 @@ const BiomarkerChart = ({biomarkerData}) => {
     return (
         <div className="flex flex-col space-y-4 ml-4 mr-4 mb-4">
             <h1 className="text-2xl font-bold">Biomarker Chart</h1>
-            <ReactApexChart options={options} series={biomarkerData} type="line" height={350}/>
+            <ReactApexChart options={options} series={biomarkerData ? biomarkerData : []} type="line" height={350}/>
         </div>
     );
 

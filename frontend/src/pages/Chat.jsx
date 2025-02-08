@@ -26,6 +26,8 @@ function Chat() {
     const audioConfig = useRef(null);
     const recognizer = useRef(null);
     const synthesizer = useRef(null);
+    const audioContext = useRef(null);
+    const audioProcessor = useRef(null);
     const [biomarkerData, setBiomarkerData] = useState([
         {
             name: "Pragmatic",
@@ -52,8 +54,6 @@ function Chat() {
             data: []
         },
     ]);
-
-    let audioContext, audioProcessor;
 
     ws.onopen = () => {
         console.log("WebSocket connected to ", wsUrl);
@@ -85,7 +85,6 @@ function Chat() {
     }, [messages]);
 
     useEffect(() => {
-        // setRecording(true);
         speechConfig.current = SpeechSDK.SpeechConfig.fromSubscription(
             SPEECH_KEY,
             SPEECH_REGION
@@ -170,35 +169,35 @@ function Chat() {
         }
     }
 
+    // Helper function to convert array buffer to base64
+    function arrayBufferToBase64(buffer) {
+        let binary = '';
+        const bytes = new Uint8Array(buffer);
+        const len = bytes.byteLength;
+        for (let i = 0; i < len; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary);
+    }
+
     async function initAudioProcessing() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            audioContext = new AudioContext({
+            audioContext.current = new AudioContext({
                 sampleRate: 16000
             });
             
-            const source = audioContext.createMediaStreamSource(stream);
+            const source = audioContext.current.createMediaStreamSource(stream);
     
             // Create ScriptProcessor for direct audio processing
             const bufferSize = 4096;
-            const processorNode = audioContext.createScriptProcessor(bufferSize, 1, 1);
+            const processorNode = audioContext.current.createScriptProcessor(bufferSize, 1, 1);
             
             // Buffer to accumulate smaller chunks of audio
-            const sampleRate = audioContext.sampleRate;
+            const sampleRate = audioContext.current.sampleRate;
             const chunkBufferSize = sampleRate * 5; 
             let audioBuffer = new Float32Array(chunkBufferSize);
             let bufferIndex = 0;
-            
-            // Helper function to convert array buffer to base64
-            function arrayBufferToBase64(buffer) {
-                let binary = '';
-                const bytes = new Uint8Array(buffer);
-                const len = bytes.byteLength;
-                for (let i = 0; i < len; i++) {
-                    binary += String.fromCharCode(bytes[i]);
-                }
-                return btoa(binary);
-            }
             
             processorNode.onaudioprocess = (e) => {
                 if (!recording) return;
@@ -245,10 +244,10 @@ function Chat() {
             
             // Connect the nodes
             source.connect(processorNode);
-            processorNode.connect(audioContext.destination);
+            processorNode.connect(audioContext.current.destination);
             
             // Store nodes for cleanup
-            audioProcessor = processorNode;
+            audioProcessor.current = processorNode;
             
             console.log(`Audio processing initialized with 0.5-second chunks at ${sampleRate}Hz`);
         } catch (error) {
@@ -278,7 +277,7 @@ function Chat() {
     const navigate = useNavigate();
 
     const toNew = () => {
-        navigate('/new', {state: biomarkerData});
+        navigate('/dashboard', {state: biomarkerData});
     }
 
     return (
@@ -292,11 +291,14 @@ function Chat() {
                 <button
                     variant="outline-primary"
                     onClick={() => setRecording(!recording) }>
-                    {recording ? <BsStopCircle size={50} color="red"/> : <BsPlayCircle size={50} color="lightskyblue"/>}
+                    {recording ? 
+                        <BsStopCircle size={50} style={{color: "red"}}/> : 
+                        <BsPlayCircle size={50} style={{color: "lightskyblue"}}/>}
                 </button>
                 <Button
                     className="border-1 p-[1em] rounded-med"
                     variant="outline-primary"
+                    size="lg"
                     onClick={() => toNew()}
                 >
                     Finish

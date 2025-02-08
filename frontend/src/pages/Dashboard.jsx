@@ -4,29 +4,25 @@ import Header from '../components/Header';
 import BiomarkerChart from "../components/BiomarkerChart";
 import BiomarkerDetails from "../components/BiomarkerDetails";
 import Descriptions from "../data/descriptions.json";
+import { useLocation } from "react-router-dom";
 
-const Dashboard = ({biomarkerScores1}) => {
-    const biomarkerScores = {
-        "Pragmatic": 1,
-        "Grammar": 2,
-        "Anomia": 7,
-        "Turn Taking": 3,
-        "Prosody": 1,
-        "Pronunciation": 7
-    }
+const Dashboard = () => {
+
+    const location = useLocation();
+    const biomarkerScores = location.state;
 
     const [displayedBiomarker, setDisplayedBiomarker] = useState("Pragmatic");
-    const [score, setScore] = useState(biomarkerScores[displayedBiomarker]);
+    const [score, setScore] = useState(getScore(displayedBiomarker));
     const [description, setDescription] = useState(Descriptions["Pragmatic"].description);
-    const [yourDescription, setYourDescription] = useState(Descriptions["Pragmatic"].details[getScore]);
+    const [yourDescription, setYourDescription] = useState(Descriptions["Pragmatic"].details[getScoreDesc]);
     
     useEffect(() => {
         setDescription(Descriptions[displayedBiomarker].description);
-        setScore(biomarkerScores[displayedBiomarker]);
+        setScore(getScore(displayedBiomarker));
     }, [displayedBiomarker]);
 
     useEffect(() => {
-        var scoreDesc = getScore(score);
+        var scoreDesc = getScoreDesc(score);
         setYourDescription(Descriptions[displayedBiomarker].details[scoreDesc]);
     }, [score])
 
@@ -38,7 +34,29 @@ const Dashboard = ({biomarkerScores1}) => {
         }
     }
 
-    function getScore(score) {
+    function getScore(biomarker) {
+        if (!biomarkerScores) {
+            return "N/A";
+        }
+        var data;
+        if (biomarker === "Pragmatic") {
+            data = biomarkerScores[0].data;
+        } else if (biomarker === "Grammar") {
+            data = biomarkerScores[1].data;
+        } else if (biomarker === "Anomia") {
+            data = biomarkerScores[2].data;
+        } else if (biomarker === "Turn Taking") {
+            data = biomarkerScores[3].data;
+        } else if (biomarker === "Prosody") {
+            data = biomarkerScores[4].data;
+        } else if (biomarker === "Pronunciation") {
+            data = biomarkerScores[5].data;
+        }
+        var score = data.reduce((prev, current) => prev + current) / data.length;
+        return score.toFixed(2);
+    }
+
+    function getScoreDesc(score) {
         if (score <= 2.0) {
             return "Excellent";
         } else if (score <= 4.0) {
@@ -49,13 +67,15 @@ const Dashboard = ({biomarkerScores1}) => {
             return "Poor";
         } else if (score > 8.0) {
             return "Very Poor";
+        } else {
+            return "N/A";
         }
     }
     
     return (
         <>
             <Header />
-            <BiomarkerChart />
+            <BiomarkerChart biomarkerData={biomarkerScores} />
             <span className="flex flex-row space-x-5 mr-4 mb-4">
                 <div className="flex flex-col space-y-4 ml-4 w-[25vw]">
                     <Button
