@@ -277,14 +277,14 @@ function Chat() {
     const navigate = useNavigate();
 
     const toNew = () => {
-        navigate('/dashboard', {state: biomarkerData});
+        navigate('/new', {state: {biomarkerData: biomarkerData, messages: messages}});
     }
 
     return (
         <>
             <Header />
-            <div className="flex h-[75vh] mt-[1em]">
-                <ChatHistory messages={messages} />
+            <div className="flex flex-row h-[75vh] mt-[1em]">
+                <ChatHistory messages={messages} styling={"border-r-1 border-blue-200 w-1/2"} />
                 <Avatar />
             </div> 
             <div className="flex flex-row justify-center mb-[2em] pt-[3em] gap-[4em] items-center">

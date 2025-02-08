@@ -35,7 +35,7 @@ const Dashboard = () => {
     }
 
     function getScore(biomarker) {
-        if (!biomarkerScores) {
+        if (!biomarkerScores || biomarkerScores[0].data.length ===  0) {
             return "N/A";
         }
         var data;

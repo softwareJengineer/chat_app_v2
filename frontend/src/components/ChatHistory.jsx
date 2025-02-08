@@ -1,7 +1,7 @@
 import React, { useState, Component } from "react";
 import ReactDOM from "react-dom/client";
 
-const ChatHistory = ({messages}) => {
+const ChatHistory = ({messages, styling}) => {
 
     function renderMessage(sender, message) {
         if (sender === 'You') {
@@ -21,11 +21,10 @@ const ChatHistory = ({messages}) => {
 
     return (
         <>
-            <div className="w-[50vw] overflow-y-auto border-r-1 border-blue-200">
-                {messages.map(({sender, message}, i) => (
-                    renderMessage(sender, message)
-                ))}
-                
+            <div className={styling + " overflow-y-auto"}>
+                    {messages.map(({sender, message}, i) => (
+                        renderMessage(sender, message)
+                    ))}
             </div>
         </>
     )
