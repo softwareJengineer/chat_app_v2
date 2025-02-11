@@ -5,11 +5,13 @@ import BiomarkerChart from "../components/BiomarkerChart";
 import BiomarkerDetails from "../components/BiomarkerDetails";
 import Descriptions from "../data/descriptions.json";
 import { useLocation } from "react-router-dom";
+import dummyData from "../data/dummyData.json";
 
 const Dashboard = () => {
 
     const location = useLocation();
-    const biomarkerScores = location.state;
+    // const biomarkerScores = location.state;
+    const biomarkerScores = dummyData;
 
     const [displayedBiomarker, setDisplayedBiomarker] = useState("Pragmatic");
     const [score, setScore] = useState(getScore(displayedBiomarker));
@@ -43,15 +45,15 @@ const Dashboard = () => {
             data = biomarkerScores[0].data;
         } else if (biomarker === "Grammar") {
             data = biomarkerScores[1].data;
-        } else if (biomarker === "Anomia") {
-            data = biomarkerScores[2].data;
-        } else if (biomarker === "Turn Taking") {
-            data = biomarkerScores[3].data;
         } else if (biomarker === "Prosody") {
-            data = biomarkerScores[4].data;
+            data = biomarkerScores[2].data;
         } else if (biomarker === "Pronunciation") {
+            data = biomarkerScores[3].data;
+        } else if (biomarker === "Anomia") {
+            data = biomarkerScores[4].data;
+        } else if (biomarker === "Turn Taking") {
             data = biomarkerScores[5].data;
-        }
+        } 
         var score = data.reduce((prev, current) => prev + current) / data.length;
         return score.toFixed(2);
     }
@@ -76,45 +78,45 @@ const Dashboard = () => {
         <>
             <Header />
             <BiomarkerChart biomarkerData={biomarkerScores} />
-            <span className="flex flex-row space-x-5 mr-4 mb-4">
-                <div className="flex flex-col space-y-4 ml-4 w-[25vw]">
+            <span className="flex flex-row space-x-5 mx-[2em] mb-4 gap-[2em]">
+                <div className="flex flex-col w-1/5 gap-2">
                     <Button
-                        className="p-4 shadow-md w-[20vw] mb-2"
+                        className="p-4 shadow-md w-full"
                         variant={getActive("Pragmatic")}
                         onClick={() => setDisplayedBiomarker("Pragmatic")}
                     >
                         Pragmatic
                     </Button>
                     <Button
-                        className="p-4 shadow-md w-[20vw] mb-2"
+                        className="p-4 shadow-md"
                         variant={getActive("Grammar")}
                         onClick={() => setDisplayedBiomarker("Grammar")}
                     >
                         Grammar
                     </Button>
                     <Button
-                        className="p-4 shadow-md w-[20vw] mb-2"
+                        className="p-4 shadow-md"
                         variant={getActive("Prosody")}
                         onClick={() => setDisplayedBiomarker("Prosody")}
                     >
                         Prosody
                     </Button>
                     <Button
-                        className="p-4 shadow-md w-[20vw] mb-2"
+                        className="p-4 shadow-md"
                         variant={getActive("Pronunciation")}
                         onClick={() => setDisplayedBiomarker("Pronunciation")}
                     >
                         Pronunciation
                     </Button>
                     <Button
-                        className="p-4 shadow-md w-[20vw] mb-2"
+                        className="p-4 shadow-md"
                         variant={getActive("Anomia")}
                         onClick={() => setDisplayedBiomarker("Anomia")}
                     >
                         Anomia
                     </Button>
                     <Button
-                        className="p-4 shadow-md w-[20vw] mb-2"
+                        className="p-4 shadow-md"
                         variant={getActive("Turn Taking")}
                         onClick={() => setDisplayedBiomarker("Turn Taking")}
                     >

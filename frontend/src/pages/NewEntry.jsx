@@ -21,13 +21,17 @@ function NewEntry() {
         navigate('/dashboard', {state: biomarkerData});
     }
 
+    const toChat = () => {
+        navigate('/');
+    }
+
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
 
     return (
         <>
-            <div className="m-[2em] flex flex-row space-x-[4em]">
+            <div className="mx-[2em] flex flex-row space-x-[4em]">
                 <div className="flex flex-col w-1/2">
                     <label className={labelStyling}>Title</label>
                     <input 
@@ -46,7 +50,9 @@ function NewEntry() {
                         required 
                     />
                     <label className={labelStyling}>Chat History</label>
-                    <ChatHistory messages={messages} styling={"bg-blue-100 rounded-lg h-[50vh]"}></ChatHistory>
+                    <div className="bg-gray-100 rounded-lg h-1/2 pt-[2em]">
+                        <ChatHistory messages={messages}></ChatHistory>
+                    </div>
                 </div>
                 <div className="flex flex-col w-1/2">
                     <label className={labelStyling}>Notes</label>
@@ -56,9 +62,9 @@ function NewEntry() {
                     </div>
                 </div>
             </div>
-            <div className="flex justify-center items-center gap-[2em]">
-                <Button onClick={() => toDashboard()} variant="outline-primary" size="lg">Save</Button>
+            <div className="flex justify-center items-center gap-[2em] mt-[2em]">
                 <Button variant="outline-danger" onClick={() => handleShow()} size="lg">Cancel</Button>
+                <Button onClick={() => toDashboard()} variant="outline-primary" size="lg">Save</Button>
             </div>
 
             <Modal
@@ -72,13 +78,13 @@ function NewEntry() {
                 <Modal.Title>Unsaved Changes</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    Are you sure you want to exit without saving this session data?
+                    Are you sure you want to exit without saving this session data? All data will be lost.
                 </Modal.Body>
                 <Modal.Footer>
                 <Button variant="outline-primary" onClick={handleClose}>
                     No
                 </Button>
-                <Button onClick={() => toDashboard()} variant="danger">Yes</Button>
+                <Button onClick={() => toChat()} variant="danger">Yes</Button>
                 </Modal.Footer>
             </Modal>
         </>

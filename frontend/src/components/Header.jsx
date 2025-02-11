@@ -9,10 +9,20 @@ function Header() {
        <p className="pt-[1em] pl-[1em] font-mono text-lg">AI Assistant Chat</p>
         <span className="float-right ml-auto mr-[1em] mt-[1em] space-x-[1em]">
           <Link to="/">
-            <Button variant={location.pathname === "/" ? "primary" : "outline-primary"}>Chat</Button>
+            <Button 
+              variant={location.pathname === "/" ? "primary" : "outline-primary"}
+              size="lg"
+            >
+              Chat
+            </Button>
           </Link> 
           <Link to="/dashboard">
-            <Button variant={location.pathname === "/dashboard" ? "primary" : "outline-primary"}>Dashboard</Button>
+            <Button 
+              variant={location.pathname === "/dashboard" ? "primary" : "outline-primary"}
+              size="lg"
+            >
+              Dashboard
+            </Button>
           </Link>
         </span>
       </div>

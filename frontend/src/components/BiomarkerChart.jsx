@@ -17,10 +17,6 @@ const BiomarkerChart = ({biomarkerData}) => {
                 width: [5,5,4],
                 curve: 'straight'
             },
-            labels: [1, 2, 3, 4, 5],
-            title: {
-                text: "Biomarker Scores"
-            },
             xaxis: {
 
             },
@@ -36,7 +32,7 @@ const BiomarkerChart = ({biomarkerData}) => {
     }
 
     return (
-        <div className="flex flex-col space-y-4 ml-4 mr-4 mb-4">
+        <div className="flex flex-col space-y-4 ml-4 mr-10 mb-4">
             <h1 className="text-2xl font-bold">Biomarker Chart</h1>
             <ReactApexChart options={options} series={biomarkerData ? biomarkerData : []} type="line" height={350}/>
         </div>

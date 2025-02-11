@@ -5,10 +5,12 @@ import ChatHistory from "../components/ChatHistory";
 import Avatar from "../components/Avatar";
 import { BsStopCircle, BsPlayCircle } from "react-icons/bs";
 import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const SPEECH_KEY = "3249fb4e6d8248569b42d5dbf693c259";
 const SPEECH_REGION = "eastus";
+const bufferSize = 4096;
+
 // Replace static wsUrl with dynamic version
 const wsUrl = window.location.hostname === 'localhost' 
     ? `ws://${window.location.hostname}:8000/ws/chat/`
@@ -28,6 +30,10 @@ function Chat() {
     const synthesizer = useRef(null);
     const audioContext = useRef(null);
     const audioProcessor = useRef(null);
+    const stream = useRef(null);
+    const source = useRef(null);
+    const processorNode = useRef(null);
+
     const [biomarkerData, setBiomarkerData] = useState([
         {
             name: "Pragmatic",
@@ -127,7 +133,8 @@ function Chat() {
             recognizer.current.startContinuousRecognitionAsync(() => {
                 console.log('Speech recognition started.');
             });
-            initAudioProcessing();
+            // initAudioProcessing();
+            
         }
         
         return () => {
@@ -136,6 +143,11 @@ function Chat() {
             });
             recognizer.current = undefined;
             audioConfig.current = undefined;
+            audioProcessor.current = undefined;
+            if (source.current && processorNode.current) {
+                source.current.disconnect(processorNode.current);
+                processorNode.current.disconnect(audioContext.current.destination);
+            }             
         };
     }, [recording]);
     
@@ -182,16 +194,15 @@ function Chat() {
 
     async function initAudioProcessing() {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.current = await navigator.mediaDevices.getUserMedia({ audio: true });
             audioContext.current = new AudioContext({
                 sampleRate: 16000
             });
             
-            const source = audioContext.current.createMediaStreamSource(stream);
+            source.current = audioContext.current.createMediaStreamSource(stream.current);
     
             // Create ScriptProcessor for direct audio processing
-            const bufferSize = 4096;
-            const processorNode = audioContext.current.createScriptProcessor(bufferSize, 1, 1);
+            processorNode.current = audioContext.current.createScriptProcessor(bufferSize, 1, 1);
             
             // Buffer to accumulate smaller chunks of audio
             const sampleRate = audioContext.current.sampleRate;
@@ -199,7 +210,7 @@ function Chat() {
             let audioBuffer = new Float32Array(chunkBufferSize);
             let bufferIndex = 0;
             
-            processorNode.onaudioprocess = (e) => {
+            processorNode.current.onaudioprocess = (e) => {
                 if (!recording) return;
                 
                 const input = e.inputBuffer.getChannelData(0);
@@ -243,11 +254,11 @@ function Chat() {
             };
             
             // Connect the nodes
-            source.connect(processorNode);
-            processorNode.connect(audioContext.current.destination);
+            source.current.connect(processorNode.current);
+            processorNode.current.connect(audioContext.current.destination);
             
             // Store nodes for cleanup
-            audioProcessor.current = processorNode;
+            audioProcessor.current = processorNode.current;
             
             console.log(`Audio processing initialized with 0.5-second chunks at ${sampleRate}Hz`);
         } catch (error) {
@@ -284,7 +295,9 @@ function Chat() {
         <>
             <Header />
             <div className="flex flex-row h-[75vh] mt-[1em]">
-                <ChatHistory messages={messages} styling={"border-r-1 border-blue-200 w-1/2"} />
+                <div className="w-1/2 border-r-1 border-blue-200">
+                    <ChatHistory messages={messages} />
+                </div>
                 <Avatar />
             </div> 
             <div className="flex flex-row justify-center mb-[2em] pt-[3em] gap-[4em] items-center">

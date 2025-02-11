@@ -76,7 +76,7 @@ function Avatar() {
                     {/* <Environment files="images/background.jpg" background backgroundBlurriness={0.5}/> */}
                     <primitive object={gltf.scene} position={[0,-0.05,0]}/>
                     <directionalLight position={[1, 2, 2]} intensity={3} />
-                    {/* <OrbitControls target={[0, 0, 0]} /> */}
+                    <OrbitControls target={[0, 0, 0]} />
                     {/* <Model /> */}
                 </Canvas>
             </div>
