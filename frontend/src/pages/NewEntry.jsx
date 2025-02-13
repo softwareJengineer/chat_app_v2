@@ -50,7 +50,7 @@ function NewEntry() {
                         required 
                     />
                     <label className={labelStyling}>Chat History</label>
-                    <div className="bg-gray-100 rounded-lg h-1/2 pt-[2em]">
+                    <div className="bg-gray-100 rounded-lg h-1/2 pt-[2em] overflow-y-auto">
                         <ChatHistory messages={messages}></ChatHistory>
                     </div>
                 </div>

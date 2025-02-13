@@ -3,15 +3,15 @@ import React from "react";
 function ScoreChart({score}) {
 
     function getColor(score) {
-        if (score <= 2.0) {
+        if (score <= .20) {
             return "bg-green-600";
-        } else if (score <= 4.0) {
+        } else if (score <= .40) {
             return "bg-lime-500";
-        } else if (score <= 6.0) {
+        } else if (score <= .60) {
             return "bg-yellow-500";
-        } else if (score <= 8.0) {
+        } else if (score <= .80) {
             return "bg-orange-500";
-        } else if (score > 8.0) {
+        } else if (score > .80) {
             return "bg-red-500";
         } else {
             return "bg-gray-400";

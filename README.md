@@ -18,3 +18,6 @@ In the frontend directory:
 
 8. The web app can be accessed through localhost:8000 in your browser
 
+REQUIREMENTS
+1. Node.js
+2. Python3

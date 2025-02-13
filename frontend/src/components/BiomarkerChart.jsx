@@ -22,9 +22,9 @@ const BiomarkerChart = ({biomarkerData}) => {
             },
             yaxis: {
                 min: 0,
-                max: 10,
+                max: 1.0,
                 tickAmount: 20,
-                stepSize: 0.5,
+                stepSize: 0.05,
                 forceNiceScale: true,
                 decimalsInFloat: 3
             }

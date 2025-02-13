@@ -4,16 +4,16 @@ import ScoreChart from "./ScoreChart";
 function BiomarkerDetails({name, score, description, yourDescription}) {
 
     function getScore(score) {
-        if (score <= 2.0) {
+        if (score <= .20) {
             return "Excellent";
-        } else if (score <= 4.0) {
+        } else if (score <= .40) {
             return "Good";
-        } else if (score <= 6.0) {
+        } else if (score <= .60) {
             return "Fair";
-        } else if (score <= 8.0) {
-            return "Poor";
-        } else if (score > 8.0) {
-            return "Very Poor";
+        } else if (score <= .80) {
+            return "High";
+        } else if (score > .80) {
+            return "Very High";
         } else {
             return "N/A"
         }
