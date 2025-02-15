@@ -291,34 +291,80 @@ function Chat() {
         navigate('/new', {state: {biomarkerData: biomarkerData, messages: messages}});
     }
 
-    return (
-        <>
-            <Header />
-            <div className="flex flex-row h-[75vh] mt-[1em]">
-                <div className="w-1/2 border-r-1 border-blue-200">
-                    <ChatHistory messages={messages} />
+    const [width, setWidth] = React.useState(window.innerWidth);
+    const breakpoint = 700;
+
+    useEffect(() => {
+        const handleResizeWindow = () => setWidth(window.innerWidth);
+         window.addEventListener("resize", handleResizeWindow);
+         return () => {
+           window.removeEventListener("resize", handleResizeWindow);
+         };
+    }, []);
+
+    if (width > breakpoint) {
+        return (
+            <>
+                <Header />
+                <div className="flex flex-row h-[75vh] mt-[1em] w-[100vw]">
+                    <div className="w-1/2 border-r-1 border-blue-200">
+                        <ChatHistory messages={messages} />
+                    </div>
+                    <div className="w-[50vw]">
+                        <Avatar />
+                    </div>
+                </div> 
+                <div className="flex flex-row justify-center mb-[2em] pt-[3em] gap-[4em] items-center">
+                    <button
+                        variant="outline-primary"
+                        onClick={() => setRecording(!recording) }>
+                        {recording ? 
+                            <BsStopCircle size={50} style={{color: "red"}}/> : 
+                            <BsPlayCircle size={50} style={{color: "lightskyblue"}}/>}
+                    </button>
+                    <Button
+                        className="border-1 p-[1em] rounded-med"
+                        variant="outline-primary"
+                        size="lg"
+                        onClick={() => toNew()}
+                    >
+                        Finish
+                    </Button>
                 </div>
-                <Avatar />
-            </div> 
-            <div className="flex flex-row justify-center mb-[2em] pt-[3em] gap-[4em] items-center">
-                <button
-                    variant="outline-primary"
-                    onClick={() => setRecording(!recording) }>
-                    {recording ? 
-                        <BsStopCircle size={50} style={{color: "red"}}/> : 
-                        <BsPlayCircle size={50} style={{color: "lightskyblue"}}/>}
-                </button>
-                <Button
-                    className="border-1 p-[1em] rounded-med"
-                    variant="outline-primary"
-                    size="lg"
-                    onClick={() => toNew()}
-                >
-                    Finish
-                </Button>
-            </div>
-        </>
-    );
+            </>
+        );
+    } else {
+        return (
+            <>
+                <Header />
+                <div className="flex flex-col my-[1em] h-[80vh]">
+                    <div className="w-[100vw] h-1/2 bg-blue-200 rounded-lg">
+                        <ChatHistory messages={messages}/>    
+                    </div>
+                    <div className="w-[100vw] h-1/2">
+                        <Avatar />  
+                    </div>
+                </div>
+                <div className="flex flex-row justify-center mb-[1em] pt-[1em] gap-[2em] items-center">
+                    <button
+                        variant="outline-primary"
+                        onClick={() => setRecording(!recording) }>
+                        {recording ? 
+                            <BsStopCircle size={50} style={{color: "red"}}/> : 
+                            <BsPlayCircle size={50} style={{color: "lightskyblue"}}/>}
+                    </button>
+                    <Button
+                        className="border-1 p-[1em] rounded-med"
+                        variant="outline-primary"
+                        size="lg"
+                        onClick={() => toNew()}
+                    >
+                        Finish
+                    </Button>
+                </div>
+            </>
+        )
+    }
 }
 
 export default Chat;

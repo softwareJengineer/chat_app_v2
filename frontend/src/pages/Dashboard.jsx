@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Component } from "react";
-import { Button } from "react-bootstrap";
+import { Button, Dropdown } from "react-bootstrap";
 import Header from '../components/Header';
 import BiomarkerChart from "../components/BiomarkerChart";
 import BiomarkerDetails from "../components/BiomarkerDetails";
@@ -53,7 +53,9 @@ const Dashboard = () => {
             data = biomarkerScores[4].data;
         } else if (biomarker === "Turn Taking") {
             data = biomarkerScores[5].data;
-        } 
+        } else {
+            return "N/A";
+        }
         var score = data.reduce((prev, current) => prev + current) / data.length;
         return score.toFixed(2);
     }
@@ -73,65 +75,85 @@ const Dashboard = () => {
             return "N/A";
         }
     }
+
+    const ScoreButton = ({name, padding, size}) => {
+        return (
+            <Button
+                className={padding + " shadow-md w-full"}
+                variant={getActive(name)}
+                size={size}
+                onClick={() => setDisplayedBiomarker(name)}
+            >
+                {name}
+            </Button>
+        );
+    }
+
+    const [width, setWidth] = React.useState(window.innerWidth);
+    const breakpoint = 700;
+
+    useEffect(() => {
+        const handleResizeWindow = () => setWidth(window.innerWidth);
+            window.addEventListener("resize", handleResizeWindow);
+            return () => {
+            window.removeEventListener("resize", handleResizeWindow);
+            };
+    }, []);
     
-    return (
-        <>
-            <Header />
-            <BiomarkerChart biomarkerData={biomarkerScores} />
-            <span className="flex flex-row space-x-5 mx-[2em] mb-4 gap-[2em]">
-                <div className="flex flex-col w-1/5 gap-2">
-                    <Button
-                        className="p-4 shadow-md w-full"
-                        variant={getActive("Pragmatic")}
-                        onClick={() => setDisplayedBiomarker("Pragmatic")}
-                    >
-                        Pragmatic
-                    </Button>
-                    <Button
-                        className="p-4 shadow-md"
-                        variant={getActive("Grammar")}
-                        onClick={() => setDisplayedBiomarker("Grammar")}
-                    >
-                        Grammar
-                    </Button>
-                    <Button
-                        className="p-4 shadow-md"
-                        variant={getActive("Prosody")}
-                        onClick={() => setDisplayedBiomarker("Prosody")}
-                    >
-                        Prosody
-                    </Button>
-                    <Button
-                        className="p-4 shadow-md"
-                        variant={getActive("Pronunciation")}
-                        onClick={() => setDisplayedBiomarker("Pronunciation")}
-                    >
-                        Pronunciation
-                    </Button>
-                    <Button
-                        className="p-4 shadow-md"
-                        variant={getActive("Anomia")}
-                        onClick={() => setDisplayedBiomarker("Anomia")}
-                    >
-                        Anomia
-                    </Button>
-                    <Button
-                        className="p-4 shadow-md"
-                        variant={getActive("Turn Taking")}
-                        onClick={() => setDisplayedBiomarker("Turn Taking")}
-                    >
-                        Turn Taking
-                    </Button>
+    if (width > breakpoint) {
+        return (
+            <>
+                <Header />
+                <BiomarkerChart biomarkerData={biomarkerScores} />
+                <span className="flex flex-row space-x-5 mx-[1rem] mb-4 gap-[1rem]">
+                    <div className="flex flex-col w-1/5 gap-2">
+                        <ScoreButton padding="p-4" name="Pragmatic" />
+                        <ScoreButton padding="p-4" name="Grammar" />
+                        <ScoreButton padding="p-4" name="Prosody" />
+                        <ScoreButton padding="p-4" name="Pronunciation" />
+                        <ScoreButton padding="p-4" name="Anomia" />
+                        <ScoreButton padding="p-4" name="Turn Taking" />
+                    </div>
+                    <BiomarkerDetails 
+                        name={displayedBiomarker}
+                        score={score}
+                        description={description}
+                        yourDescription={yourDescription}
+                    />
+                </span>
+            </>
+        );
+    } else {
+        return (
+            <>
+                <Header />
+                <BiomarkerChart biomarkerData={biomarkerScores} />
+                <div className="flex justify-center mb-[1rem]">
+                    <Dropdown>
+                        <Dropdown.Toggle variant="outline-primary" id="dropdown-basic">
+                            Biomarker Score
+                        </Dropdown.Toggle>
+
+                        <Dropdown.Menu>
+                            <Dropdown.Item onClick={() => setDisplayedBiomarker("Pragmatic")}>Pragmatic</Dropdown.Item>
+                            <Dropdown.Item onClick={() => setDisplayedBiomarker("Grammar")}>Grammar</Dropdown.Item>
+                            <Dropdown.Item onClick={() => setDisplayedBiomarker("Prosody")}>Prosody</Dropdown.Item>
+                            <Dropdown.Item onClick={() => setDisplayedBiomarker("Pronunciation")}>Pronunciation</Dropdown.Item>
+                            <Dropdown.Item onClick={() => setDisplayedBiomarker("Anomia")}>Anomia</Dropdown.Item>
+                            <Dropdown.Item onClick={() => setDisplayedBiomarker("Turn Taking")}>Turn Taking</Dropdown.Item>
+                        </Dropdown.Menu>
+                    </Dropdown>
                 </div>
+                
                 <BiomarkerDetails 
                     name={displayedBiomarker}
                     score={score}
                     description={description}
                     yourDescription={yourDescription}
                 />
-            </span>
-        </>
-    );
+            </>
+        )
+    }
 }
 
 export default Dashboard;
