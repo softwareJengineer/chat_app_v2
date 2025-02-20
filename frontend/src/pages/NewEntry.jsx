@@ -6,7 +6,6 @@ import ChatHistory from "../components/ChatHistory";
 
 
 function NewEntry() {
-    const [show, setShow] = useState(false);
     const location = useLocation();
     const biomarkerData = location.state ? location.state.biomarkerData : [];
     const messages = location.state ? location.state.messages : [];
@@ -18,16 +17,13 @@ function NewEntry() {
 
     const navigate = useNavigate();
 
+    const toDetails = () => {
+        navigate('/details', {state: {biomarkerData: biomarkerData, messages: messages}});
+    }
+
     const toDashboard = () => {
-        navigate('/dashboard', {state: biomarkerData});
+        navigate('/dashboard');
     }
-
-    const toChat = () => {
-        navigate('/');
-    }
-
-    const handleClose = () => setShow(false);
-    const handleShow = () => setShow(true);
 
     const [width, setWidth] = React.useState(window.innerWidth);
     const breakpoint = 700;
@@ -39,31 +35,6 @@ function NewEntry() {
             window.removeEventListener("resize", handleResizeWindow);
             };
     }, []);
-
-    function CloseModal() {
-        return (
-            <Modal
-                show={show}
-                onHide={handleClose}
-                backdrop="static"
-                keyboard={false}
-                centered
-            >
-                <Modal.Header closeButton>
-                <Modal.Title>Unsaved Changes</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    Are you sure you want to exit without saving this session data? All data will be lost.
-                </Modal.Body>
-                <Modal.Footer>
-                <Button variant="outline-primary" onClick={handleClose}>
-                    No
-                </Button>
-                <Button onClick={() => toChat()} variant="danger">Yes</Button>
-                </Modal.Footer>
-            </Modal>
-        )
-    }
 
     if (width > breakpoint) {
         return (
@@ -100,11 +71,9 @@ function NewEntry() {
                 </div>
             </div>
             <div className="flex justify-center items-center gap-[2em] mt-[2em]">
-                <Button variant="outline-danger" onClick={() => handleShow()} size="lg">Cancel</Button>
+                <Button variant="outline-danger" onClick={() => toDetails()} size="lg">Cancel</Button>
                 <Button onClick={() => toDashboard()} variant="outline-primary" size="lg">Save</Button>
             </div>
-
-            <CloseModal />
         </>
         )
     } else {
@@ -138,11 +107,9 @@ function NewEntry() {
                     </div>
                 </div>
             <div className="flex justify-center items-center gap-[2em] my-[2em]">
-                <Button variant="outline-danger" onClick={() => handleShow()} size="lg">Cancel</Button>
+                <Button variant="outline-danger" onClick={() => toDetails()} size="lg">Cancel</Button>
                 <Button onClick={() => toDashboard()} variant="outline-primary" size="lg">Save</Button>
             </div>
-
-            <CloseModal />
         </>
         )
     }

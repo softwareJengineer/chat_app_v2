@@ -20,10 +20,11 @@ const wsUrl = window.location.hostname === 'localhost'
 const ws = new WebSocket(wsUrl);
 
 function Chat() {
+    const location = useLocation();
     const [recording, setRecording] = useState(false);
     const [systemSpeaking, setSystemSpeaking] = useState(false);
     const [userSpeaking, setUserSpeaking] = useState(false);
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState(location.state ? location.state.messages : []);
     const speechConfig = useRef(null);
     const audioConfig = useRef(null);
     const recognizer = useRef(null);
@@ -33,8 +34,8 @@ function Chat() {
     const stream = useRef(null);
     const source = useRef(null);
     const processorNode = useRef(null);
-
-    const [biomarkerData, setBiomarkerData] = useState([
+    
+    const [biomarkerData, setBiomarkerData] = useState(location.state? location.state.biomarkerData : [
         {
             name: "Pragmatic",
             data: []
@@ -288,7 +289,7 @@ function Chat() {
     const navigate = useNavigate();
 
     const toNew = () => {
-        navigate('/new', {state: {biomarkerData: biomarkerData, messages: messages}});
+        navigate('/details', {state: {biomarkerData: biomarkerData, messages: messages}});
     }
 
     const [width, setWidth] = React.useState(window.innerWidth);
