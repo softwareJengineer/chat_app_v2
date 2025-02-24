@@ -1,8 +1,6 @@
-import React, { useRef, useState, useEffect } from "react";
-import { useGLTF, useAnimations, OrbitControls, PerspectiveCamera } from '@react-three/drei';
-import { Canvas, useFrame, useLoader } from "@react-three/fiber";
-import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
-import { AnimationMixer, LoopRepeat } from 'three';
+import React from "react";
+import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
+import { Canvas } from "@react-three/fiber";
 import Model from "./Model";
 
 function Avatar() {
@@ -15,7 +13,7 @@ function Avatar() {
                     fov={50}
                 />
                 <OrbitControls />
-                <directionalLight position={[1, 5, 5]} intensity={3} />
+                <directionalLight position={[0, 5, 5]} intensity={3} />
                 <Model />
             </Canvas>
         </>
