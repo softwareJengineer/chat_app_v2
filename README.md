@@ -21,3 +21,7 @@ In the frontend directory:
 REQUIREMENTS
 1. Node.js
 2. Python3
+3. Java 22
+4. new_LSA.csv
+5. stanford-parser models file
+6. Phi-3_finetuned.gguf
