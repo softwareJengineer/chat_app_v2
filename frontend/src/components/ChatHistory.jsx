@@ -1,29 +1,34 @@
 import React, { useState, Component } from "react";
-import ReactDOM from "react-dom/client";
 
 const ChatHistory = ({messages}) => {
 
-    function renderMessage(sender, message) {
+    function renderMessage(sender, message, time) {
         if (sender === 'You') {
             return (
-                <p className="p-[1em] bg-purple-200 w-fit rounded-sm m-[1em] ml-auto">
-                    <b>{sender}:</b> {message}
-                </p>
+                <div className="flex flex-col float-right ml-auto mr-[1em]">
+                    <p className="p-[1em] bg-purple-200 w-fit rounded-sm">
+                        <b>{sender}:</b> {message}
+                    </p>
+                    <p className="ml-auto text-gray-400">{time}</p>
+                </div>
             )
         } else {
             return (
-                <p className="p-[1em] bg-green-200 w-fit rounded-sm m-[1em]">
-                    <b>{sender}:</b> {message}
-                </p>
+                <div className="flex flex-col  ml-[1em]">
+                    <p className="p-[1em] bg-green-200 w-fit rounded-sm">
+                        <b>{sender}:</b> {message}
+                    </p>
+                    <p>{time}</p>
+                </div>
             )
         }
     }
 
     return (
         <>
-            <div className="overflow-y-auto">
-                    {messages.map(({sender, message}, i) => (
-                        renderMessage(sender, message)
+            <div className="overflow-y-auto flex flex-col">
+                    {messages.map(({sender, message, time}, i) => (
+                        renderMessage(sender, message, time)
                     ))}
             </div>
         </>

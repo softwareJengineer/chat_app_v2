@@ -246,7 +246,7 @@ const Details = () => {
                     description={description}
                     yourDescription={yourDescription}
                 />
-                <div className="flex m-[1rem] justify-center items-center bg-gray-100 rounded-lg p-[1rem]  overflow-y-auto h-[30vh]">
+                <div className="flex m-[1rem] justify-center items-center bg-gray-100 rounded-lg p-[1rem] overflow-y-auto h-[30vh]">
                     <h2>Chat History</h2>
                     <ChatHistory messages={messages}/>
                 </div>

@@ -11,22 +11,17 @@ import asyncio
 import numpy as np
 import librosa
 import math
+from datetime import datetime, timezone
 from .. import config as cf
 from .biomarker_models.altered_grammer import generate_grammar_score
 from .biomarker_models.coherence_function import coherence
 import os
-
-global vectors, entropy, stop_list
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 
 vectors_path = current_path + '/biomarker_models/new_LSA.csv'
 entropy_path = current_path + '/biomarker_models/Hoffman_entropy_53758.csv'
 stop_path = current_path + '/biomarker_models/stoplist.txt'
-
-vectors = pd.read_csv(vectors_path, index_col=0)
-entropy = pd.read_csv(entropy_path)
-stop_list = pd.read_table(stop_path, header=None)
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -42,9 +37,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.user_utterances = deque(maxlen=100)
             self.overlapped_speech_count = 0
             self.global_llm_response = ""
-            self.vectors = vectors
-            self.entropy = entropy
-            self.stop_list = stop_list
+            self.vectors = pd.read_csv(vectors_path, index_col=0)
+            self.entropy = pd.read_csv(entropy_path)
+            self.stop_list = pd.read_table(stop_path, header=None)
             self.history_speech_df = pd.DataFrame(columns=['V1', 'V2'])
             self.chat_history = []  # Add chat_history as instance variable
             await self.accept()
@@ -99,21 +94,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 user_utt = data['data'].lower()
                 logger.info(f"Received user utterance: {user_utt}")
                 
+                # Generate LLM response
+                response = self.process_user_utterance(user_utt)
+                logger.info("Received response!")
+                system_time = datetime.now(timezone.utc)
+                await self.send(json.dumps({
+                    'type': 'llm_response',
+                    'data': response,
+                    'time': system_time.strftime("%H:%M:%S")
+                }))
+                self.global_llm_response = response
+                
                 # Generate biomarker scores
                 biomarker_scores = self.generate_biomarker_scores(user_utt)
                 await self.send(json.dumps({
                     'type': 'biomarker_scores',
                     'data': biomarker_scores
                 }))
-                
-                # Generate LLM response
-                response = self.process_user_utterance(user_utt)
-                logger.info("Received response!")
-                await self.send(json.dumps({
-                    'type': 'llm_response',
-                    'data': response
-                }))
-                self.global_llm_response = response
             
             elif data['type'] == 'audio_data':
                 print("AUDIO DATA RECEIVED")
@@ -171,18 +168,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
             logger.info(f"created new history speech dataframe : {new_speech_df}")
         except Exception as e:
             logger.error(f"Error preparing speech data for coherence calculation: {e}")
+            return -1
         
         try:
             pragmatic_score = coherence(new_speech_df, vectors=self.vectors, entropy=self.entropy, stop_list=self.stop_list)
             # Assuming adjusted_pragmatic_score is a float
             if math.isnan(pragmatic_score):
                 print("is nan condition pragmatic_score",pragmatic_score)
-                pragmatic_score = 0
+                return -1
 
             if pragmatic_score != 0:
                 adjusted_pragmatic_score = 1 - pragmatic_score
-            else:
-                adjusted_pragmatic_score = 0
             
             print("pragmatic_score",pragmatic_score)
             print("adjusted_pragmatic_score",adjusted_pragmatic_score)
@@ -190,17 +186,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return adjusted_pragmatic_score
         except Exception as e:
             logger.error(f"Error calculating pragmatic score: {e}")
-            adjusted_pragmatic_score = 0
+            return -1
             
 
     def generate_altered_grammar_score(self, user_utt, current_duration):
         try:
             altered_grammar_score = generate_grammar_score(list(user_utt), current_duration)
-            if altered_grammar_score == 0:
-                altered_grammar_score = random.uniform(0, 0.5)  # Random value between 0 and 0.5
         except Exception as e:
             logger.error(f"Error calculating altered grammar score: {e}")
-            altered_grammar_score = random.uniform(0, 0.5)
+            return -1
         
         print("altered_grammar_score",altered_grammar_score)
         return altered_grammar_score
@@ -232,10 +226,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if self.conversation_start_time is not None:
                 current_duration = time() - self.conversation_start_time
         return {
-            'pragmatic': self.generate_pragmatic_score(user_utt),
-            'grammar': self.generate_altered_grammar_score(user_utt, current_duration),
-            'prosody': self.generate_prosody_score(user_utt),
-            'pronunciation': self.generate_pronunciation_score(user_utt)
+            'pragmatic': 1.0 - self.generate_pragmatic_score(user_utt),
+            'grammar': 1.0 - self.generate_altered_grammar_score(user_utt, current_duration),
+            'prosody': 1.0 - self.generate_prosody_score(user_utt),
+            'pronunciation': 1.0 - self.generate_pronunciation_score(user_utt)
         }
     
     async def send_periodic_scores(self):  # Remove websocket parameter
@@ -243,8 +237,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await asyncio.sleep(5)
             if self.conversation_start_time is not None:
                 current_duration = time() - self.conversation_start_time
-                anomia_score = self.generate_anomia_score()
-                turntaking_score = self.generate_turntaking_score()
+                anomia_score = 1.0 - self.generate_anomia_score()
+                turntaking_score = 1.0 - self.generate_turntaking_score()
                 await self.send(json.dumps({  # Use self.send instead
                     'type': 'periodic_scores',
                     'data': {

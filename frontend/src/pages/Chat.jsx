@@ -80,7 +80,8 @@ function Chat() {
         const response = JSON.parse(event.data);
         if (!recording) return;
         if (response.type === 'llm_response') {
-            addMessageToChat('AI', response.data);
+            // console.log(response);
+            addMessageToChat('AI', response.data, response.time);
             speakResponse(response.data);
         } else if (response.type.includes("scores")) {
             updateScores(response);
@@ -107,13 +108,15 @@ function Chat() {
     
         const processRecognizedTranscript = (event) => {
             const result = event.result;
-            // console.log('Recognition result:', result);
+            console.log('Recognition result:', result);
         
             if (result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
                 setUserSpeaking(false);
                 const transcription = result.text;
+                const date = new Date();
+                const msgTime = date.getUTCHours() + ':' + date.getUTCMinutes() + ':' + date.getUTCSeconds();
                 console.log(`Recognized: ${transcription}`);
-                addMessageToChat('You', transcription);
+                addMessageToChat('You', transcription, msgTime);
                 sendTranscriptionToServer(transcription);
             }
         };
@@ -282,13 +285,14 @@ function Chat() {
         setBiomarkerData(prevData);
     }
 
-    function addMessageToChat(sender, message) {
-        setMessages((prevMessages) => [...prevMessages, { sender, message }]);
+    function addMessageToChat(sender, message, time) {
+        setMessages((prevMessages) => [...prevMessages, { sender, message, time }]);
     };
 
     const navigate = useNavigate();
 
     const toNew = () => {
+        setRecording(false);
         navigate('/details', {state: {biomarkerData: biomarkerData, messages: messages}});
     }
 
@@ -311,7 +315,7 @@ function Chat() {
                     <div className="w-1/2 border-r-1 border-blue-200">
                         <ChatHistory messages={messages} />
                     </div>
-                    <div className="w-[50vw]">
+                    <div className="w-1/2">
                         <Avatar />
                     </div>
                 </div> 

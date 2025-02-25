@@ -1,9 +1,8 @@
-import React, { Component, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Button } from "react-bootstrap";
 import { Link, useLocation } from "react-router-dom";
 
 function Header() {
-  
 	const [width, setWidth] = React.useState(window.innerWidth);
 	const breakpoint = 700;
 

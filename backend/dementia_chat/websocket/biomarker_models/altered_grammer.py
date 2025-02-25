@@ -8,6 +8,8 @@ from nltk.parse import stanford
 import numpy as np
 import pickle
 import logging
+import shutil
+import nltk
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -15,8 +17,14 @@ logger = logging.getLogger(__name__)
 
 nlp = stanza.Pipeline('en')
 
-java_path = r"C:\Program Files\Java\jdk-22\bin\java.exe"
+java_path = shutil.which("java")
+
+if (not java_path):
+    # java_path = r"C:\Program Files\Java\jdk-22\bin\java.exe"
+    java_path = r'C\Program Files (x86)\Common Files\Oracle\Java\java8path\java.EXE'
 os.environ['JAVAHOME'] = java_path
+os.environ['JAVA_HOME'] = java_path
+# nltk.internals.config_java(bin=java_path)
 
 # Update this path to where you extracted the Stanford Parser
 root_path = os.path.dirname(os.path.abspath(__file__))
