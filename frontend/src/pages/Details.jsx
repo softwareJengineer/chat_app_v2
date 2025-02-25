@@ -66,15 +66,15 @@ const Details = () => {
 
     function getScoreDesc(score) {
         if (score <= .20) {
-            return "Excellent";
+            return "Very Low";
         } else if (score <= .40) {
-            return "Good";
+            return "Low";
         } else if (score <= .60) {
             return "Fair";
         } else if (score <= .80) {
-            return "High";
+            return "Good";
         } else if (score > .80) {
-            return "Very High";
+            return "Excellent";
         } else {
             return "N/A";
         }
@@ -186,9 +186,9 @@ const Details = () => {
                         yourDescription={yourDescription}
                     />
                 </span>
-                <div className="flex flex-col m-[1rem] bg-gray-100 rounded-lg p-[3rem]">
+                <div className="flex flex-col gap-[2rem] m-[1rem] bg-gray-100 rounded-lg p-[3rem] items-center">
                     <h2>Chat History</h2>
-                    <div className="flex justify-center items-center overflow-y-auto h-[30vh]">
+                    <div className="flex overflow-y-auto h-[30vh]">
                         <ChatHistory messages={messages}/>
                     </div>
                 </div>

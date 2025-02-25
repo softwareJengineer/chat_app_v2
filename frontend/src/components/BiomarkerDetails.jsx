@@ -5,17 +5,17 @@ function BiomarkerDetails({name, score, description, yourDescription}) {
 
     function getScore(score) {
         if (score <= .20) {
-            return "Excellent";
+            return "Very Low";
         } else if (score <= .40) {
-            return "Good";
+            return "Low";
         } else if (score <= .60) {
             return "Fair";
         } else if (score <= .80) {
-            return "High";
+            return "Good";
         } else if (score > .80) {
-            return "Very High";
+            return "Excellent";
         } else {
-            return "N/A"
+            return "N/A";
         }
     }
 

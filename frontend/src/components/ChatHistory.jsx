@@ -9,7 +9,7 @@ const ChatHistory = ({messages}) => {
                     <p className="p-[1em] bg-purple-200 w-fit rounded-sm">
                         <b>{sender}:</b> {message}
                     </p>
-                    <p className="ml-auto text-gray-400">{time}</p>
+                    <p className="ml-auto text-gray-400 text-xs">{time}</p>
                 </div>
             )
         } else {
@@ -18,7 +18,7 @@ const ChatHistory = ({messages}) => {
                     <p className="p-[1em] bg-green-200 w-fit rounded-sm">
                         <b>{sender}:</b> {message}
                     </p>
-                    <p>{time}</p>
+                    <p className="text-gray-400 text-xs">{time}</p>
                 </div>
             )
         }

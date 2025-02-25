@@ -170,7 +170,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             logger.info(f"created new history speech dataframe : {new_speech_df}")
         except Exception as e:
             logger.error(f"Error preparing speech data for coherence calculation: {e}")
-            return 0
+            return 1
         
         try:
             pragmatic_score = coherence(new_speech_df, vectors=self.vectors, entropy=self.entropy, stop_list=self.stop_list)
@@ -190,7 +190,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return adjusted_pragmatic_score
         except Exception as e:
             logger.error(f"Error calculating pragmatic score: {e}")
-            return 0
+            return 1
             
 
     def generate_altered_grammar_score(self, user_utt, current_duration):
@@ -198,7 +198,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             altered_grammar_score = generate_grammar_score(list(user_utt), current_duration)
         except Exception as e:
             logger.error(f"Error calculating altered grammar score: {e}")
-            return 0
+            return 1
         print("altered_grammar_score",altered_grammar_score)
         return altered_grammar_score
 
@@ -239,7 +239,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         while True:
             await asyncio.sleep(5)
             if self.conversation_start_time is not None:
-                current_duration = time() - self.conversation_start_time
                 anomia_score = 1.0 - self.generate_anomia_score()
                 turntaking_score = 1.0 - self.generate_turntaking_score()
                 await self.send(json.dumps({  # Use self.send instead

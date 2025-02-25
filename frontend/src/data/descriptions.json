@@ -5,8 +5,8 @@
             "Excellent": "Excellent description",
             "Good": "Good description",
             "Fair": "Fair description",
-            "High": "High description",
-            "Very High": "Very High description",
+            "Low": "Low description",
+            "Very Low": "Very Low description",
             "N/A": "Your Pragmatic score is not available."
         }
     },
@@ -16,8 +16,8 @@
             "Excellent": "Excellent description",
             "Good": "Good description",
             "Fair": "Fair description",
-            "High": "High description",
-            "Very High": "Very High description",
+            "Low": "Low description",
+            "Very Low": "Very Low description",
             "N/A": "Your Grammar score is not available."
         }
     },
@@ -27,8 +27,8 @@
             "Excellent": "Excellent description",
             "Good": "Good description",
             "Fair": "Fair description",
-            "High": "High description",
-            "Very High": "Very High description",
+            "Low": "Low description",
+            "Very Low": "Very Low description",
             "N/A": "Your Anomia score is not available."
         }
     },
@@ -38,8 +38,8 @@
             "Excellent": "Excellent description",
             "Good": "Good description",
             "Fair": "Fair description",
-            "High": "High description",
-            "Very High": "Very High description",
+            "Low": "Low description",
+            "Very Low": "Very Low description",
             "N/A": "Your Turn Taking score is not available."
         }
     },
@@ -49,8 +49,8 @@
             "Excellent": "Excellent description",
             "Good": "Good description",
             "Fair": "Fair description",
-            "High": "High description",
-            "Very High": "Very High description",
+            "Low": "Low description",
+            "Very Low": "Very Low description",
             "N/A": "Your Prosody score is not available."
         }
     },
@@ -60,8 +60,8 @@
             "Excellent": "Excellent description",
             "Good": "Good description",
             "Fair": "Fair description",
-            "High": "High description",
-            "Very High": "Very High description",
+            "Low": "Low description",
+            "Very Low": "Very Low description",
             "N/A": "Your Pronunciation score is not available."
         }
     }

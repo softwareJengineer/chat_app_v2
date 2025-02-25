@@ -4,15 +4,15 @@ function ScoreChart({score}) {
 
     function getColor(score) {
         if (score <= .20) {
-            return "bg-green-600";
+            return "bg-red-600";
         } else if (score <= .40) {
-            return "bg-lime-500";
+            return "bg-orange-500";
         } else if (score <= .60) {
             return "bg-yellow-500";
         } else if (score <= .80) {
-            return "bg-orange-500";
+            return "bg-lime-500";
         } else if (score > .80) {
-            return "bg-red-500";
+            return "bg-green-500";
         } else {
             return "bg-gray-400";
         }

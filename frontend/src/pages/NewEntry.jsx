@@ -58,7 +58,7 @@ function NewEntry() {
                         required 
                     />
                     <label className={labelStyling}>Chat History</label>
-                    <div className="bg-gray-100 rounded-lg h-1/2 pt-[2em] overflow-y-auto">
+                    <div className="bg-gray-100 rounded-lg h-[55vh] pt-[2em] overflow-y-auto">
                         <ChatHistory messages={messages}></ChatHistory>
                     </div>
                 </div>
@@ -70,7 +70,7 @@ function NewEntry() {
                     </div>
                 </div>
             </div>
-            <div className="flex justify-center items-center gap-[2em] mt-[2em]">
+            <div className="flex justify-center items-center gap-[2em] my-[2em]">
                 <Button variant="outline-danger" onClick={() => toDetails()} size="lg">Cancel</Button>
                 <Button onClick={() => toDashboard()} variant="outline-primary" size="lg">Save</Button>
             </div>

@@ -312,7 +312,7 @@ function Chat() {
             <>
                 <Header />
                 <div className="flex flex-row h-[75vh] mt-[1em] w-[100vw]">
-                    <div className="w-1/2 border-r-1 border-blue-200">
+                    <div className="w-1/2 border-r-1 border-blue-200 overflow-y-auto">
                         <ChatHistory messages={messages} />
                     </div>
                     <div className="w-1/2">
