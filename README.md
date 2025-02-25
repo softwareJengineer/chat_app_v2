@@ -16,7 +16,7 @@ In the frontend directory:
 
 7. Run the command: npm run dev
 
-8. The web app can be accessed through localhost:8000 in your browser
+8. The web app can be accessed through localhost:5173 in your browser
 
 REQUIREMENTS
 1. Node.js
