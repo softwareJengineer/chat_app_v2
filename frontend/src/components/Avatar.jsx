@@ -12,7 +12,11 @@ function Avatar() {
                     position={[0, 0, 10]}
                     fov={50}
                 />
+<<<<<<< HEAD
                 {/* <OrbitControls /> */}
+=======
+                <OrbitControls />
+>>>>>>> 4166ee4ae0465d0b97d003c8d64faf01934fad08
                 <directionalLight position={[0, 5, 5]} intensity={3} />
                 <Model />
             </Canvas>

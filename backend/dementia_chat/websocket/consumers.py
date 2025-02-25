@@ -110,7 +110,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.send(json.dumps({
                     'type': 'biomarker_scores',
                     'data': biomarker_scores
-                }))
+                })) 
+                
+                self.global_llm_response = response
             
             elif data['type'] == 'audio_data':
                 print("AUDIO DATA RECEIVED")
@@ -168,17 +170,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
             logger.info(f"created new history speech dataframe : {new_speech_df}")
         except Exception as e:
             logger.error(f"Error preparing speech data for coherence calculation: {e}")
-            return -1
+            return 0
         
         try:
             pragmatic_score = coherence(new_speech_df, vectors=self.vectors, entropy=self.entropy, stop_list=self.stop_list)
             # Assuming adjusted_pragmatic_score is a float
             if math.isnan(pragmatic_score):
                 print("is nan condition pragmatic_score",pragmatic_score)
-                return -1
+                pragmatic_score = 0
 
             if pragmatic_score != 0:
                 adjusted_pragmatic_score = 1 - pragmatic_score
+            else:
+                adjusted_pragmatic_score = 0
             
             print("pragmatic_score",pragmatic_score)
             print("adjusted_pragmatic_score",adjusted_pragmatic_score)
@@ -186,7 +190,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return adjusted_pragmatic_score
         except Exception as e:
             logger.error(f"Error calculating pragmatic score: {e}")
-            return -1
+            return 0
             
 
     def generate_altered_grammar_score(self, user_utt, current_duration):
@@ -194,8 +198,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             altered_grammar_score = generate_grammar_score(list(user_utt), current_duration)
         except Exception as e:
             logger.error(f"Error calculating altered grammar score: {e}")
-            return -1
-        
+            return 0
         print("altered_grammar_score",altered_grammar_score)
         return altered_grammar_score
 
