@@ -9,7 +9,6 @@ import numpy as np
 import pickle
 import logging
 import shutil
-import nltk
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -20,8 +19,7 @@ nlp = stanza.Pipeline('en')
 java_path = shutil.which("java")
 
 if (not java_path):
-    # java_path = r"C:\Program Files\Java\jdk-22\bin\java.exe"
-    java_path = r'C\Program Files (x86)\Common Files\Oracle\Java\java8path\java.EXE'
+    java_path = r"C:\Program Files\Java\jdk-22"
 os.environ['JAVAHOME'] = java_path
 os.environ['JAVA_HOME'] = java_path
 # nltk.internals.config_java(bin=java_path)
@@ -49,8 +47,8 @@ def generate_grammar_score(list_sentences, speech_duration_seconds):
     logger.info(f"Generating grammar score for {list_sentences} sentences over {speech_duration_seconds} seconds")
 
     if not list_sentences:
-        logger.warning("No sentences provided. Returning default score of 0.")
-        return 0
+        logger.warning("No sentences provided. Returning default score of 1.")
+        return 1
     print
     extracted_features = {"coordinated_sentence":[],"subordinated_sentence":[],"reduced_sentence":[],"predicates":[], "production_rules":[],"function_words":[],"unique_words":[],"total_words":[],"character_length":[],"immediate_word_repetitions":[]}
     
@@ -106,7 +104,7 @@ def generate_grammar_score(list_sentences, speech_duration_seconds):
         return altered_grammar_score
     except Exception as e:
         logger.error(f"Error in generate_grammar_score: {str(e)}")
-        return 0  # Return a default score in case of error
+        return 1  # Return a default score in case of error
 
 def calculate_probability(features):
     logger.info("Calculating probability")
