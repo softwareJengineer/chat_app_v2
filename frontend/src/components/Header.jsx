@@ -1,9 +1,12 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
 import { Link, useLocation } from "react-router-dom";
 
 function Header() {
-	const [width, setWidth] = React.useState(window.innerWidth);
+	const [width, setWidth] = useState(window.innerWidth);
+	const [loggedIn, setLoggedIn] = useState(false);
+
+	const location = useLocation();
 	const breakpoint = 700;
 
 	useEffect(() => {
@@ -14,57 +17,48 @@ function Header() {
 		};
 	}, []);
 
-	let location = useLocation();
-
-	if (width > breakpoint) {
-		return (
-			<div className='flex'>
-				<p className="pt-[1em] pl-[1em] font-mono text-lg">AI Assistant Chat</p>
-				<span className="float-right ml-auto mr-[1em] mt-[1em] space-x-[1em]">
-				<Link to="/">
-					<Button 
-					variant={location.pathname === "/" ? "primary" : "outline-primary"}
-					size="lg"
-					>
-					Chat
-					</Button>
-				</Link> 
+	function checkLoggedIn() {
+		if (loggedIn) {
+			return (
 				<Link to="/dashboard">
 					<Button 
 					variant={location.pathname === "/dashboard" ? "primary" : "outline-primary"}
-					size="lg"
+					size={window.innerWidth > breakpoint ? "lg" : "md"}
 					>
 					Dashboard
 					</Button>
 				</Link>
-				</span>
-			</div>
-		);
-	} else {
-		return (
-			<div className='flex'>
-				<p className="pt-[1em] pl-[1em] font-mono text-lg">AI Assistant Chat</p>
-				<span className="float-right ml-auto mr-[1em] mt-[1em] space-x-[1em]">
-				<Link to="/">
+			)
+		} else {
+			return (
+				<Link to="/login">
 					<Button 
-					variant={location.pathname === "/" ? "primary" : "outline-primary"}
-					size="md"
+					variant={location.pathname === "/login" ? "primary" : "outline-primary"}
+					size={window.innerWidth > breakpoint ? "lg" : "md"}
 					>
-					Chat
-					</Button>
-				</Link> 
-				<Link to="/dashboard">
-					<Button 
-					variant={location.pathname === "/dashboard" ? "primary" : "outline-primary"}
-					size="md"
-					>
-					Dashboard
+					Log In
 					</Button>
 				</Link>
-				</span>
-			</div>
-		)
+			)
+		}
 	}
+
+	return (
+		<div className='flex'>
+			<p className="pt-[1em] pl-[1em] font-mono text-lg">AI Assistant Chat</p>
+			<span className="float-right ml-auto mr-[1em] mt-[1em] space-x-[1em]">
+			<Link to="/">
+				<Button 
+				variant={location.pathname === "/" ? "primary" : "outline-primary"}
+				size={window.innerWidth > breakpoint? "lg" : "md"}
+				>
+				Chat
+				</Button>
+			</Link> 
+			{checkLoggedIn()}
+			</span>
+		</div>
+	);
 }
 
 export default Header;

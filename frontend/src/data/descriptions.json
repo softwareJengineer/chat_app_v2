@@ -1,6 +1,6 @@
 {
     "Pragmatic": {
-        "description": "Pragmatic Description",
+        "description": "Pragmatic impairment refers to difficulties in understanding and using social language effectively. It involves challenges with the social rules of communication, such as taking turns in conversation, understanding non-verbal cues (like facial expressions or body language), maintaining appropriate eye contact, and adjusting language based on the situation or listener. ",
         "details": {
             "Excellent": "Excellent description",
             "Good": "Good description",
@@ -11,7 +11,7 @@
         }
     },
     "Grammar": {
-        "description": "Grammar description",
+        "description": "Altered grammar refers to deviations or irregularities in the structure of sentences or phrases when speaking or writing. These changes can involve incorrect word order, misused tenses, improper subject-verb agreement, or the omission or addition of words that disrupt the flow of communication. Altered grammar may manifest as incomplete sentences, run-on sentences, or unusual word choices that make it difficult for others to understand the intended meaning.",
         "details": {
             "Excellent": "Excellent description",
             "Good": "Good description",
@@ -22,7 +22,7 @@
         }
     },
     "Anomia": {
-        "description": "Anomia description",
+        "description": "Anomia is a type of language disorder characterized by difficulty in finding and recalling words, especially when trying to name objects, people, or places. Individuals with anomia often know the meaning of the word they want to say but struggle to retrieve it from memory, leading to pauses, descriptions, or substitutions of similar words in conversation. ",
         "details": {
             "Excellent": "Excellent description",
             "Good": "Good description",
@@ -33,7 +33,7 @@
         }
     },
     "Turn Taking": {
-        "description": "Turn taking description",
+        "description": "Turn-taking difficulty refers to challenges in appropriately timing and participating in the back-and-forth flow of conversation. People with turn-taking difficulties may interrupt others, struggle to wait for their turn to speak, or not recognize when it is their turn to listen. They may also have trouble maintaining the rhythm of conversation, which can lead to awkward pauses or speaking over others. ",
         "details": {
             "Excellent": "Excellent description",
             "Good": "Good description",
@@ -44,7 +44,7 @@
         }
     },
     "Prosody": {
-        "description": "Prosody description",
+        "description": "Prosody impairment refers to difficulties in using or interpreting the rhythm, intonation, pitch, and stress patterns of speech, which are essential for conveying meaning, emotion, and emphasis. People with prosody impairment may have a monotonous or flat tone, lack proper stress on certain words, or use an inappropriate pitch for the context. This can lead to challenges in expressing emotions like excitement or sadness, making it harder for others to understand the speaker's feelings or intentions. It can also affect the listener's ability to comprehend the speaker’s message in terms of timing, pauses, or emphasis. ",
         "details": {
             "Excellent": "Excellent description",
             "Good": "Good description",
@@ -55,7 +55,7 @@
         }
     },
     "Pronunciation": {
-        "description": "Pronunciation description",
+        "description": "Impaired pronunciation refers to difficulties in articulating sounds or words correctly, which can result in speech that is hard to understand. This can involve mispronouncing individual sounds, syllables, or words, or using incorrect phonetic patterns.",
         "details": {
             "Excellent": "Excellent description",
             "Good": "Good description",

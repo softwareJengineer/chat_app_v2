@@ -296,9 +296,6 @@ function Chat() {
         navigate('/details', {state: {biomarkerData: biomarkerData, messages: messages}});
     }
 
-    const [width, setWidth] = React.useState(window.innerWidth);
-    const breakpoint = 700;
-
     useEffect(() => {
         const handleResizeWindow = () => setWidth(window.innerWidth);
          window.addEventListener("resize", handleResizeWindow);
@@ -307,69 +304,36 @@ function Chat() {
          };
     }, []);
 
-    if (width > breakpoint) {
-        return (
-            <>
-                <Header />
-                <div className="flex flex-row h-[75vh] mt-[1em] w-[100vw]">
-                    <div className="w-1/2 border-r-1 border-blue-200 overflow-y-auto">
-                        <ChatHistory messages={messages} />
-                    </div>
-                    <div className="w-1/2">
-                        <Avatar />
-                    </div>
-                </div> 
-                <div className="flex flex-row justify-center mb-[2em] pt-[3em] gap-[4em] items-center">
-                    <button
-                        variant="outline-primary"
-                        onClick={() => setRecording(!recording) }>
-                        {recording ? 
-                            <BsStopCircle size={50} style={{color: "red"}}/> : 
-                            <BsPlayCircle size={50} style={{color: "lightskyblue"}}/>}
-                    </button>
-                    <Button
-                        className="border-1 p-[1em] rounded-med"
-                        variant="outline-primary"
-                        size="lg"
-                        onClick={() => toNew()}
-                    >
-                        Finish
-                    </Button>
+    return (
+        <>
+            <Header />
+            <div className="flex md:flex-row flex-col h-[75vh] md:mt-[1em] my-[1em] w-[100vw]">
+                <div className="md:w-1/2 md:border-r-1 md:border-blue-200 overflow-y-auto md:bg-white bg-blue-200 w-[100vw] md:h-full h-1/2 rounded-lg">
+                    <ChatHistory messages={messages} />
                 </div>
-            </>
-        );
-    } else {
-        return (
-            <>
-                <Header />
-                <div className="flex flex-col my-[1em] h-[80vh]">
-                    <div className="w-[100vw] h-1/2 bg-blue-200 rounded-lg">
-                        <ChatHistory messages={messages}/>    
-                    </div>
-                    <div className="w-[100vw] h-1/2">
-                        <Avatar />  
-                    </div>
+                <div className="md:w-1/2 w-[100vw] md:h-full h-1/2">
+                    <Avatar />
                 </div>
-                <div className="flex flex-row justify-center mb-[1em] pt-[1em] gap-[2em] items-center">
-                    <button
-                        variant="outline-primary"
-                        onClick={() => setRecording(!recording) }>
-                        {recording ? 
-                            <BsStopCircle size={50} style={{color: "red"}}/> : 
-                            <BsPlayCircle size={50} style={{color: "lightskyblue"}}/>}
-                    </button>
-                    <Button
-                        className="border-1 p-[1em] rounded-med"
-                        variant="outline-primary"
-                        size="lg"
-                        onClick={() => toNew()}
-                    >
-                        Finish
-                    </Button>
-                </div>
-            </>
-        )
-    }
+            </div> 
+            <div className="flex flex-row justify-center mb-[2em] pt-[3em] gap-[4em] items-center">
+                <button
+                    variant="outline-primary"
+                    onClick={() => setRecording(!recording) }>
+                    {recording ? 
+                        <BsStopCircle size={50} style={{color: "red"}}/> : 
+                        <BsPlayCircle size={50} style={{color: "lightskyblue"}}/>}
+                </button>
+                <Button
+                    className="border-1 p-[1em] rounded-med"
+                    variant="outline-primary"
+                    size="lg"
+                    onClick={() => toNew()}
+                >
+                    Finish
+                </Button>
+            </div>
+        </>
+    );
 }
 
 export default Chat;

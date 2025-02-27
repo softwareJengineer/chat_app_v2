@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Component } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Dropdown, Modal } from "react-bootstrap";
 import Header from '../components/Header';
 import BiomarkerChart from "../components/BiomarkerChart";
