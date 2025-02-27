@@ -24,7 +24,7 @@ function SessionSummary() {
     return (
         <div className="flex mx-[2rem]">
             <button 
-                className="border-1 p-[2rem] border-blue-500 hover:bg-blue-500 hover:text-white rounded w-full bg-blue-200" 
+                className="border-1 p-[2rem] border-gray-300 hover:bg-gray-300 rounded w-full" 
                 onClick={() => {console.log("clicked")}}
             >
                 <div className="flex flex-row gap-4">
@@ -32,7 +32,7 @@ function SessionSummary() {
                         <div>Session on {date}</div>
                         <div>{time}</div>
                     </div>
-                    <div className="flex flex-row float-right ml-auto gap-4">
+                    <div className="flex md:flex-row flex-col float-right ml-auto md:gap-4 gap-2">
                         {scores}
                     </div>
                 </div>

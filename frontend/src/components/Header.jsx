@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 
 function Header() {
 	const [width, setWidth] = useState(window.innerWidth);
-	const [loggedIn, setLoggedIn] = useState(false);
+	const [loggedIn, setLoggedIn] = useState(true);
 
 	const location = useLocation();
 	const breakpoint = 700;
