@@ -6,6 +6,7 @@ import NewEntry from "./pages/NewEntry";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
+import Reminders from "./pages/Reminders";
 
 function App() {
     return (
@@ -16,6 +17,7 @@ function App() {
           <Route path='/dashboard' element={<Dashboard/>}></Route>
           <Route path='/login' element={<Login/>}></Route>
           <Route path='/signup' element={<SignUp/>}></Route>
+          <Route path='/reminders' element={<Reminders/>}></Route>
         </Routes>
     );
 }

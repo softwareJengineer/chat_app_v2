@@ -7,18 +7,22 @@ import Descriptions from "../data/descriptions.json";
 import { useLocation, useNavigate } from "react-router-dom";
 import dummyData from "../data/dummyData.json";
 import ChatHistory from "../components/ChatHistory";
+import ScoreRadarChart from "../components/ScoreRadarChart";
 
 const Details = () => {
     const location = useLocation();
-    const biomarkerData = location.state.biomarkerData;
+    const biomarkerData1 = location.state.biomarkerData;
+    const biomarkerData = dummyData;
     const messages = location.state.messages;
 
     const [displayedBiomarker, setDisplayedBiomarker] = useState("Pragmatic");
     const [score, setScore] = useState(getScore(displayedBiomarker));
     const [description, setDescription] = useState(Descriptions["Pragmatic"].description);
     const [yourDescription, setYourDescription] = useState(Descriptions["Pragmatic"].details[getScoreDesc]);
-    const [show, setShow] = useState(false);
-    const [width, setWidth] = React.useState(window.innerWidth);
+    const [showCM, setShowCM] = useState(false);
+    const [showDV, setShowDV] = useState(false);
+    const [width, setWidth] = useState(window.innerWidth);
+    const [viewDetails, setViewDetails] = useState(false);
     const breakpoint = 700;
     const navigate = useNavigate();
     
@@ -113,14 +117,16 @@ const Details = () => {
         navigate('/', {state: {messages: messages, biomarkerData: biomarkerData}});
     }
 
-    const handleClose = () => setShow(false);
-    const handleShow = () => setShow(true);
+    const handleCloseCM = () => setShowCM(false);
+    const handleShowCM = () => setShowCM(true);
+    const handleCloseDV = () => setShowDV(false);
+    const handleShowDV = () => setShowDV(true);
 
     function CloseModal() {
         return (
             <Modal
-                show={show}
-                onHide={handleClose}
+                show={showCM}
+                onHide={handleCloseCM}
                 backdrop="static"
                 keyboard={false}
                 centered
@@ -132,10 +138,35 @@ const Details = () => {
                     Are you sure you want to exit without saving this session data? All data will be lost.
                 </Modal.Body>
                 <Modal.Footer>
-                <Button variant="outline-primary" onClick={handleClose}>
+                <Button variant="outline-primary" onClick={handleCloseCM}>
                     No
                 </Button>
                 <Button onClick={() => toChat([])} variant="danger">Yes</Button>
+                </Modal.Footer>
+            </Modal>
+        )
+    }
+
+    function ShowDetailsModal() {
+        return (
+            <Modal
+                show={showDV}
+                onHide={handleCloseDV}
+                backdrop="static"
+                keyboard={false}
+                centered
+            >
+                <Modal.Header closeButton>
+                <Modal.Title>Show Detailed View?</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    Are you sure you want to view the detailed view? The data may be upsetting for some users.
+                </Modal.Body>
+                <Modal.Footer>
+                <Button variant="outline-primary" onClick={handleCloseDV}>
+                    No
+                </Button>
+                <Button onClick={() => {setViewDetails(true); handleCloseDV()}} variant="danger">Yes</Button>
                 </Modal.Footer>
             </Modal>
         )
@@ -145,7 +176,13 @@ const Details = () => {
         return (
             <>
                 <Header />
-                <BiomarkerChart biomarkerData={biomarkerData} />
+                <div className="flex md:flex-row flex-col m-4 gap-4 items-center justify-center">
+                    <ScoreRadarChart biomarkerData={biomarkerData} />
+                    <div className="w-1/2">
+                        Hello, user! Today, your Turn Taking score was particularly strong. Good job! You could improve on your Pragmatic score.
+                        Might I suggest playing a word-pairing game?
+                    </div>
+                </div>
                 <div className="flex flex-row gap-[2rem] justify-center mb-[2rem]">
                     <Button 
                         size="lg"
@@ -157,7 +194,7 @@ const Details = () => {
                     <Button
                         size="lg"
                         variant="danger"
-                        onClick={() => handleShow()}
+                        onClick={() => handleShowCM()}
                     >
                         Delete Data
                     </Button>
@@ -170,34 +207,47 @@ const Details = () => {
                     </Button>
                 </div>
                 <CloseModal />
-                <span className="flex flex-row space-x-5 mx-[1rem] mb-4 gap-[1rem]">
-                    <div className="flex flex-col w-1/5 gap-2">
-                        <ScoreButton padding="p-4" name="Pragmatic" />
-                        <ScoreButton padding="p-4" name="Grammar" />
-                        <ScoreButton padding="p-4" name="Prosody" />
-                        <ScoreButton padding="p-4" name="Pronunciation" />
-                        <ScoreButton padding="p-4" name="Anomia" />
-                        <ScoreButton padding="p-4" name="Turn Taking" />
-                    </div>
-                    <BiomarkerDetails 
-                        name={displayedBiomarker}
-                        score={score}
-                        description={description}
-                        yourDescription={yourDescription}
-                    />
-                </span>
-                <div className="flex flex-col gap-[2rem] m-[1rem] bg-gray-100 rounded-lg p-[3rem] items-center">
-                    <h2>Chat History</h2>
-                    <div className="flex overflow-y-auto h-[30vh]">
-                        <ChatHistory messages={messages}/>
-                    </div>
+                <div className="flex justify-center mb-[2rem]">
+                    <Button size="lg" variant="outline-primary" onClick={() => handleShowDV()}>Show Detailed View?</Button>
                 </div>
+                <ShowDetailsModal />
+
+                {viewDetails ? 
+                    <div>
+                    <BiomarkerChart biomarkerData={biomarkerData} />
+                    <span className="flex flex-row space-x-5 mx-[1rem] mb-4 gap-[1rem]">
+                        <div className="flex flex-col w-1/5 gap-2">
+                            <ScoreButton padding="p-4" name="Pragmatic" />
+                            <ScoreButton padding="p-4" name="Grammar" />
+                            <ScoreButton padding="p-4" name="Prosody" />
+                            <ScoreButton padding="p-4" name="Pronunciation" />
+                            <ScoreButton padding="p-4" name="Anomia" />
+                            <ScoreButton padding="p-4" name="Turn Taking" />
+                        </div>
+                        <BiomarkerDetails 
+                            name={displayedBiomarker}
+                            score={score}
+                            description={description}
+                            yourDescription={yourDescription}
+                        />
+                    </span>
+                    <div className="flex flex-col gap-[2rem] m-[1rem] bg-gray-100 rounded-lg p-[3rem] items-center">
+                        <h2>Chat History</h2>
+                        <div className="flex overflow-y-auto h-[30vh]">
+                            <ChatHistory messages={messages}/>
+                        </div>
+                    </div>
+                    </div>
+            : <></>}
             </>
         );
     } else {
         return (
             <>
                 <Header />
+                <div className="h-[100vh] w-[100vw]">
+                    <ScoreRadarChart biomarkerData={biomarkerData}/>
+                </div>
                 <BiomarkerChart biomarkerData={biomarkerData} />
                 <div className="flex flex-row gap-[2rem] justify-center mb-[2rem]">
                     <Button 
@@ -210,7 +260,7 @@ const Details = () => {
                     <Button
                         size="lg"
                         variant="danger"
-                        onClick={() => handleShow()}
+                        onClick={() => handleShowCM()}
                     >
                         Delete Data
                     </Button>
@@ -223,6 +273,7 @@ const Details = () => {
                     </Button>
                 </div>
                 <CloseModal />
+                {viewDetails ? 
                 <div className="flex justify-center mb-[1rem]">
                     <Dropdown>
                         <Dropdown.Toggle variant="outline-primary" id="dropdown-basic">
@@ -238,18 +289,18 @@ const Details = () => {
                             <Dropdown.Item onClick={() => setDisplayedBiomarker("Turn Taking")}>Turn Taking</Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>
-                </div>
-                
-                <BiomarkerDetails 
+                    <BiomarkerDetails 
                     name={displayedBiomarker}
                     score={score}
                     description={description}
                     yourDescription={yourDescription}
-                />
-                <div className="flex m-[1rem] justify-center items-center bg-gray-100 rounded-lg p-[1rem] overflow-y-auto h-[30vh]">
-                    <h2>Chat History</h2>
-                    <ChatHistory messages={messages}/>
-                </div>
+                    />
+                    <div className="flex m-[1rem] justify-center items-center bg-gray-100 rounded-lg p-[1rem] overflow-y-auto h-[30vh]">
+                        <h2>Chat History</h2>
+                        <ChatHistory messages={messages}/>
+                    </div>
+                </div> : <></>};
+ 
             </>
         )
     }

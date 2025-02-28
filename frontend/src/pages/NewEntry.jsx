@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import BiomarkerChart from "../components/BiomarkerChart";
-import { Button, Modal } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import ChatHistory from "../components/ChatHistory";
 
 
@@ -11,9 +11,6 @@ function NewEntry() {
     const messages = location.state ? location.state.messages : [];
 
     const labelStyling = "text-xl my-[1em]";
-    const current = new Date();
-    const date = `${current.getDate()}/${current.getMonth()+1}/${current.getFullYear()}`;
-    const time = current.getHours() + ':' + current.getMinutes() + ":" + current.getSeconds();
 
     const navigate = useNavigate();
 
@@ -41,12 +38,12 @@ function NewEntry() {
         <>
             <div className="mx-[2em] flex flex-row space-x-[4em]">
                 <div className="flex flex-col w-1/2">
-                    <label className={labelStyling}>Title</label>
+                    <label className={labelStyling}>Date</label>
                     <input 
                         className="border-1 p-2 mb-[1em] rounded-lg" 
                         name="title" 
                         id="title"
-                        placeholder={"Session on " + date} 
+                        type="date"
                         required 
                     />
                     <label className={labelStyling}>Time</label>
@@ -54,7 +51,7 @@ function NewEntry() {
                         className="border-1 p-2 mb-[1em] rounded-lg" 
                         name="time" 
                         id="time" 
-                        placeholder = {time}
+                        type="time"
                         required 
                     />
                     <label className={labelStyling}>Chat History</label>

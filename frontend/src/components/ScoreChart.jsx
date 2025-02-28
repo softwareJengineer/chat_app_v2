@@ -21,7 +21,7 @@ function ScoreChart({score}) {
     return (
         <>
             <div className={getColor(score) +" text-4xl w-[25vh] h-[25vh] flex rounded-full justify-center items-center mx-auto"}>
-                {score}/10
+                {score}/1.0
             </div>
         </>
     )

@@ -1,8 +1,15 @@
 import React from "react";
 import Header from "../components/Header";
 import { Button } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 function SignUp() {
+    const navigate = useNavigate();
+
+    function toLogin() {
+        navigate('/login');
+    }
+
     return (
         <>
             <Header/>
@@ -27,6 +34,7 @@ function SignUp() {
                                 <label for="remember" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">I agree with the terms and conditions.</label>
                             </div>
                             <Button variant="primary">Sign Up</Button>
+                            <p>Already have an account? <a className="hover:cursor-pointer" onClick={() => toLogin()}>Log In</a></p>
                         </div>
                     </div>
                 </div>
