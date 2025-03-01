@@ -1,49 +1,139 @@
-import React, { useState } from "react"
-import { Button } from "react-bootstrap"
-import SessionSummary from "../components/SessionSummary"
+import React, { useState } from "react";
+import { Button, Modal, Form } from "react-bootstrap";
 import Header from "../components/Header";
+import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
+import moment from 'moment';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
+
 
 function Reminders() {
-    const [reminders, setReminders] = useState([{label: "Reminder 1", date: "Nov 1, 2000", time: "00:00:00 UTC"}]);
+    const [reminders, setReminders] = useState([]);
+    const [showNewReminder, setShowNewReminder] = useState(false);
+    const [title, setTitle] = useState('');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [repeat, setRepeat] = useState('');
+    const [recurrences, setRecurrences] = useState(0);
+    const localizer = momentLocalizer(moment);
 
-    function addReminder(label, date, time) {
-        setReminders((prevReminders) => [...prevReminders, { label, date, time }]);
+    const addReminder = (event) => {
+        event.preventDefault();
+        for (let i = 0; i < recurrences; i++) {
+            let start = new Date(startDate);
+            let end = new Date(endDate);
+            if (repeat === 'Daily') {
+                start.setDate(start.getDate() + i);
+                end.setDate(end.getDate() + i);
+            } else if (repeat === 'Weekly') {
+                start.setDate(start.getDate() + i * 7);
+                end.setDate(end.getDate() + i * 7);
+            }
+            setReminders((prevReminders) => [...prevReminders, { title, start, end }]);
+        }
+        handleClose();
     };
 
-    function renderReminder(label, date, time) {
-        return (
-            <div className="border-1 border-gray-300 rounded-lg flex flex-col gap-1 p-[1rem] my-2">
-                <p>{label}</p>
-                <p>{date} at {time}</p>
-            </div>
-        )
-    }
+    const handleClose = () => {
+        setShowNewReminder(false);
+        resetForm();
+    };
+
+    const handleShow = () => setShowNewReminder(true);
+
+    const resetForm = () => {
+        setTitle('');
+        setStartDate('');
+        setEndDate('');
+        setRepeat('');
+        setRecurrences(0);
+    };
 
     return (
         <>
-        <Header />
-        <div className="flex md:flex-row flex-col m-[2rem] gap-4 md:h-[30vh]">
-        <div className="md:w-1/2 overflow-y-auto">
-            <h2>Your Reminders</h2>
-            {reminders.map(({label, date, time}, i) => (
-                renderReminder(label, date, time)
-            ))}
-        </div>
-        <div className="md:w-1/2">
-            <h2>Create a new reminder</h2>
-            <form>
-                <div className="flex flex-col gap-2 mt-[2rem]">
-                    <label>Label</label>
-                    <input className="border-1 border-gray-300 p-2 rounded-md" placeholder="Reminder label"></input>
-                    <label>When:</label>
-                    <input className="border-1 border-gray-300 p-2 rounded-md mb-4" type="datetime-local"></input>
-                    <Button>Create</Button>
-                </div>
-            </form>
-        </div>
-        </div>
-        <h1 className="p-[2rem]">Session Data</h1>
-        <SessionSummary />
+            <Header />
+            <h2 className="m-[2rem]">Your Calendar</h2>
+            <div className="h-[75vh] m-[2rem]">
+                <Calendar
+                    localizer={localizer}
+                    events={reminders}
+                    startAccessor="start"
+                    endAccessor="end"
+                    defaultView={Views.DAY}
+                />
+            </div>
+            <div className="flex justify-center m-[2rem]">
+                <Button onClick={handleShow} size="lg">Create a New Reminder</Button>
+            </div>
+
+            <Modal show={showNewReminder} onHide={handleClose} centered backdrop="static" keyboard={false}>
+                <Modal.Header closeButton>
+                <Modal.Title>Create New Reminder</Modal.Title>
+                </Modal.Header>
+                <Form onSubmit={addReminder}>
+                    <Modal.Body>
+                        <Form.Group controlId="formTitle">
+                            <Form.Label>Reminder Label</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder="Enter label"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                            />
+                        </Form.Group>
+            
+                        <Form.Group controlId="formStart">
+                            <Form.Label>Start</Form.Label>
+                            <Form.Control
+                                type="datetime-local"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                            />
+                        </Form.Group>
+            
+                        <Form.Group controlId="formEnd">
+                            <Form.Label>End</Form.Label>
+                            <Form.Control
+                                type="datetime-local"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                            />
+                        </Form.Group>
+
+                        <Form.Group controlId="formRepeat">
+                            <Form.Label>Repeat</Form.Label>
+                            <Form.Control 
+                                as="select"
+                                value={repeat}
+                                onChange={(e) => setRepeat(e.target.value)}
+                            >
+                                <option>None</option>
+                                <option>Daily</option>
+                                <option>Weekly</option>
+                            </Form.Control>
+                        </Form.Group>
+
+                        <Form.Group controlId="formRecurrences">
+                            <Form.Label>Recurrences</Form.Label>
+                            <Form.Control
+                                type="number"
+                                placeholder="0"
+                                disabled={repeat === 'None'}
+                                value={recurrences}
+                                onChange={(e) => setRecurrences(e.target.value)}
+                            />
+                        </Form.Group>
+                    
+                        <Modal.Footer>
+                            <Button variant="outline-danger" onClick={handleClose}>
+                                Cancel
+                            </Button>
+                            <Button variant="primary" type="submit">
+                                Create
+                            </Button>
+                        </Modal.Footer>
+                    </Modal.Body>
+                </Form>
+            </Modal>
         </>
     );
 }

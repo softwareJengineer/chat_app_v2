@@ -231,9 +231,8 @@ const Details = () => {
                             yourDescription={yourDescription}
                         />
                     </span>
-                    <div className="flex flex-col gap-[2rem] m-[1rem] bg-gray-100 rounded-lg p-[3rem] items-center">
-                        <h2>Chat History</h2>
-                        <div className="flex overflow-y-auto h-[30vh]">
+                    <div className="flex justify-center m-[1rem] bg-gray-100 rounded-lg p-[3rem]">
+                        <div className="overflow-y-auto h-[30vh] w-full">
                             <ChatHistory messages={messages}/>
                         </div>
                     </div>
@@ -245,10 +244,9 @@ const Details = () => {
         return (
             <>
                 <Header />
-                <div className="h-[100vh] w-[100vw]">
+                <div className="h-fit w-[100vw]">
                     <ScoreRadarChart biomarkerData={biomarkerData}/>
                 </div>
-                <BiomarkerChart biomarkerData={biomarkerData} />
                 <div className="flex flex-row gap-[2rem] justify-center mb-[2rem]">
                     <Button 
                         size="lg"
@@ -273,8 +271,13 @@ const Details = () => {
                     </Button>
                 </div>
                 <CloseModal />
+                <div className="flex justify-center mb-[2rem]">
+                    <Button size="lg" variant="outline-primary" onClick={() => handleShowDV()}>Show Detailed View?</Button>
+                </div>
+                <ShowDetailsModal />
                 {viewDetails ? 
-                <div className="flex justify-center mb-[1rem]">
+                <div className="flex flex-col justify-center m-[1rem]">
+                    <BiomarkerChart biomarkerData={biomarkerData} />
                     <Dropdown>
                         <Dropdown.Toggle variant="outline-primary" id="dropdown-basic">
                             Biomarker Score
@@ -290,14 +293,15 @@ const Details = () => {
                         </Dropdown.Menu>
                     </Dropdown>
                     <BiomarkerDetails 
-                    name={displayedBiomarker}
-                    score={score}
-                    description={description}
-                    yourDescription={yourDescription}
+                        name={displayedBiomarker}
+                        score={score}
+                        description={description}
+                        yourDescription={yourDescription}
                     />
-                    <div className="flex m-[1rem] justify-center items-center bg-gray-100 rounded-lg p-[1rem] overflow-y-auto h-[30vh]">
-                        <h2>Chat History</h2>
-                        <ChatHistory messages={messages}/>
+                    <div className="flex justify-center gap-[2rem] mt-[1rem] bg-gray-100 rounded-lg p-[3rem]">
+                        <div className="overflow-y-auto h-[30vh] w-full">
+                            <ChatHistory messages={messages}/>
+                        </div>
                     </div>
                 </div> : <></>};
  

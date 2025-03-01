@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Button } from "react-bootstrap";
+import { Button, ToggleButton, ToggleButtonGroup } from "react-bootstrap";
 import Header from '../components/Header';
 import ChatHistory from "../components/ChatHistory";
 import Avatar from "../components/Avatar";
 import { BsStopCircle, BsPlayCircle } from "react-icons/bs";
+import { TbMessages } from "react-icons/tb";
+import { RiRobot2Line } from "react-icons/ri";
+import { MdOutlineVerticalSplit } from "react-icons/md";
 import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -25,6 +28,7 @@ function Chat() {
     const [systemSpeaking, setSystemSpeaking] = useState(false);
     const [userSpeaking, setUserSpeaking] = useState(false);
     const [messages, setMessages] = useState(location.state ? location.state.messages : []);
+    const [viewMode, setViewMode] = useState(2);
     const speechConfig = useRef(null);
     const audioConfig = useRef(null);
     const recognizer = useRef(null);
@@ -296,6 +300,37 @@ function Chat() {
         navigate('/details', {state: {biomarkerData: biomarkerData, messages: messages}});
     }
 
+    function getView() {
+        if (viewMode == 1) {
+            return (
+                <div className="flex justify-self-center md:border-x-1 md:border-blue-200 flex-col h-[70vh] md:mt-[1em] md:w-1/2 w-full">
+                    <ChatHistory messages={messages} />
+                </div> 
+            );
+        } else if (viewMode == 2) {
+            return (
+            <div className="flex md:flex-row flex-col h-[70vh] md:mt-[1em] w-full">
+                <div className="md:w-1/2 md:border-r-1 border-blue-200 overflow-y-auto md:border-b-0 border-b-1 w-full md:h-full h-1/2">
+                    <ChatHistory messages={messages} />
+                </div>
+                <div className="md:w-1/2 w-[100vw] md:h-full h-1/2">
+                    <Avatar />
+                </div>
+            </div> 
+            );
+        } else {
+            return (
+                <div className="flex md:flex-row flex-col h-[70vh] md:mt-[1em] w-full">
+                    <Avatar />
+                </div>
+            )
+        }
+    }
+
+    useEffect(() => {
+        console.log(viewMode);
+    }, [viewMode]);
+
     useEffect(() => {
         const handleResizeWindow = () => setWidth(window.innerWidth);
          window.addEventListener("resize", handleResizeWindow);
@@ -307,14 +342,27 @@ function Chat() {
     return (
         <>
             <Header />
-            <div className="flex md:flex-row flex-col h-[75vh] md:mt-[1em] my-[1em] w-[100vw]">
-                <div className="md:w-1/2 md:border-r-1 md:border-blue-200 overflow-y-auto md:bg-white bg-blue-200 w-[100vw] md:h-full h-1/2">
-                    <ChatHistory messages={messages} />
-                </div>
-                <div className="md:w-1/2 w-[100vw] md:h-full h-1/2">
-                    <Avatar />
-                </div>
-            </div> 
+            <div className="ml-[1rem] mt-[1rem] flex justify-center">
+                <ToggleButtonGroup 
+                    type="radio"
+                    name="viewMode"
+                    defaultValue={2}
+                >
+                    <ToggleButton id="messages" variant="outline-primary" value={1} onChange={(e) => setViewMode(e.currentTarget.value)}
+                    >
+                        Messages
+                    </ToggleButton>
+                    <ToggleButton id="split" variant="outline-primary" value={2} onChange={(e) => setViewMode(e.currentTarget.value)}
+                    >
+                        Messages & Chatbot
+                    </ToggleButton>
+                    <ToggleButton id="avatar" variant="outline-primary" value={3} onChange={(e) => setViewMode(e.currentTarget.value)}
+                    >
+                        Chatbot
+                    </ToggleButton>
+                </ToggleButtonGroup>
+            </div>
+            {getView()}
             <div className="flex flex-row justify-center mb-[2em] pt-[3em] gap-[4em] items-center">
                 <button
                     variant="outline-primary"

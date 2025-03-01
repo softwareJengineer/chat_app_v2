@@ -26,6 +26,7 @@ const ChatHistory = ({messages}) => {
 
     return (
         <>
+            <h2 className="flex justify-center">Chat History</h2>
             <div className="overflow-y-auto flex flex-col">
                     {messages.map(({sender, message, time}, i) => (
                         renderMessage(sender, message, time)

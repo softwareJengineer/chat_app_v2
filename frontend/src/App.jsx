@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Reminders from "./pages/Reminders";
+import History from "./pages/History"
 
 function App() {
     return (
@@ -18,6 +19,7 @@ function App() {
           <Route path='/login' element={<Login/>}></Route>
           <Route path='/signup' element={<SignUp/>}></Route>
           <Route path='/reminders' element={<Reminders/>}></Route>
+          <Route path='/history' element={<History/>}></Route>
         </Routes>
     );
 }

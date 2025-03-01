@@ -23,13 +23,18 @@ function DropDown() {
         navigate('/login');
     }
 
+    const toHistory = () => {
+        navigate('/history');
+    }
+
     function getMenuItems() {
         if (loggedIn) {
             return (
                 <>
                     <Dropdown.Item onClick={() => toDashboard()}>Dashboard</Dropdown.Item>
                     <Dropdown.Item onClick={() => toReminders()}>Your Reminders</Dropdown.Item>
-                    <Dropdown.Item onClick={() => toLogOut()}>Log Out</Dropdown.Item>
+                    <Dropdown.Item onClick={() => toHistory()}>History</Dropdown.Item>
+                    <Dropdown.Item onClick={() => toLogOut()}>Log Out</Dropdown.Item> 
                 </>
             )
         } else {
