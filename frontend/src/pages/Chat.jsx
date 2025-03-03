@@ -327,18 +327,6 @@ function Chat() {
         }
     }
 
-    useEffect(() => {
-        console.log(viewMode);
-    }, [viewMode]);
-
-    useEffect(() => {
-        const handleResizeWindow = () => setWidth(window.innerWidth);
-         window.addEventListener("resize", handleResizeWindow);
-         return () => {
-           window.removeEventListener("resize", handleResizeWindow);
-         };
-    }, []);
-
     return (
         <>
             <Header />

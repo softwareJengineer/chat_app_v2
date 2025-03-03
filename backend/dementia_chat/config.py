@@ -74,9 +74,11 @@ prompt = "You are an assistant for dementia patients. Provide any response as mu
 
 try:
     model_path = current_path + "/services/Phi-3_finetuned.gguf"
-    if not os.path.exists(model_path):
-        logger.error(f"Model file not found: {model_path}")
-        raise FileNotFoundError(f"Model file not found: {model_path}")
+    pronunciation_model_path = current_path + "/services/pronunciation_rf(v4).pkl"
+    prosody_model_path = current_path + "/services/prosody_rf(v1).pkl"
+    if not os.path.exists(model_path) or not os.path.exists(pronunciation_model_path) or not os.path.exists(prosody_model_path):
+        logger.error(f"One of the files not found: {model_path, pronunciation_model_path, prosody_model_path}")
+        raise FileNotFoundError(f"Model file not found: {model_path, pronunciation_model_path, prosody_model_path}")
         
     llm = Llama(
         model_path=model_path,

@@ -21,11 +21,11 @@ function BiomarkerDetails({name, score, description, yourDescription}) {
 
     return (
         <div className="w-full bg-blue-100 p-4 rounded-md">
-            <h2 className="text-2xl mb-4">Your {name} Score</h2>
-            <ScoreChart score={score}></ScoreChart>
-            <p className="text-xl mt-4 font-bold mx-auto justify-center items-center flex">{getScore(score)}</p>
+            <h2 className="text-2xl mb-4">{name} Score</h2>
+            {score == -1 ? <></> : <ScoreChart score={score}></ScoreChart>}
+            {score == -1 ? <></> : <p className="text-xl mt-4 font-bold mx-auto justify-center items-center flex">{getScore(score)}</p>}
             <p>{description}</p>
-            <p>Your {name} score falls into the range of <b>{getScore(score)}</b>, meaning {yourDescription}</p>
+            {score == -1 ? <></> : <p>Your {name} score falls into the range of <b>{getScore(score)}</b>, meaning {yourDescription}</p>}
         </div>
     );
 }

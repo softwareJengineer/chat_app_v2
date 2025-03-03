@@ -1,5 +1,5 @@
 import React from 'react';
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis } from 'recharts';
 
 const ScoreRadarChart = ({biomarkerData}) => {
     var data = [];
@@ -12,7 +12,7 @@ const ScoreRadarChart = ({biomarkerData}) => {
     }
  
     return (
-        <RadarChart height={500} width={600} 
+        <RadarChart height={500} width={600}
             outerRadius="80%" data={data}>
             <PolarGrid />
             <PolarAngleAxis dataKey="name" />

@@ -9,9 +9,14 @@ from collections import deque
 import pandas as pd
 import asyncio
 import numpy as np
+import opensmile
+import joblib
+import uuid
 import librosa
 import math
 from datetime import datetime, timezone
+from django.apps import apps
+from channels.db import database_sync_to_async
 from .. import config as cf
 from .biomarker_models.altered_grammer import generate_grammar_score
 from .biomarker_models.coherence_function import coherence
@@ -23,6 +28,34 @@ vectors_path = current_path + '/biomarker_models/new_LSA.csv'
 entropy_path = current_path + '/biomarker_models/Hoffman_entropy_53758.csv'
 stop_path = current_path + '/biomarker_models/stoplist.txt'
 
+# Constants
+WINDOW_SIZE = 5  # seconds
+HOP_LENGTH = 0.01  # 10ms for feature extraction
+SAMPLE_RATE = 16000  # Hz
+
+PROSODY_FEATURES = [
+    'F0final_sma', 'voicingFinalUnclipped_sma',
+    'audspec_lengthL1norm_sma', 'audspecRasta_lengthL1norm_sma',
+    'pcm_RMSenergy_sma', 'pcm_zcr_sma', 'jitterLocal_sma', 
+    'jitterDDP_sma', 'shimmerLocal_sma', 'logHNR_sma'
+]
+
+PRONUNCIATION_FEATURES = [
+    'audSpec_Rfilt_sma[3]', 'audSpec_Rfilt_sma[5]', 'audSpec_Rfilt_sma[9]', 'audSpec_Rfilt_sma[11]', 
+    'audSpec_Rfilt_sma[12]', 'audSpec_Rfilt_sma[16]', 'audSpec_Rfilt_sma[20]', 'audSpec_Rfilt_sma[21]', 
+    'audSpec_Rfilt_sma[23]', 'audSpec_Rfilt_sma[24]', 'audSpec_Rfilt_sma[25]', 'pcm_fftMag_fband250-650_sma', 
+    'pcm_fftMag_spectralCentroid_sma', 'pcm_fftMag_spectralVariance_sma', 'mfcc_sma[5]', 'mfcc_sma[9]', 'mfcc_sma[10]', 
+    'mfcc_sma[13]'
+    ] 
+
+# Initialize feature extractor
+feature_extractor = opensmile.Smile(
+    feature_set=opensmile.FeatureSet.ComParE_2016,
+    feature_level=opensmile.FeatureLevel.LowLevelDescriptors,
+    sampling_rate=SAMPLE_RATE,
+)
+
+
 # Configure logging
 logger = logging.getLogger(__name__)
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -33,6 +66,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             if not cf.llm:
                 raise RuntimeError("LLM not initialized")
             # Rest of connect code...
+            self.Session = apps.get_model('dementia_chat', 'Session')
+            self.session_id = str(uuid.uuid4())
             self.conversation_start_time = time()
             self.user_utterances = deque(maxlen=100)
             self.overlapped_speech_count = 0
@@ -41,9 +76,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.entropy = pd.read_csv(entropy_path)
             self.stop_list = pd.read_table(stop_path, header=None)
             self.history_speech_df = pd.DataFrame(columns=['V1', 'V2'])
+            self.prosody_features = None
+            self.pronunciation_features = None
             self.chat_history = []  # Add chat_history as instance variable
             await self.accept()
             self.periodic_scores_task = asyncio.create_task(self.send_periodic_scores())
+            self.prosody_model = joblib.load(cf.prosody_model_path)
+            self.pronunciation_model = joblib.load(cf.pronunciation_model_path)
         except Exception as e:
             logger.error(f"Failed to initialize consumer: {e}")
             return
@@ -55,6 +94,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.user_utterances.clear()
         self.overlapped_speech_count = 0
         logger.info(f"Client disconnected: {self.client_id}")
+        
+    @database_sync_to_async
+    def store_session(self, user, date, time, scores, avg_scores, notes, messages):
+        """Store utterance in database asynchronously"""
+        try:
+            self.Session.objects.create(
+                session_id=self.session_id,
+                user=user,
+                date=date,
+                time=time,
+                scores=scores,
+                avg_scores=avg_scores,
+                notes=notes,
+                messages=messages
+            )
+        except Exception as e:
+            logger.error(f"Failed to store session: {e}")
 
     def process_user_utterance(self, user_utt):
         try:
@@ -138,6 +194,30 @@ class ChatConsumer(AsyncWebsocketConsumer):
             
         except Exception as e:
             logger.error(f"Error processing audio data: {e}")
+            
+    def reshape_data(self, X):
+        'Reshape 3D data to 2D'
+        return X.reshape(X.shape[0], -1)
+
+    def get_probs(self, model, X):
+        'Takes a classif model and returns probability values'
+        probabilities = model.predict_proba(X)[:,1]
+        return probabilities
+    
+    def get_chunks(self, features, chunk_size):
+        'Seperate features in 5-second non-overlapping chunks'
+        return [features.iloc[i:i+chunk_size].values for i in range(0, len(features), chunk_size) if len(features.iloc[i:i+chunk_size]) == chunk_size]
+
+
+    def process_scores(self, features, chunk_size, model):
+        'getting scores from file'
+        chunks = self.get_chunks(features, chunk_size)
+        print(f'\tOriginal features shape: {features.shape}')
+        feature_array = self.reshape_data(np.array(chunks))
+        print(f'\tReshaped features shape: {feature_array.shape}')
+        scores = self.get_probs(model, feature_array)
+        print(f"\tSCORES: {scores}\n")
+        return scores
 
     def generate_pragmatic_score(self, user_utt):
         # Calculate pragmatic score
@@ -218,11 +298,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
         fillers_per_minute = len(all_fillers) / duration_minutes if duration_minutes > 0 else 0
         return min(fillers_per_minute / 10, 1)
 
-    def generate_prosody_score(self, user_utt):
-        return random.random()
+    def generate_prosody_score(self):
+        if self.prosody_features is not None:
+            try:
+                chunk_size = int(WINDOW_SIZE / HOP_LENGTH)
+                score = self.process_scores(self.prosody_features, chunk_size, self.prosody_model)
+                return score
+            except Exception as e:
+                logger.error(f"Error processing prosody features: {e}")
+                return 1
 
-    def generate_pronunciation_score(self, user_utt):
-        return random.random()
+    def generate_pronunciation_score(self):
+        if self.pronunciation_features is not None:
+            try:
+                print("\tGenerating pronunciation score...")
+                chunk_size = int(WINDOW_SIZE / HOP_LENGTH)
+                score = self.process_scores(self.pronunciation_features, chunk_size, self.pronunciation_model)
+                return score[0]
+            except Exception as e:
+                logger.error(f"Error processing prosody features: {e}")
+                return 1
 
     def generate_biomarker_scores(self, user_utt):
         self.user_utterances.append(user_utt)

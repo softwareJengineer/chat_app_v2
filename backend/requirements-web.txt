@@ -44,13 +44,13 @@ networkx
 nltk==3.9.1
 oauthlib==3.2.2
 openpyxl==3.1.5
+opensmile
 portalocker==2.10.1
 protobuf==5.28.2
 pycparser==2.22
 PyJWT==2.9.0
 python-dateutil==2.9.0.post0
 pytz==2024.2
-recharts
 regex==2024.9.11
 requests==2.32.3
 requests-oauthlib==2.0.0

@@ -216,16 +216,17 @@ const Details = () => {
                     <div>
                     <BiomarkerChart biomarkerData={biomarkerData} />
                     <span className="flex flex-row space-x-5 mx-[1rem] mb-4 gap-[1rem]">
-                        <div className="flex flex-col w-1/5 gap-2">
-                            <ScoreButton padding="p-4" name="Pragmatic" />
-                            <ScoreButton padding="p-4" name="Grammar" />
-                            <ScoreButton padding="p-4" name="Prosody" />
-                            <ScoreButton padding="p-4" name="Pronunciation" />
-                            <ScoreButton padding="p-4" name="Anomia" />
-                            <ScoreButton padding="p-4" name="Turn Taking" />
-                        </div>
+                    <div className="flex flex-col w-1/5 gap-2">
+                        <ScoreButton padding="p-4" name="Pragmatic" />
+                        <ScoreButton padding="p-4" name="Grammar" />
+                        <ScoreButton padding="p-4" name="Prosody" />
+                        <ScoreButton padding="p-4" name="Pronunciation" />
+                        <ScoreButton padding="p-4" name="Anomia" />
+                        <ScoreButton padding="p-4" name="Turn Taking"  />
+                    </div>
                         <BiomarkerDetails 
                             name={displayedBiomarker}
+                            displayName={displayedBiomarker}
                             score={score}
                             description={description}
                             yourDescription={yourDescription}
@@ -294,6 +295,7 @@ const Details = () => {
                     </Dropdown>
                     <BiomarkerDetails 
                         name={displayedBiomarker}
+                        displayname={displayedBiomarker}
                         score={score}
                         description={description}
                         yourDescription={yourDescription}
