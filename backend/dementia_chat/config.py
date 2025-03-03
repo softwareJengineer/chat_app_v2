@@ -89,6 +89,6 @@ except Exception as e:
     logger.error(f"Failed to initialize LLM: {e}")
     raise
 
-######### PROSODY & PRONUNCIATION MODEL PATHS #############
-pronunciation_model_path = "backend/dementia_chat/websocket/biomarker_models/pronunciation_rf(v4).pkl"
-prosody_model_path = "backend/dementia_chat/websocket/biomarker_models/prosody_rf(v1).pkl"
+current_path = os.path.dirname(os.path.abspath(__file__))
+pronunciation_model_path = current_path + "/websocket/biomarker_models/pronunciation_rf(v4).pkl"
+prosody_model_path = current_path + "/websocket/biomarker_models/prosody_rf(v1).pkl"
