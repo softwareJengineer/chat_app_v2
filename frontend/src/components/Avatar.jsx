@@ -2,6 +2,7 @@ import React from "react";
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { Canvas } from "@react-three/fiber";
 import Model from "./Model";
+import Model2 from "./Model2";
 
 function Avatar() {
     return (
@@ -14,7 +15,7 @@ function Avatar() {
                 />
                 {/* <OrbitControls /> */}
                 <directionalLight position={[0, 10, 10]} intensity={5} />
-                <Model />
+                <Model2 />
             </Canvas>
         </>
     )

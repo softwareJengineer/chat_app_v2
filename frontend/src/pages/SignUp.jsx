@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 function SignUp() {
     const navigate = useNavigate();
+    const inputStyling = "p-2 border-1 border-gray-400 rounded-md";
 
     function toLogin() {
         navigate('/login');
@@ -19,19 +20,27 @@ function SignUp() {
                         <p className="justify-center flex text-xl font-mono">Sign Up</p>
                         <div className="flex flex-col gap-3 rounded-lg p-4">
                             <span className="flex flex-row gap-2">
-                                <input className="w-1/2 p-2 border-1 border-gray-400 rounded-md" placeholder="First Name"></input>
-                                <input className="w-1/2 p-2 border-1 border-gray-400 rounded-md" placeholder="Last Name"></input>
+                                <input className={"w-1/2 " + inputStyling} placeholder="First Name"></input>
+                                <input className={"w-1/2 " + inputStyling} placeholder="Last Name"></input>
                             </span>
-                            <input className="p-2 border-1 border-gray-400 rounded-md" placeholder="email@example.com">
+                            <input className={inputStyling} placeholder="email@example.com">
                             </input>
-                            <input className="p-2 border-1 border-gray-400 rounded-md" placeholder="Username"></input>
-                            <input type="password" className="p-2 border-1 border-gray-400 rounded-md" placeholder="Password"></input>
-                            <input type="password" className="p-2 border-1 border-gray-400 rounded-md" placeholder="Confirm Password"></input>
-                            <div class="flex items-start">
-                                <div class="flex items-center h-5">
-                                <input id="remember" type="checkbox" value="" class="w-4 h-4 border border-gray-300 rounded-sm bg-gray-50" required />
+                            <input className={inputStyling} placeholder="Username"></input>
+                            <input type="password" className={inputStyling} placeholder="Password"></input>
+                            <input type="password" className={inputStyling} placeholder="Confirm Password"></input>
+                            <div className="flex items-start">
+                                <div className="flex items-center h-5">
+                                <input id="remember" type="checkbox" value="" className="w-4 h-4 border border-gray-300 rounded-sm bg-gray-50" required />
                                 </div>
-                                <label for="remember" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">I agree with the terms and conditions.</label>
+                                <label className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">I agree with the terms and conditions.</label>
+                            </div>
+                            <div className="flex flex-row gap-2 items-center">
+                                <label>I am a:</label>
+                                <select name="role" id="role" className={inputStyling}>
+                                    <option value="" disabled selected>Select One</option>
+                                    <option value="patient">Patient</option>
+                                    <option value="caregiver">Caregiver</option>
+                                </select>
                             </div>
                             <Button variant="primary">Sign Up</Button>
                             <p>Already have an account? <a className="hover:cursor-pointer" onClick={() => toLogin()}>Log In</a></p>

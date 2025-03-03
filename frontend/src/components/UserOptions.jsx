@@ -2,7 +2,7 @@ import React from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { useLocation, useNavigate } from "react-router-dom";
 
-function DropDown() {
+function UserOptions() {
     const location = useLocation();
     const loggedIn = location.state ? location.state.loggedIn : true;
     const navigate = useNavigate();
@@ -59,4 +59,4 @@ function DropDown() {
     );
 }
 
-export default DropDown;
+export default UserOptions;

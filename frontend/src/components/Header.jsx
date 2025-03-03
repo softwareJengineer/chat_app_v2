@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
 import { Link, useLocation } from "react-router-dom";
-import DropDown from "./DropDown";
+import UserOptions from "./UserOptions";
 
 function Header() {
 	const location = useLocation();
@@ -18,7 +18,7 @@ function Header() {
 					Chat
 					</Button>
 				</Link> 
-				<DropDown/>
+				<UserOptions />
 			</span>
 		</div>
 	);
