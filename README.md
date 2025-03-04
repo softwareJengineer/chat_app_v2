@@ -19,7 +19,7 @@ In the frontend directory:
 8. The web app can be accessed through localhost:5173 in your browser
 
 REQUIREMENTS
-1. Node.js (only requirement if only viewing the frontend)
+1. Node.js (the requirement for only viewing the frontend, the others are not necessary if you do not need backend functionality)
 2. Python3
 3. Java 22
 4. new_LSA.csv
