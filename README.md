@@ -6,7 +6,7 @@ Speech Model is not currently being tracked because of its size
 1. Ensure your machine has Docker installed
 2. Clone the repo using this terminal command: git clone https://github.com/softwareJengineer/chat_app_v2
 
-In the backend directory:
+In the backend directory (if you want to use the speech synthesis and score generation functionality, unnecessary for only viewing the app):
 
 4. Build the docker container using this command: docker-compose up --build
 5. To start the docker container simply run: docker-compose up
