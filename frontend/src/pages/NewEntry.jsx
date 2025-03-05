@@ -38,11 +38,19 @@ function NewEntry() {
         <>
             <div className="mx-[2em] flex flex-row space-x-[4em]">
                 <div className="flex flex-col w-1/2">
-                    <label className={labelStyling}>Date</label>
+                    <label className={labelStyling}>Conversation Title</label>
                     <input 
                         className="border-1 p-2 mb-[1em] rounded-lg" 
                         name="title" 
                         id="title"
+                        type="text"
+                        required 
+                    />
+                    <label className={labelStyling}>Date</label>
+                    <input 
+                        className="border-1 p-2 mb-[1em] rounded-lg" 
+                        name="date" 
+                        id="date"
                         type="date"
                         required 
                     />

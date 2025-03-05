@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Button, Dropdown, Modal } from "react-bootstrap";
 import Header from '../components/Header';
 import BiomarkerChart from "../components/BiomarkerChart";
@@ -8,6 +8,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import dummyData from "../data/dummyData.json";
 import ChatHistory from "../components/ChatHistory";
 import ScoreRadarChart from "../components/ScoreRadarChart";
+import Avatar from "../components/Avatar";
+import { UserContext } from "../App";
 
 const Details = () => {
     const location = useLocation();
@@ -15,6 +17,7 @@ const Details = () => {
     const biomarkerData = dummyData;
     const messages = location.state.messages;
 
+    const {user, setUser} = useContext(UserContext);
     const [displayedBiomarker, setDisplayedBiomarker] = useState("Pragmatic");
     const [score, setScore] = useState(getScore(displayedBiomarker));
     const [description, setDescription] = useState(Descriptions["Pragmatic"].description);
@@ -23,8 +26,14 @@ const Details = () => {
     const [showDV, setShowDV] = useState(false);
     const [width, setWidth] = useState(window.innerWidth);
     const [viewDetails, setViewDetails] = useState(false);
-    const breakpoint = 700;
     const navigate = useNavigate();
+
+    if (!user) {
+        navigate("/login");
+    }
+
+    const isCaretaker = user.isCaretaker;
+    const breakpoint = 700;
     
     useEffect(() => {
         setDescription(Descriptions[displayedBiomarker].description);
@@ -177,12 +186,14 @@ const Details = () => {
             <>
                 <Header />
                 <div className="flex md:flex-row flex-col m-4 gap-4 items-center justify-center">
-                    <ScoreRadarChart biomarkerData={biomarkerData} />
+                    <div className="w-1/2 h-[50vh]">
+                        <Avatar />
+                    </div>
                     <div className="w-1/2">
-                        Hello, user! Today, your Turn Taking score was particularly strong. Good job! You could improve on your Pragmatic score.
-                        Might I suggest playing a word-pairing game?
+                        Thank you for talking with me! We talked for 10 minutes. I hope to see you again tomorrow!
                     </div>
                 </div>
+                {isCaretaker ? 
                 <div className="flex flex-row gap-[2rem] justify-center mb-[2rem]">
                     <Button 
                         size="lg"
@@ -205,38 +216,41 @@ const Details = () => {
                     >
                         Save Data
                     </Button>
-                </div>
+                </div> : <></>}
                 <CloseModal />
                 <div className="flex justify-center mb-[2rem]">
-                    <Button size="lg" variant="outline-primary" onClick={() => handleShowDV()}>Show Detailed View?</Button>
+                    <Button size="lg" variant="outline-primary" onClick={() => handleShowDV()}>Show All Conversation Data?</Button>
                 </div>
                 <ShowDetailsModal />
 
                 {viewDetails ? 
                     <div>
-                    <BiomarkerChart biomarkerData={biomarkerData} />
-                    <span className="flex flex-row space-x-5 mx-[1rem] mb-4 gap-[1rem]">
-                    <div className="flex flex-col w-1/5 gap-2">
-                        <ScoreButton padding="p-4" name="Pragmatic" />
-                        <ScoreButton padding="p-4" name="Grammar" />
-                        <ScoreButton padding="p-4" name="Prosody" />
-                        <ScoreButton padding="p-4" name="Pronunciation" />
-                        <ScoreButton padding="p-4" name="Anomia" />
-                        <ScoreButton padding="p-4" name="Turn Taking"  />
-                    </div>
-                        <BiomarkerDetails 
-                            name={displayedBiomarker}
-                            displayName={displayedBiomarker}
-                            score={score}
-                            description={description}
-                            yourDescription={yourDescription}
-                        />
-                    </span>
-                    <div className="flex justify-center m-[1rem] bg-gray-100 rounded-lg p-[3rem]">
-                        <div className="overflow-y-auto h-[30vh] w-full">
-                            <ChatHistory messages={messages}/>
+                        <div className="flex justify-center">
+                            <ScoreRadarChart biomarkerData={biomarkerData} />
                         </div>
-                    </div>
+                        <BiomarkerChart biomarkerData={biomarkerData} />
+                        <span className="flex flex-row space-x-5 mx-[1rem] mb-4 gap-[1rem]">
+                        <div className="flex flex-col w-1/5 gap-2">
+                            <ScoreButton padding="p-4" name="Pragmatic" />
+                            <ScoreButton padding="p-4" name="Grammar" />
+                            <ScoreButton padding="p-4" name="Prosody" />
+                            <ScoreButton padding="p-4" name="Pronunciation" />
+                            <ScoreButton padding="p-4" name="Anomia" />
+                            <ScoreButton padding="p-4" name="Turn Taking"  />
+                        </div>
+                            <BiomarkerDetails 
+                                name={displayedBiomarker}
+                                displayName={displayedBiomarker}
+                                score={score}
+                                description={description}
+                                yourDescription={yourDescription}
+                            />
+                        </span>
+                        <div className="flex justify-center m-[1rem] bg-gray-100 rounded-lg p-[3rem]">
+                            <div className="overflow-y-auto h-[30vh] w-full">
+                                <ChatHistory messages={messages}/>
+                            </div>
+                        </div>
                     </div>
             : <></>}
             </>
@@ -245,32 +259,38 @@ const Details = () => {
         return (
             <>
                 <Header />
-                <div className="h-fit w-[100vw]">
-                    <ScoreRadarChart biomarkerData={biomarkerData}/>
+                <div className="flex flex-col m-4 gap-4 items-center justify-center py-[2rem]">
+                    <div className="h-[50vh]">
+                        <Avatar />
+                    </div>
+                    <div>
+                        Thank you for talking with me! We talked for 10 minutes. I hope to see you again tomorrow!
+                    </div>
                 </div>
-                <div className="flex flex-row gap-[2rem] justify-center mb-[2rem]">
-                    <Button 
-                        size="lg"
-                        variant="outline-primary"
-                        onClick={() => toChat(messages)}
-                    >
-                        Back
-                    </Button>
-                    <Button
-                        size="lg"
-                        variant="danger"
-                        onClick={() => handleShowCM()}
-                    >
-                        Delete Data
-                    </Button>
-                    <Button
-                        size="lg"
-                        variant="primary"
-                        onClick={() => toNew()}
-                    >
-                        Save Data
-                    </Button>
-                </div>
+                    {isCaretaker ? 
+                    <div className="flex flex-row gap-[2rem] justify-center mb-[2rem]">
+                        <Button 
+                            size="lg"
+                            variant="outline-primary"
+                            onClick={() => toChat(messages)}
+                        >
+                            Back
+                        </Button>
+                        <Button
+                            size="lg"
+                            variant="danger"
+                            onClick={() => handleShowCM()}
+                        >
+                            Delete Data
+                        </Button>
+                        <Button
+                            size="lg"
+                            variant="primary"
+                            onClick={() => toNew()}
+                        >
+                            Save Data
+                        </Button>
+                    </div> : <></>}
                 <CloseModal />
                 <div className="flex justify-center mb-[2rem]">
                     <Button size="lg" variant="outline-primary" onClick={() => handleShowDV()}>Show Detailed View?</Button>
@@ -278,6 +298,9 @@ const Details = () => {
                 <ShowDetailsModal />
                 {viewDetails ? 
                 <div className="flex flex-col justify-center m-[1rem]">
+                    <div className="h-fit w-[100vw]">
+                        <ScoreRadarChart biomarkerData={biomarkerData}/>
+                    </div>
                     <BiomarkerChart biomarkerData={biomarkerData} />
                     <Dropdown>
                         <Dropdown.Toggle variant="outline-primary" id="dropdown-basic">

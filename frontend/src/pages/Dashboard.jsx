@@ -1,14 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Button } from "react-bootstrap";
 import Header from "../components/Header";
 import BiomarkerDetails from "../components/BiomarkerDetails";
 import ScoreRadarChart from "../components/ScoreRadarChart";
 import dummyData from "../data/dummyData.json"
 import Descriptions from "../data/descriptions.json";
+import { UserContext } from "../App";
+import { useNavigate } from "react-router-dom";
 
 function Dashboard() {
+    const { user, setUser } = useContext(UserContext);
     const [displayedBiomarker, setDisplayedBiomarker] = useState("Pragmatic");
     const [description, setDescription] = useState(Descriptions["Pragmatic"].description);
+
+    const navigate = useNavigate();
+
+    if (!user) {
+        navigate("/login");
+    }
 
     useEffect(() => {
         setDescription(Descriptions[displayedBiomarker].description);
@@ -43,7 +52,7 @@ function Dashboard() {
                     <ScoreRadarChart biomarkerData={dummyData}/>
                 </div>
                 <div className="w-1/2">
-                    Hello, user! You've been talking with me for 3 days. During our most recent conversation, you displayed 
+                    Hello, {user.username}! You've been talking with me for 3 days. During our most recent conversation, you displayed 
                     less disrupted turn taking. Keep up the good work! You could work on your pragatic impairment score.
                 </div>
             </div>

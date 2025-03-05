@@ -33,7 +33,7 @@ function SessionSummary() {
                         <div>{time}</div>
                     </div>
                     <div className="flex md:flex-row flex-col float-right ml-auto md:gap-4 gap-2">
-                        {scores}
+                        {/* {scores} */}
                     </div>
                 </div>
             </button>

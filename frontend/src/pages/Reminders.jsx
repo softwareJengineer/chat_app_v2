@@ -1,12 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Button, Modal, Form } from "react-bootstrap";
 import Header from "../components/Header";
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
+import { UserContext } from "../App";
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { useNavigate } from "react-router-dom";
 
 
 function Reminders() {
+    const { user, setUser } = useContext(UserContext);
     const [reminders, setReminders] = useState([]);
     const [showNewReminder, setShowNewReminder] = useState(false);
     const [title, setTitle] = useState('');
@@ -15,6 +18,12 @@ function Reminders() {
     const [repeat, setRepeat] = useState('');
     const [recurrences, setRecurrences] = useState(0);
     const localizer = momentLocalizer(moment);
+    
+    const navigate = useNavigate();
+    
+    if (!user) {
+        navigate("/login");
+    }
 
     const addReminder = (event) => {
         event.preventDefault();

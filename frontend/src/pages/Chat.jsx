@@ -4,9 +4,6 @@ import Header from '../components/Header';
 import ChatHistory from "../components/ChatHistory";
 import Avatar from "../components/Avatar";
 import { BsStopCircle, BsPlayCircle } from "react-icons/bs";
-import { TbMessages } from "react-icons/tb";
-import { RiRobot2Line } from "react-icons/ri";
-import { MdOutlineVerticalSplit } from "react-icons/md";
 import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -28,7 +25,8 @@ function Chat() {
     const [systemSpeaking, setSystemSpeaking] = useState(false);
     const [userSpeaking, setUserSpeaking] = useState(false);
     const [messages, setMessages] = useState(location.state ? location.state.messages : []);
-    const [viewMode, setViewMode] = useState(2);
+    const [viewMode, setViewMode] = useState(3);
+    const [chatbotMessage, setChatbotMessage] = useState("Hello! I am here to assist you.");
     const speechConfig = useRef(null);
     const audioConfig = useRef(null);
     const recognizer = useRef(null);
@@ -86,6 +84,7 @@ function Chat() {
         if (response.type === 'llm_response') {
             // console.log(response);
             addMessageToChat('AI', response.data, response.time);
+            setChatbotMessage(response.data);
             speakResponse(response.data);
         } else if (response.type.includes("scores")) {
             updateScores(response);
@@ -303,25 +302,33 @@ function Chat() {
     function getView() {
         if (viewMode == 1) {
             return (
-                <div className="flex justify-self-center md:border-x-1 md:border-blue-200 flex-col h-[70vh] md:mt-[1em] md:w-1/2 w-full">
+                <div className="flex justify-self-center md:border-x-1 md:border-blue-200 mb-[2rem] flex-col h-[65vh] mt-[1em] md:w-1/2 w-full">
                     <ChatHistory messages={messages} />
                 </div> 
             );
         } else if (viewMode == 2) {
             return (
-            <div className="flex md:flex-row flex-col h-[70vh] md:mt-[1em] w-full">
+            <div className="flex md:flex-row flex-col h-[65vh] mt-[1em] w-full mb-[2rem]">
                 <div className="md:w-1/2 md:border-r-1 border-blue-200 overflow-y-auto md:border-b-0 border-b-1 w-full md:h-full h-1/2">
                     <ChatHistory messages={messages} />
                 </div>
                 <div className="md:w-1/2 w-[100vw] md:h-full h-1/2">
+                    <div className="my-[1rem] flex justify-center bg-blue-200 p-[1em] rounded-lg mx-[25%]">
+                            {chatbotMessage}
+                    </div>
                     <Avatar />
                 </div>
             </div> 
             );
         } else {
             return (
-                <div className="flex md:flex-row flex-col h-[70vh] md:mt-[1em] w-full">
-                    <Avatar />
+                <div className="h-[65vh] mb-[2rem]">
+                    <div className="my-[1rem] flex justify-center bg-blue-200 p-[1em] rounded-lg mx-[25%]">
+                        {chatbotMessage}
+                    </div>
+                    <div className="h-full mt-[1em] w-full">
+                        <Avatar />
+                    </div>
                 </div>
             )
         }
@@ -334,7 +341,7 @@ function Chat() {
                 <ToggleButtonGroup 
                     type="radio"
                     name="viewMode"
-                    defaultValue={2}
+                    defaultValue={3}
                 >
                     <ToggleButton id="messages" variant="outline-primary" value={1} onChange={(e) => setViewMode(e.currentTarget.value)}
                     >

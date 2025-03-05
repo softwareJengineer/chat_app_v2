@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { UserContext } from '../App';
 
 function UserOptions() {
-    const location = useLocation();
-    const loggedIn = location.state ? location.state.loggedIn : true;
+    const { user, setUser } = useContext(UserContext);
+    const loggedIn = user !== null;
     const navigate = useNavigate();
 
     const toDashboard = () => {
@@ -16,6 +17,7 @@ function UserOptions() {
     }
 
     const toLogOut = () => {
+        setUser(null);
         navigate('/');
     }
 

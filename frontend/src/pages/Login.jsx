@@ -1,14 +1,23 @@
-import React from "react";
+import React, { useContext } from "react";
 import Header from "../components/Header";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
-
+import { UserContext } from "../App";
 
 function Login() {
+    const {user, setUser} = useContext(UserContext);
     const navigate = useNavigate();
 
     const toSignup = () => {
         navigate('/signup');
+    }
+
+    function login() {
+        setUser({
+            username: "John Smith",
+            isCaretaker: true
+        });
+        navigate('/dashboard');
     }
     
     return (
@@ -23,7 +32,7 @@ function Login() {
                             <input className="p-2 border-b-1 border-gray-400"></input>
                             <label>Password</label>
                             <input className="p-2 border-b-1 border-gray-400"></input>
-                            <Button variant="primary">Log In</Button>
+                            <Button variant="primary" onClick={() => login()}>Log In</Button>
                         </div>
                         <p>Don't have an account? <a className="hover:cursor-pointer" onClick={() => toSignup()}>Sign Up</a></p>
                     </div>
