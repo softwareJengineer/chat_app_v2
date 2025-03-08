@@ -1,49 +1,77 @@
-import React from "react";
-import Header from "../components/Header";
-import { Button } from "react-bootstrap";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "react-bootstrap";
+import Header from "../components/Header";
 
 function SignUp() {
     const navigate = useNavigate();
-    const inputStyling = "p-2 border-1 border-gray-400 rounded-md";
+    const [formData, setFormData] = useState({
+        username: '',
+        email: '',
+        password: ''
+    });
 
-    function toLogin() {
-        navigate('/login');
-    }
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await fetch('http://localhost:8000/api/signup/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                navigate('/login');
+            } else {
+                alert(data.error);
+            }
+        } catch (error) {
+            console.error('Signup error:', error);
+        }
+    };
 
     return (
         <>
             <Header/>
-            <form>
+            <form onSubmit={handleSubmit}>
                 <div className="flex justify-center items-center">
-                    <div className="flex flex-col w-4/5 md:w-1/2 m-[2rem]">
+                    <div className="flex flex-col md:w-1/2 w-4/5 m-[2rem]">
                         <p className="justify-center flex text-xl font-mono">Sign Up</p>
-                        <div className="flex flex-col gap-3 rounded-lg p-4">
-                            <span className="flex flex-row gap-2">
-                                <input className={"w-1/2 " + inputStyling} placeholder="First Name"></input>
-                                <input className={"w-1/2 " + inputStyling} placeholder="Last Name"></input>
-                            </span>
-                            <input className={inputStyling} placeholder="email@example.com">
-                            </input>
-                            <input className={inputStyling} placeholder="Username"></input>
-                            <input type="password" className={inputStyling} placeholder="Password"></input>
-                            <input type="password" className={inputStyling} placeholder="Confirm Password"></input>
-                            <div className="flex items-start">
-                                <div className="flex items-center h-5">
-                                <input id="remember" type="checkbox" value="" className="w-4 h-4 border border-gray-300 rounded-sm bg-gray-50" required />
-                                </div>
-                                <label className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">I agree with the terms and conditions.</label>
-                            </div>
-                            <div className="flex flex-row gap-2 items-center">
-                                <label>I am a:</label>
-                                <select name="role" id="role" className={inputStyling}>
-                                    <option value="" disabled selected>Select One</option>
-                                    <option value="patient">Patient</option>
-                                    <option value="caregiver">Caregiver</option>
-                                </select>
-                            </div>
-                            <Button variant="primary">Sign Up</Button>
-                            <p>Already have an account? <a className="hover:cursor-pointer" onClick={() => toLogin()}>Log In</a></p>
+                        <div className="flex flex-col gap-2 border-1 border-gray-400 rounded-lg p-4">
+                            <label>Username</label>
+                            <input 
+                                name="username"
+                                value={formData.username}
+                                onChange={handleChange}
+                                className="p-2 border-b-1 border-gray-400"
+                            />
+                            <label>Email</label>
+                            <input 
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                className="p-2 border-b-1 border-gray-400"
+                            />
+                            <label>Password</label>
+                            <input 
+                                type="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                className="p-2 border-b-1 border-gray-400"
+                            />
+                            <Button type="submit" variant="primary">Sign Up</Button>
                         </div>
                     </div>
                 </div>
