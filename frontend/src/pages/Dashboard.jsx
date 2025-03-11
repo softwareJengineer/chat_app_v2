@@ -52,7 +52,7 @@ function Dashboard() {
                     <ScoreRadarChart biomarkerData={dummyData}/>
                 </div>
                 <div className="w-1/2">
-                    Hello, {user.username}! You've been talking with me for 3 days. During our most recent conversation, you displayed 
+                    Hello, {user.firstName}! You've been talking with me for 3 days. During our most recent conversation, you displayed 
                     less disrupted turn taking. Keep up the good work! You could work on your pragatic impairment score.
                 </div>
             </div>

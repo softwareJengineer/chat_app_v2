@@ -34,7 +34,11 @@ function Login() {
             if (data.success) {
                 setUser({
                     username: data.username,
-                    email: data.email
+                    email: data.email,
+                    role: data.role,
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    settings: data.settings
                 });
                 navigate('/dashboard');
             } else {
@@ -59,6 +63,7 @@ function Login() {
                                 value={formData.username}
                                 onChange={handleChange}
                                 className="p-2 border-b-1 border-gray-400"
+                                required
                             />
                             <label>Password</label>
                             <input 
@@ -67,6 +72,7 @@ function Login() {
                                 value={formData.password}
                                 onChange={handleChange}
                                 className="p-2 border-b-1 border-gray-400"
+                                required
                             />
                             <Button type="submit" variant="primary">Log In</Button>
                         </div>
