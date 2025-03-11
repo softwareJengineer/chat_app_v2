@@ -5,15 +5,16 @@ import { UserContext } from '../App';
 
 function UserOptions() {
     const { user, setUser } = useContext(UserContext);
-    const loggedIn = user !== null;
+
+    const isCaregiver = user?.role === "Caregiver";
     const navigate = useNavigate();
 
     const toDashboard = () => {
         navigate('/dashboard');
     }
 
-    const toReminders = () => {
-        navigate('/reminders');
+    const toSchedule = () => {
+        navigate('/schedule');
     }
 
     const toLogOut = () => {
@@ -25,27 +26,27 @@ function UserOptions() {
         navigate('/login');
     }
 
+    const toSettings = () => {
+        navigate('/settings');
+    }
+
     const toHistory = () => {
         navigate('/history');
     }
 
     function getMenuItems() {
-        if (loggedIn) {
-            return (
-                <>
-                    <Dropdown.Item onClick={() => toDashboard()}>Dashboard</Dropdown.Item>
-                    <Dropdown.Item onClick={() => toReminders()}>Your Reminders</Dropdown.Item>
-                    <Dropdown.Item onClick={() => toHistory()}>History</Dropdown.Item>
-                    <Dropdown.Item onClick={() => toLogOut()}>Log Out</Dropdown.Item> 
-                </>
-            )
-        } else {
-            return (
-                <>
-                    <Dropdown.Item onClick={() => toLogIn()}>Log In</Dropdown.Item>
-                </>
-            )
-        }
+        return (
+            <>
+                {isCaregiver ? 
+                    <Dropdown.Item onClick={toHistory}>History</Dropdown.Item> : 
+                    <Dropdown.Item onClick={toDashboard}>Dashboard</Dropdown.Item>
+                }
+                <Dropdown.Item onClick={() => toSchedule()}>Schedule</Dropdown.Item>
+                <Dropdown.Item onClick={() => toSettings()}>Settings</Dropdown.Item>
+                <Dropdown.Item onClick={() => toLogOut()}>Log Out</Dropdown.Item> 
+            </>
+        )
+
     }
 
     return (

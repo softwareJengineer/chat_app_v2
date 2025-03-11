@@ -10,6 +10,8 @@ import ChatHistory from "../components/ChatHistory";
 import ScoreRadarChart from "../components/ScoreRadarChart";
 import Avatar from "../components/Avatar";
 import { UserContext } from "../App";
+import { GiAlarmClock, GiPartyPopper, GiRobotAntennas } from "react-icons/gi";
+
 
 const Details = () => {
     const location = useLocation();
@@ -32,7 +34,7 @@ const Details = () => {
         navigate("/login");
     }
 
-    const isCaretaker = user.isCaretaker;
+    const isCaregiver = user.role !== "Patient";
     const breakpoint = 700;
     
     useEffect(() => {
@@ -166,10 +168,10 @@ const Details = () => {
                 centered
             >
                 <Modal.Header closeButton>
-                <Modal.Title>Show Detailed View?</Modal.Title>
+                <Modal.Title>Show Speech Analysis?</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    Are you sure you want to view the detailed view? The data may be upsetting for some users.
+                    Are you sure you want to see the speech analysis? The data may be upsetting for some users.
                 </Modal.Body>
                 <Modal.Footer>
                 <Button variant="outline-primary" onClick={handleCloseDV}>
@@ -185,15 +187,29 @@ const Details = () => {
         return (
             <>
                 <Header />
-                <div className="flex md:flex-row flex-col m-4 gap-4 items-center justify-center">
-                    <div className="w-1/2 h-[50vh]">
+                <div className="flex md:flex-row flex-col m-4 gap-[5rem]">
+                    <div className="flex justify-left flex-col h-[75vh] w-2/5">
+                        <div className="my-[1rem] flex justify-center bg-blue-200 p-[1em] rounded-lg">
+                                    Thank you for talking to me. I hope to see you again soon!
+                        </div>
                         <Avatar />
                     </div>
-                    <div className="w-1/2">
-                        Thank you for talking with me! We talked for 10 minutes. I hope to see you again tomorrow!
+                    <div className="flex flex-col mx-[2rem] gap-4 justify-center">
+                        <div className="flex flex-row items-center gap-4 text-4xl">
+                            <GiPartyPopper size={50} color="orange" /> 
+                            We've talked for 5 days in a row!
+                        </div>
+                        <div className="flex flex-row items-center gap-4 text-4xl">
+                            <GiAlarmClock size={50} color="green" /> 
+                            We talked for 25 minutes today!
+                        </div>
+                        <div className="flex flex-row items-center gap-4 text-4xl">
+                            <GiRobotAntennas size={50} color="purple" /> 
+                            We talked about 3 topics!
+                        </div>
                     </div>
                 </div>
-                {isCaretaker ? 
+                {/* {isCaregiver ? 
                 <div className="flex flex-row gap-[2rem] justify-center mb-[2rem]">
                     <Button 
                         size="lg"
@@ -216,10 +232,11 @@ const Details = () => {
                     >
                         Save Data
                     </Button>
-                </div> : <></>}
+                </div> : <></>} */}
                 <CloseModal />
-                <div className="flex justify-center mb-[2rem]">
-                    <Button size="lg" variant="outline-primary" onClick={() => handleShowDV()}>Show All Conversation Data?</Button>
+                <div className="flex flex-col gap-[1rem] justify-center mb-[2rem] w-2/5 mx-auto">
+                    <Button size="lg" onClick={toDashboard}>Your Dashboard</Button>
+                    <Button size="lg" variant="outline-primary" onClick={() => handleShowDV()}>View Speech Analysis</Button>
                 </div>
                 <ShowDetailsModal />
 
@@ -267,7 +284,7 @@ const Details = () => {
                         Thank you for talking with me! We talked for 10 minutes. I hope to see you again tomorrow!
                     </div>
                 </div>
-                    {isCaretaker ? 
+                    {/* {isCaregiver ? 
                     <div className="flex flex-row gap-[2rem] justify-center mb-[2rem]">
                         <Button 
                             size="lg"
@@ -290,7 +307,7 @@ const Details = () => {
                         >
                             Save Data
                         </Button>
-                    </div> : <></>}
+                    </div> : <></>} */}
                 <CloseModal />
                 <div className="flex justify-center mb-[2rem]">
                     <Button size="lg" variant="outline-primary" onClick={() => handleShowDV()}>Show Detailed View?</Button>

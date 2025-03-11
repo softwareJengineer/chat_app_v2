@@ -6,8 +6,10 @@ import NewEntry from "./pages/NewEntry";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
-import Reminders from "./pages/Reminders";
+import Schedule from "./pages/Schedule";
 import History from "./pages/History";
+import Settings from "./pages/Settings";
+import Home from "./pages/Home";
 
 export const UserContext = React.createContext(null);
 
@@ -17,14 +19,16 @@ function App() {
     return (
       <UserContext.Provider value={{ user: user, setUser: setUser }}>
           <Routes>
-            <Route exact path='/' element={<Chat/>}></Route>
+            <Route exact path='/' element={<Home/>}></Route>
+            <Route path='/chat' element={<Chat/>}></Route>
             <Route path='/details' element={<Details/>}></Route>
             <Route path='/new' element={<NewEntry/>}></Route>
             <Route path='/dashboard' element={<Dashboard/>}></Route>
             <Route path='/login' element={<Login/>}></Route>
             <Route path='/signup' element={<SignUp/>}></Route>
-            <Route path='/reminders' element={<Reminders/>}></Route>
+            <Route path='/schedule' element={<Schedule/>}></Route>
             <Route path='/history' element={<History/>}></Route>
+            <Route path='/settings' element={<Settings/>}></Route>
           </Routes>
         </UserContext.Provider>
     );

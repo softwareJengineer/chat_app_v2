@@ -6,7 +6,9 @@ import ScoreRadarChart from "../components/ScoreRadarChart";
 import dummyData from "../data/dummyData.json"
 import Descriptions from "../data/descriptions.json";
 import { UserContext } from "../App";
-import { useNavigate } from "react-router-dom";
+import { FaUser } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
+import Avatar from "../components/Avatar";
 
 function Dashboard() {
     const { user, setUser } = useContext(UserContext);
@@ -14,6 +16,7 @@ function Dashboard() {
     const [description, setDescription] = useState(Descriptions["Pragmatic"].description);
 
     const navigate = useNavigate();
+    const date = new Date();
 
     if (!user) {
         navigate("/login");
@@ -47,7 +50,58 @@ function Dashboard() {
     return (
         <>
             <Header />
-            <div className="flex flex-row justify-center m-4 items-center gap-4">
+            <div className="m-[2rem] flex flex-col gap-2">
+                <h1>Your Dashboard</h1>
+                <div className="flex items-center gap-4 align-middle">
+                    <FaUser size={50}/>
+                    <p className="align-middle">{user.firstName} {user.lastName}</p>
+                </div>
+                <Link to="/settings">
+                    Update profile
+                </Link>
+            </div>
+            <div className="flex m-[2rem]">
+                <h2>Daily Overview:</h2>
+                <p className="flex float-right ml-auto text-xl">{date.toDateString()}</p>
+            </div>
+            <div className="grid md:grid-cols-2 grid-cols-1 h-full justify-stretch m-[2rem] items-center gap-4">
+                <div className="w-full h-full border-1 rounded-lg border-gray-200 p-[1rem] self-stretch">
+                    <h3>Conclusions and Suggestions</h3>
+                    <div className="flex flex-row gap-4 my-[1rem]">
+                        <div className="w-1/3">
+                            <Avatar />
+                        </div>
+                        <div className="w-2/3">
+                            <p className="font-bold">You're doing fantastic!</p>
+                            <p>You've completed 10 chats with me.</p>
+                            <p>Complete another 5 to reach a new goal!</p>
+                            <Link to='/schedule'>
+                                <Button variant="outline-primary">Schedule a chat</Button>
+                            </Link>
+                        </div>
+                    </div>
+                    <p className="font-bold">Daily suggestions:</p>
+                    <p>Play a word game with me!</p>
+                    <p>Go outside and enjoy the greenery and fresh air.</p>
+                </div>
+                <div className="w-full h-full border-1 rounded-lg border-gray-200 p-[1rem] self-stretch">
+                    <h3>Radar Track</h3>
+                    <ScoreRadarChart biomarkerData={dummyData}/>
+                    Compared to the last time we talked, you have shown improvement in anomia, turn taking, and grammer, but have
+                    declined in prosody, pronunciation, and pragmatics. Keep up the good work!
+                    <br/>
+                    Based on these scores, I suggest the following activities:
+                    <div className="flex flex-row gap-4 m-[1rem]">
+                        <div className="w-1/2 border-1 rounded-md border-gray-200 p-[1rem]">
+                            <h4>Mad Libs</h4>
+                        </div>
+                        <div className="w-1/2 border-1 rounded-md border-gray-200 p-[1rem]">
+                            <h4>Word Matching</h4>
+                        </div>  
+                    </div>
+                </div>
+            </div>
+            {/* <div className="flex flex-row justify-center m-4 items-center gap-4">
                 <div className='w-1/2'>
                     <ScoreRadarChart biomarkerData={dummyData}/>
                 </div>
@@ -71,7 +125,7 @@ function Dashboard() {
                     score={-1}
                     description={description}
                 />
-            </span>
+            </span> */}
         </>
     )
 }

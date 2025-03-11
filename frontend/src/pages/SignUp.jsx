@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
-import Header from "../components/Header";
 
 function SignUp() {
     const navigate = useNavigate();
@@ -56,9 +55,8 @@ function SignUp() {
 
     return (
         <>
-            <Header/>
             <form onSubmit={handleSubmit}>
-                <div className="flex justify-center items-center">
+                <div className="flex h-[100vh] justify-center items-center">
                     <div className="flex flex-col w-4/5 md:w-1/2 m-[2rem]">
                         <p className="justify-center flex text-xl font-mono">Sign Up</p>
                         <div className="flex flex-col gap-3 rounded-lg p-4">
@@ -126,7 +124,7 @@ function SignUp() {
                                     required
                                 >
                                     <option value="" disabled>Select One</option>
-                                    <option value="Patient">Patient</option>
+                                    <option value="Patient">PLwD</option>
                                     <option value="Caregiver">Caregiver</option>
                                 </select>
                             </div>

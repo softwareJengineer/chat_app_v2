@@ -8,7 +8,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useNavigate } from "react-router-dom";
 
 
-function Reminders() {
+function Schedule() {
     const { user, setUser } = useContext(UserContext);
     const [reminders, setReminders] = useState([]);
     const [showNewReminder, setShowNewReminder] = useState(false);
@@ -147,4 +147,4 @@ function Reminders() {
     );
 }
 
-export default Reminders;
+export default Schedule;

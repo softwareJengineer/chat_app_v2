@@ -2,7 +2,6 @@ import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import { UserContext } from "../App";
-import Header from "../components/Header";
 
 function Login() {
     const {setUser} = useContext(UserContext);
@@ -51,9 +50,8 @@ function Login() {
 
     return (
         <>
-            <Header/>
             <form onSubmit={handleSubmit}>
-                <div className="flex justify-center items-center">
+                <div className="flex h-[100vh] justify-center items-center">
                     <div className="flex flex-col md:w-1/2 w-4/5 m-[2rem]">
                         <p className="justify-center flex text-xl font-mono">Log In</p>
                         <div className="flex flex-col gap-2 border-1 border-gray-400 rounded-lg p-4">
