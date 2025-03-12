@@ -146,7 +146,7 @@ const Details = () => {
                 <Modal.Title>Unsaved Changes</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    Are you sure you want to exit without saving this session data? All data will be lost.
+                    Are you sure you want to exit without saving this chat data? All data will be lost.
                 </Modal.Body>
                 <Modal.Footer>
                 <Button variant="outline-primary" onClick={handleCloseCM}>

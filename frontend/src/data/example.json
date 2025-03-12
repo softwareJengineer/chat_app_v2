@@ -5,9 +5,9 @@
         "Username": "jsmith",
         "Password": "password",
         "Email": "johnsmith@gmail.com",
-        "Sessions": [
+        "Chats": [
             {
-                "SessionID": "abcd1234",
+                "ChatID": "abcd1234",
                 "Date": "01/01/2000",
                 "Time": "00:00:00",
                 "Scores": {

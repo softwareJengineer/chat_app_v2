@@ -7,7 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Schedule from "./pages/Schedule";
-import History from "./pages/History";
+import Analysis from "./pages/Analysis";
 import Settings from "./pages/Settings";
 import Home from "./pages/Home";
 
@@ -27,7 +27,7 @@ function App() {
             <Route path='/login' element={<Login/>}></Route>
             <Route path='/signup' element={<SignUp/>}></Route>
             <Route path='/schedule' element={<Schedule/>}></Route>
-            <Route path='/history' element={<History/>}></Route>
+            <Route path='/analysis' element={<Analysis/>}></Route>
             <Route path='/settings' element={<Settings/>}></Route>
           </Routes>
         </UserContext.Provider>

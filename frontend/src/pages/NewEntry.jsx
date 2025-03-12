@@ -90,7 +90,7 @@ function NewEntry() {
                         className="border-1 p-2 rounded-lg" 
                         name="title" 
                         id="title"
-                        placeholder={"Session on " + date} 
+                        placeholder={"Chat on " + date} 
                         required 
                     />
                     <label className={labelStyling}>Time</label>

@@ -30,15 +30,15 @@ function UserOptions() {
         navigate('/settings');
     }
 
-    const toHistory = () => {
-        navigate('/history');
+    const toAnalysis = () => {
+        navigate('/analysis');
     }
 
     function getMenuItems() {
         return (
             <>
                 {isCaregiver ? 
-                    <Dropdown.Item onClick={toHistory}>History</Dropdown.Item> : 
+                    <Dropdown.Item onClick={toAnalysis}>Analysis</Dropdown.Item> : 
                     <Dropdown.Item onClick={toDashboard}>Dashboard</Dropdown.Item>
                 }
                 <Dropdown.Item onClick={() => toSchedule()}>Schedule</Dropdown.Item>

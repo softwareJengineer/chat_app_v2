@@ -59,8 +59,7 @@ function Schedule() {
 
     return (
         <>
-            <Header />
-            <h2 className="m-[2rem]">Your Calendar</h2>
+            <Header title="Your Schedule" page="schedule"/>
             <div className="h-[75vh] m-[2rem]">
                 <Calendar
                     localizer={localizer}

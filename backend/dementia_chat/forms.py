@@ -1,10 +1,10 @@
 from django import forms
 from django.forms import ModelForm
-from .models import Session
+from .models import Chat
 from .models import Reminder
 from django.contrib.auth.models import User
 
-class SessionForm(ModelForm):
+class ChatForm(ModelForm):
     date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date-local'}))
     time = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time-local'}))
     scores = forms.JSONField()
@@ -13,23 +13,23 @@ class SessionForm(ModelForm):
     messages = forms.JSONField()
 
     class Meta:
-        model = Session
+        model = Chat
         fields = ['user', 'date', 'time', 'scores', 'avg_scores', 'notes', 'messages']
 
     def __init__(self, *args, **kwargs):
         # Get the current user from the kwargs (passed in from the view)
         user = kwargs.pop('user', None)
-        super(SessionForm, self).__init__(*args, **kwargs)
+        super(ChatForm, self).__init__(*args, **kwargs)
         
         if user:
-            # Filter teams to only show sessions the user is part of
-            self.fields['session'].queryset = Session.objects.filter(user=user)
+            # Filter teams to only show chats the user is part of
+            self.fields['chat'].queryset = Chat.objects.filter(user=user)
             
-class SessionUpdateForm(ModelForm):
+class ChatnUpdateForm(ModelForm):
     notes = forms.CharField()
 
     class Meta:
-        model = Session
+        model = Chat
         fields = ['user', 'date', 'time', 'scores', 'avg_scores', 'notes', 'messages']
         
 class ReminderForm(ModelForm):

@@ -1,6 +1,6 @@
 import React from "react";
 
-function SessionSummary() {
+function ChatSummary() {
     const date = "January 01, 2000";
     const time = "00:00:00";
     const biomarkerData = {
@@ -28,7 +28,7 @@ function SessionSummary() {
     return (
         <div className="flex">
             <button 
-                className="border-1 p-[2rem] border-gray-300 hover:bg-gray-300 rounded w-full" 
+                className="border-1 p-[2rem] border-gray-300 rounded w-full shadow-sm hover:shadow-xl" 
                 onClick={() => {console.log("clicked")}}
             >
                 <div className="flex flex-row gap-4">
@@ -51,4 +51,4 @@ function SessionSummary() {
     );
 }
 
-export default SessionSummary;
+export default ChatSummary;
