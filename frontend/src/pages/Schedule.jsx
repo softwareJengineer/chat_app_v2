@@ -20,10 +20,6 @@ function Schedule() {
     const localizer = momentLocalizer(moment);
     
     const navigate = useNavigate();
-    
-    if (!user) {
-        navigate("/login");
-    }
 
     const addReminder = (event) => {
         event.preventDefault();
@@ -66,7 +62,7 @@ function Schedule() {
                     events={reminders}
                     startAccessor="start"
                     endAccessor="end"
-                    defaultView={Views.DAY}
+                    defaultView={Views.WEEK}
                 />
             </div>
             <div className="flex justify-center m-[2rem]">

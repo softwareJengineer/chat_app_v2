@@ -19,7 +19,7 @@ function Home() {
 
     return (
         <div className="flex flex-col justify-center items-center h-[100vh] gap-5">
-            <Header title="home"/>
+            <Header/>
             <h1 className="font-mono text-lg">AI Assistant Chat</h1>
             <div className="flex flex-col gap-4 border-1 border-gray-300 rounded-lg p-[3rem] md:w-1/2">
                 <Button size="lg" variant="outline-primary" onClick={toLogin}>Login</Button>

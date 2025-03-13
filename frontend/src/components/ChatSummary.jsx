@@ -28,7 +28,7 @@ function ChatSummary() {
     return (
         <div className="flex">
             <button 
-                className="border-1 p-[2rem] border-gray-300 rounded w-full shadow-sm hover:shadow-xl" 
+                className="border-1 p-[2rem] border-gray-300 rounded w-full hover:shadow-xl" 
                 onClick={() => {console.log("clicked")}}
             >
                 <div className="flex flex-row gap-4">

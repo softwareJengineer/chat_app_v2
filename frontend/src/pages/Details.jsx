@@ -30,10 +30,6 @@ const Details = () => {
     const [viewDetails, setViewDetails] = useState(false);
     const navigate = useNavigate();
 
-    if (!user) {
-        navigate("/login");
-    }
-
     const isCaregiver = user.role !== "Patient";
     const breakpoint = 700;
     

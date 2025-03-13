@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Button, ToggleButton, ToggleButtonGroup } from "react-bootstrap";
+import { Button, ToggleButton, ToggleButtonGroup, Modal } from "react-bootstrap";
 import Header from '../components/Header';
 import ChatHistory from "../components/ChatHistory";
 import Avatar from "../components/Avatar";
@@ -334,9 +334,39 @@ function Chat() {
         }
     }
 
+    const [showModal, setShowModal] = useState(false);
+
+    const handleShow = () => setShowModal(true);
+    const handleClose = () => setShowModal(false);
+
+    function CloseModal() {
+        return (
+            <Modal
+                show={showModal}
+                onHide={handleClose}
+                backdrop="static"
+                keyboard={false}
+                centered
+            >
+                <Modal.Header closeButton>
+                <Modal.Title>Unsaved Changes</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    Are you sure you want to finish chatting? You will not be able to continue this chat.
+                </Modal.Body>
+                <Modal.Footer>
+                <Button variant="outline-primary" onClick={handleClose}>
+                    No
+                </Button>
+                <Button onClick={toNew} variant="danger">Yes</Button>
+                </Modal.Footer>
+            </Modal>
+        )
+    }
+
     return (
         <>
-            <Header />
+            <Header title="Chat With Me!" page="chat"/>
             <div className="ml-[1rem] mt-[1rem] flex justify-center">
                 <ToggleButtonGroup 
                     type="radio"
@@ -370,11 +400,12 @@ function Chat() {
                     className="border-1 p-[1em] rounded-med"
                     variant="outline-primary"
                     size="lg"
-                    onClick={() => toNew()}
+                    onClick={handleShow}
                 >
                     Finish
                 </Button>
             </div>
+            <CloseModal/>
         </>
     );
 }

@@ -16,7 +16,7 @@ function Analysis() {
     return (
         <>
             <Header title="History and Trends" page="analysis" />
-            <div className="mx-[2rem] flex flex-col gap-2">
+            <div className="mx-[2rem] mb-[2rem] flex flex-col gap-2">
                 <div className="flex items-center gap-4 align-middle">
                     <FaUser size={50}/>
                     <p className="align-middle">{user.firstName} {user.lastName}</p>

@@ -3,7 +3,8 @@ import { Button } from "react-bootstrap";
 import Header from "../components/Header";
 import BiomarkerDetails from "../components/BiomarkerDetails";
 import ScoreRadarChart from "../components/ScoreRadarChart";
-import dummyData from "../data/dummyData.json"
+import dummyData from "../data/dummyData.json";
+import prevDummyData from "../data/dummyDataPrev.json";
 import Descriptions from "../data/descriptions.json";
 import { UserContext } from "../App";
 import { FaUser } from "react-icons/fa";
@@ -17,10 +18,6 @@ function Dashboard() {
 
     const navigate = useNavigate();
     const date = new Date();
-
-    if (!user) {
-        navigate("/login");
-    }
 
     useEffect(() => {
         setDescription(Descriptions[displayedBiomarker].description);
@@ -49,9 +46,8 @@ function Dashboard() {
 
     return (
         <>
-            <Header />
-            <div className="m-[2rem] flex flex-col gap-2">
-                <h1>Your Dashboard</h1>
+            <Header title="Your Dashboard" page="dashboard" />
+            <div className="mx-[2rem] flex flex-col gap-2">
                 <div className="flex items-center gap-4 align-middle">
                     <FaUser size={50}/>
                     <p className="align-middle">{user.firstName} {user.lastName}</p>
@@ -86,7 +82,7 @@ function Dashboard() {
                 </div>
                 <div className="w-full h-full border-1 rounded-lg border-gray-200 p-[1rem] self-stretch">
                     <h3>Radar Track</h3>
-                    <ScoreRadarChart biomarkerData={dummyData}/>
+                    <ScoreRadarChart biomarkerData={dummyData} prevBiomarkerData={prevDummyData}/>
                     Compared to the last time we talked, you have shown improvement in anomia, turn taking, and grammer, but have
                     declined in prosody, pronunciation, and pragmatics. Keep up the good work!
                     <br/>
