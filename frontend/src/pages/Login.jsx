@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import { UserContext } from "../App";
 
+
 function Login() {
-    const {setUser} = useContext(UserContext);
+    const { setUser, setSettings, setReminders, setChats } = useContext(UserContext);
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: '',
@@ -28,7 +29,7 @@ function Login() {
                 },
                 body: JSON.stringify(formData)
             });
-
+        
             const data = await response.json();
             if (data.success) {
                 setUser({
@@ -37,9 +38,23 @@ function Login() {
                     role: data.role,
                     firstName: data.firstName,
                     lastName: data.lastName,
-                    settings: data.settings
                 });
-                navigate('/dashboard');
+                const settingsJson = JSON.parse(data.settings)
+                setSettings({
+                    patientViewOverall: settingsJson.patient_view_overall,
+                    patientCanSchedule: settingsJson.patient_can_schedule
+                });
+                const chats = data.chats;
+                const reminders = data.reminders;
+                setChats(chats.map(chat => JSON.parse(chat)));
+                setReminders(reminders.map(reminder => {
+                    let obj = JSON.parse(reminder);
+                    obj.start = new Date(obj.start);
+                    obj.end = new Date(obj.end);
+                    return obj;
+                }));
+
+                navigate('/chat');
             } else {
                 alert(data.error);
             }

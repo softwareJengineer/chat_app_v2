@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { Button, ToggleButton, ToggleButtonGroup, Modal } from "react-bootstrap";
 import Header from '../components/Header';
 import ChatHistory from "../components/ChatHistory";
@@ -6,6 +6,7 @@ import Avatar from "../components/Avatar";
 import { BsStopCircle, BsPlayCircle } from "react-icons/bs";
 import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
 import { useNavigate, useLocation } from "react-router-dom";
+import { UserContext } from "../App";
 
 const SPEECH_KEY = "3249fb4e6d8248569b42d5dbf693c259";
 const SPEECH_REGION = "eastus";
@@ -21,6 +22,7 @@ const ws = new WebSocket(wsUrl);
 
 function Chat() {
     const location = useLocation();
+    const {user, setUser} = useContext(UserContext);
     const [recording, setRecording] = useState(false);
     const [systemSpeaking, setSystemSpeaking] = useState(false);
     const [userSpeaking, setUserSpeaking] = useState(false);
@@ -140,7 +142,7 @@ function Chat() {
             recognizer.current.startContinuousRecognitionAsync(() => {
                 console.log('Speech recognition started.');
             });
-            // initAudioProcessing();
+            initAudioProcessing();
             
         }
         
@@ -294,9 +296,48 @@ function Chat() {
 
     const navigate = useNavigate();
 
-    const toNew = () => {
+    const date = new Date();
+
+    const calcAvgBiomarkerScores = (biomarkerData) => {
+        avg = {};
+        for (var i = 0; i < biomarkerData.length; i++) {
+            var name = biomarkerData[i].name;
+            var scores = biomarkerData[i].data;
+            var score = scores.reduce((prev, current) => prev + current) / scores.length;
+            avg[name] = score;
+        }
+        return avg;
+    }
+
+    const saveChat = async () => {
         setRecording(false);
-        navigate('/details', {state: {biomarkerData: biomarkerData, messages: messages}});
+        const chatData = {
+            user: user,
+            date: date.getDate(),
+            time: date.getTime(),
+            scores: biomarkerData,
+            avg_scores: calcAvgBiomarkerScores(biomarkerData),
+            notes: "",
+            messages: messages
+        }
+        try {
+            const response = await fetch('http://localhost:8000/api/chat/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(chatData)
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                navigate('/details', {state: {biomarkerData: biomarkerData, messages: messages}});
+            } else {
+                alert(data.error);
+            }
+        } catch (error) {
+            console.error('Error saving chat data:', error);
+        }
     }
 
     function getView() {
@@ -358,7 +399,7 @@ function Chat() {
                 <Button variant="outline-primary" onClick={handleClose}>
                     No
                 </Button>
-                <Button onClick={toNew} variant="danger">Yes</Button>
+                <Button onClick={saveChat} variant="danger">Yes</Button>
                 </Modal.Footer>
             </Modal>
         )
