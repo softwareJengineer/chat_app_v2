@@ -1,8 +1,9 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 from .models import Profile, Chat, Reminder, UserSettings
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
@@ -11,6 +12,27 @@ import json
 # Create your views here.
 def index(request):
     return render(request, 'index.html')
+
+@csrf_exempt
+def profile_view(request):
+    if request.method == 'GET':
+        user = request.user
+        profile = Profile.objects.get(pk=user)
+        
+        if profile is None:
+            return JsonResponse({
+                'success': False,
+                'error': 'Could not find the user.'
+            })
+            
+        return JsonResponse({
+            'success': True,
+            'username': user.username,
+            'email': user.email,
+            'firstName': user.first_name,
+            "lastName": user.last_name,
+            "role": profile.role,
+        })
 
 @csrf_exempt
 def login_view(request):
@@ -23,7 +45,7 @@ def login_view(request):
         
         if user is not None:
             login(request, user)
-            profile = user.profile
+            profile = Profile.objects.get(pk=user)
             return JsonResponse({
                 'success': True,
                 'username': user.username,
@@ -76,6 +98,7 @@ def signup_view(request):
         })
 
 @csrf_exempt
+@login_required
 def user_settings_view(request):
     if request.method == 'PUT':
         data = json.loads(request.body)
@@ -102,10 +125,10 @@ def user_settings_view(request):
         
     elif request.method == 'GET':
         user = request.user
-        if Profile.objects.get(pk=user) is None:
+        if not user.is_authenticated or user is AnonymousUser:
             return JsonResponse({
                 'success': False,
-                'error': 'Could not find the user.'
+                'error': 'User not authenticated.'
             })
         
         settings = UserSettings.objects.get(pk=user)
@@ -124,6 +147,7 @@ def user_settings_view(request):
         
         
 @csrf_exempt
+# @login_required
 def chat_view(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -183,6 +207,7 @@ def chat_view(request):
         })
          
 @csrf_exempt
+# @login_required
 def reminder_view(request):
     if request.method == 'POST':
         data = json.loads(request.body)

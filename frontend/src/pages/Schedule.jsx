@@ -19,7 +19,29 @@ function Schedule() {
     const [recurrences, setRecurrences] = useState(0);
     const localizer = momentLocalizer(moment);
     
-    const navigate = useNavigate();
+    const createReminder = async (start, end) => {
+        try {
+            const response = await fetch('http://localhost:8000/api/reminders/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user: user,
+                    title: title,
+                    start: start,
+                    end: end
+                })
+            });
+
+            const data = await response.json();
+            if (!data.success) {
+                alert(data.error);
+            }
+        } catch (error) {
+            console.error('Error with creating reminder:', error);
+        }
+    };
 
     const addReminder = (event) => {
         event.preventDefault();
@@ -34,6 +56,7 @@ function Schedule() {
                 end.setDate(end.getDate() + i * 7);
             }
             setReminders((prevReminders) => [...prevReminders, { title, start, end }]);
+            createReminder(start, end);
         }
         handleClose();
     };

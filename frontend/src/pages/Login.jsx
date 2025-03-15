@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import { UserContext } from "../App";
 
+
 function Login() {
     const {setUser} = useContext(UserContext);
     const navigate = useNavigate();
@@ -24,6 +25,7 @@ function Login() {
             const response = await fetch('http://localhost:8000/api/login/', {
                 method: 'POST',
                 headers: {
+                    // 'Authorization': `Bearer ${localStorage.getItem('token')}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(formData)
