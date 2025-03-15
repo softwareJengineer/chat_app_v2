@@ -17,7 +17,7 @@ function App() {
     const [user, setUser] = useState(null);
     const [settings, setSettings] = useState({
         'patientViewOverall': true,
-        'PatientCanSchedule': true,
+        'patientCanSchedule': true,
     });
     const [reminders, setReminders] = useState([]);
     const [chats, setChats] = useState([]);

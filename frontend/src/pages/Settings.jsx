@@ -6,10 +6,7 @@ import { Button, Form } from "react-bootstrap";
 
 function Settings() {
     const {user, setUser, settings, setSettings} = useContext(UserContext);
-    const [formSettings, setFormSettings] = useState({
-        patientViewOverall: true,
-        patientCanSchedule: true
-    })
+    const [formSettings, setFormSettings] = useState(settings);
 
     const handleChange = (e) => {
         setFormSettings({
@@ -17,34 +14,6 @@ function Settings() {
             [e.target.name]: e.target.checked
         });
     };
-
-    // useEffect(() => {
-    //     async function get_settings() {
-    //         try {
-    //             const response = await fetch('http://localhost:8000/api/settings/', {
-    //                 method: 'GET',
-    //                 headers: {
-    //                     'Content-Type': 'application/json',
-    //                 },
-    //                 credentials: 'include'
-    //             });
-
-    //             const data = await response.json();
-    //             if (data.success) {
-    //                 setSettings({
-    //                     patientViewOverall: data.patientViewOverall, 
-    //                     patientCanSchedule: data.patientCanSchedule
-    //                 })
-    //             } else {
-    //                 console.error(data.error);
-    //             }
-    //         } catch (error) {
-    //             console.error('Could not get the user settings:', error);
-    //         }
-    //     }
-
-    //     get_settings();
-    // }, [])
 
     const saveChanges = async (e) => {
         e.preventDefault();

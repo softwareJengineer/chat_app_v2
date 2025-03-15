@@ -5,7 +5,7 @@ import { UserContext } from "../App";
 
 
 function Login() {
-    const {setUser} = useContext(UserContext);
+    const { setUser, setSettings, setReminders, setChats } = useContext(UserContext);
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: '',
@@ -25,12 +25,11 @@ function Login() {
             const response = await fetch('http://localhost:8000/api/login/', {
                 method: 'POST',
                 headers: {
-                    // 'Authorization': `Bearer ${localStorage.getItem('token')}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(formData)
             });
-
+        
             const data = await response.json();
             if (data.success) {
                 setUser({
@@ -39,9 +38,13 @@ function Login() {
                     role: data.role,
                     firstName: data.firstName,
                     lastName: data.lastName,
-                    settings: data.settings
                 });
-                navigate('/dashboard');
+                console.log(settings, chats, reminders);
+                setSettings(data.settings);
+                setChats(data.chats);
+                setReminders(data.reminders);
+
+                navigate('/chat');
             } else {
                 alert(data.error);
             }

@@ -9,8 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 
 function Schedule() {
-    const { user, setUser } = useContext(UserContext);
-    const [reminders, setReminders] = useState([]);
+    const { user, setUser, reminders, setReminders } = useContext(UserContext);
     const [showNewReminder, setShowNewReminder] = useState(false);
     const [title, setTitle] = useState('');
     const [startDate, setStartDate] = useState('');
@@ -45,7 +44,7 @@ function Schedule() {
 
     const addReminder = (event) => {
         event.preventDefault();
-        for (let i = 0; i < recurrences; i++) {
+        for (let i = 0; i <= recurrences; i++) {
             let start = new Date(startDate);
             let end = new Date(endDate);
             if (repeat === 'Daily') {

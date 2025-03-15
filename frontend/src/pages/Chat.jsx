@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { Button, ToggleButton, ToggleButtonGroup, Modal } from "react-bootstrap";
 import Header from '../components/Header';
 import ChatHistory from "../components/ChatHistory";

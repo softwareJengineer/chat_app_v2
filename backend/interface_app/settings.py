@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'channels',
     'dementia_chat',
     'corsheaders',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -74,10 +75,20 @@ TEMPLATES = [
     },
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}
+
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:8000',
     'http://localhost:5173'
 ]
+CORS_ALLOW_CREDENTIALS = True
 
 WSGI_APPLICATION = 'interface_app.wsgi.application'
 
@@ -145,3 +156,5 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True  # For development only
+
+LOGIN_REDIRECT_URL='/'

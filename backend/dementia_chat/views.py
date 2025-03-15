@@ -46,6 +46,10 @@ def login_view(request):
         if user is not None:
             login(request, user)
             profile = Profile.objects.get(pk=user)
+            settings = UserSettings.objects.get(settings_user=user)
+            reminders = Reminder.objects.filter(reminder_user=user)
+            chats = Chat.objects.filter(chat_user=user).order_by("-date")
+            
             return JsonResponse({
                 'success': True,
                 'username': user.username,
@@ -53,6 +57,9 @@ def login_view(request):
                 'firstName': user.first_name,
                 "lastName": user.last_name,
                 "role": profile.role,
+                "settings": settings,
+                "reminders": list(reminders),
+                "chats": list(chats),
             })
         else:
             return JsonResponse({
@@ -98,15 +105,16 @@ def signup_view(request):
         })
 
 @csrf_exempt
-@login_required
+# @login_required
 def user_settings_view(request):
     if request.method == 'PUT':
         data = json.loads(request.body)
         patient_view_overall = data.get('patientViewOverall')
         patient_can_schedule = data.get('patientCanSchedule')
-        user = request.user
+        username = data.get('user').get('username')
+        user = User.objects.get(username=username)
         
-        if Profile.objects.filter(user=user) is None:
+        if Profile.objects.get(user=user) is None:
             return JsonResponse({
                 'success': False,
                 'error': 'Could not find the user.'
@@ -120,7 +128,7 @@ def user_settings_view(request):
         return JsonResponse({
             'success': True,
             'patientViewOverall': settings.patient_view_overall,
-            'PatientCanSchedule': settings.patient_can_schedule
+            'patientCanSchedule': settings.patient_can_schedule
         })
         
     elif request.method == 'GET':
@@ -142,7 +150,7 @@ def user_settings_view(request):
             return JsonResponse({
             'success': True,
             'patientViewOverall': settings.patient_view_overall,
-            'PatientCanSchedule': settings.patient_can_schedule
+            'patientCanSchedule': settings.patient_can_schedule
         })
         
         
@@ -151,14 +159,15 @@ def user_settings_view(request):
 def chat_view(request):
     if request.method == 'POST':
         data = json.loads(request.body)
-        user = request.user
         date = data.get('date')
         time = data.get('time')
         scores = data.get('scores')
         avg_scores = data.get('avgScores')
         notes = data.get('notes')
         messages = data.get('messages')
-         
+        username = data.get('user').get('username')
+        user = User.objects.get(username=username)
+        
         if Profile.objects.get(pk=user) is None:
             return JsonResponse({
                 'success': False,
@@ -211,10 +220,11 @@ def chat_view(request):
 def reminder_view(request):
     if request.method == 'POST':
         data = json.loads(request.body)
-        user = request.user
         title = data.get('title')
         start = data.get('start')
         end = data.get('end')
+        username = data.get('user').get('username')
+        user = User.objects.get(username=username)
         
         if Profile.objects.get(pk=user) is None:
             return JsonResponse({
