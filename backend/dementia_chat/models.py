@@ -26,7 +26,7 @@ class Chat(models.Model):
         return self.date + " " + self.time
     
 class Reminder(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reminder_user")
+    user = models.ForeignKey(User, related_name="reminder_user", on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     start = models.DateTimeField()
     end = models.DateTimeField()
