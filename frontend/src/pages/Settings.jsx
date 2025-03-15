@@ -24,7 +24,7 @@ function Settings() {
                     'Content-Type': 'application/json',
                 },
                 // credentials: 'include',
-                body: JSON.stringify({...settings, user: user})
+                body: JSON.stringify({...formSettings, user: user})
             });
 
             const data = await response.json();
@@ -42,7 +42,7 @@ function Settings() {
     return (
         <>
         <Header title="Your Settings" page="settings" />
-        <div class="m-[2rem] flex flex-col gap-2">
+        <div className="m-[2rem] flex flex-col gap-2">
             <h3>PLwD Controls</h3>
             <Form onSubmit={saveChanges}>  
                 <Form.Switch

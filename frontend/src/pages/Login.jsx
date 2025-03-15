@@ -39,10 +39,20 @@ function Login() {
                     firstName: data.firstName,
                     lastName: data.lastName,
                 });
-                console.log(settings, chats, reminders);
-                setSettings(data.settings);
-                setChats(data.chats);
-                setReminders(data.reminders);
+                const settingsJson = JSON.parse(data.settings)
+                setSettings({
+                    patientViewOverall: settingsJson.patient_view_overall,
+                    patientCanSchedule: settingsJson.patient_can_schedule
+                });
+                const chats = data.chats;
+                const reminders = data.reminders;
+                setChats(chats.map(chat => JSON.parse(chat)));
+                setReminders(reminders.map(reminder => {
+                    let obj = JSON.parse(reminder);
+                    obj.start = new Date(obj.start);
+                    obj.end = new Date(obj.end);
+                    return obj;
+                }));
 
                 navigate('/chat');
             } else {

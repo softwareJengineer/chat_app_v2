@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.db import models
 from django.contrib.auth.models import User, AnonymousUser
 from .models import Profile, Chat, Reminder, UserSettings
+from .serializers import ProfileSerializer, ChatSerializer, ReminderSerializer, UserSettingsSerializer
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -46,9 +47,9 @@ def login_view(request):
         if user is not None:
             login(request, user)
             profile = Profile.objects.get(pk=user)
-            settings = UserSettings.objects.get(settings_user=user)
-            reminders = Reminder.objects.filter(reminder_user=user)
-            chats = Chat.objects.filter(chat_user=user).order_by("-date")
+            settings = UserSettings.objects.get(user=user)
+            reminders = list(Reminder.objects.filter(user=user))
+            chats = list(Chat.objects.filter(user=user).order_by("-date"))
             
             return JsonResponse({
                 'success': True,
@@ -57,9 +58,9 @@ def login_view(request):
                 'firstName': user.first_name,
                 "lastName": user.last_name,
                 "role": profile.role,
-                "settings": settings,
-                "reminders": list(reminders),
-                "chats": list(chats),
+                "settings": json.dumps(UserSettingsSerializer(settings).data),
+                "reminders": [json.dumps(ReminderSerializer(reminder).data) for reminder in reminders],
+                "chats": [json.dumps(ChatSerializer(chat).data) for chat in chats],
             })
         else:
             return JsonResponse({
@@ -67,6 +68,9 @@ def login_view(request):
                 'error': 'Invalid credentials'
             }, status=400)
 
+def logout_view(request):
+    logout(request)
+    
 @csrf_exempt
 def signup_view(request):
     if request.method == 'POST':
@@ -120,10 +124,14 @@ def user_settings_view(request):
                 'error': 'Could not find the user.'
             })
             
-        settings = UserSettings.objects.get(pk=user)
-        settings.patient_view_overall = patient_view_overall
-        settings.patient_can_schedule = patient_can_schedule
-        settings.save()
+        settings = UserSettings.objects.get(user=user)
+        
+        if settings is not None:
+            settings.patient_view_overall=patient_view_overall
+            settings.patient_can_schedule=patient_can_schedule
+            settings.save()
+        else:
+            UserSettings.objects.create(user=user, patient_view_overall=patient_view_overall, patient_can_schedule=patient_can_schedule)
         
         return JsonResponse({
             'success': True,

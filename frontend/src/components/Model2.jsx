@@ -14,7 +14,9 @@ function Model2(props) {
         .reset()
         .fadeIn(mixer.stats.actions.inUse === 0 ? 0 : 0.5)
         .play();
-        return () => actions[animation].fadeOut(0.5);
+        if (actions[animation]) {
+            return () => actions[animation].fadeOut(0.5);
+        }
     }, [animation]);
 
     return (
