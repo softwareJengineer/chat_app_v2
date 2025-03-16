@@ -46,7 +46,11 @@ function Login() {
                 });
                 const chats = data.chats;
                 const reminders = data.reminders;
-                setChats(chats.map(chat => JSON.parse(chat)));
+                setChats(chats.map(chat => {
+                    let obj = JSON.parse(chat);
+                    obj.date = new Date(obj.date);
+                    return obj;
+                }));
                 setReminders(reminders.map(reminder => {
                     let obj = JSON.parse(reminder);
                     obj.start = new Date(obj.start);
@@ -54,7 +58,11 @@ function Login() {
                     return obj;
                 }));
 
-                navigate('/chat');
+                if (data.role === 'Patient') {
+                    navigate('/chat');
+                } else {
+                    navigate('/analysis');
+                }
             } else {
                 alert(data.error);
             }

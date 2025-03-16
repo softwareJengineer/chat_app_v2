@@ -1,47 +1,103 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useContext } from "react";
 import { Button } from "react-bootstrap";
 import Header from "../components/Header";
-import BiomarkerDetails from "../components/BiomarkerDetails";
 import ScoreRadarChart from "../components/ScoreRadarChart";
 import dummyData from "../data/dummyData.json";
 import prevDummyData from "../data/dummyDataPrev.json";
-import Descriptions from "../data/descriptions.json";
 import { UserContext } from "../App";
 import { FaUser } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Avatar from "../components/Avatar";
+import daysInARow from "../functions/daysInARow";
+import compareScores from "../functions/compareScores";
 
 function Dashboard() {
-    const { user, setUser } = useContext(UserContext);
-    const [displayedBiomarker, setDisplayedBiomarker] = useState("Pragmatic");
-    const [description, setDescription] = useState(Descriptions["Pragmatic"].description);
-
-    const navigate = useNavigate();
+    const { user, chats } = useContext(UserContext);
+    const location = useLocation();
     const date = new Date();
+    // const chatData = location.state.chatData;
 
-    useEffect(() => {
-        setDescription(Descriptions[displayedBiomarker].description);
-    }, [displayedBiomarker]);
+    const avg = {
+        "Pragmatic": .6,
+        "Grammar": .2,
+        "Prosody": .3,
+        "Pronunciation": .4,
+        "Anomia": .5,
+        "Turn Taking": .6
+    };
 
-    function getActive(biomarker) {
-        if (biomarker === displayedBiomarker) {
-            return "primary";
-        } else {
-            return "outline-primary";
-        }
+    const prevAvg = {
+        "Pragmatic": .6,
+        "Grammar": .5,
+        "Prosody": .4,
+        "Pronunciation": .3,
+        "Anomia": .2,
+        "Turn Taking": .1
+    };
+
+    const chatData = {
+        user: user,
+        date: new Date(),
+        scores: dummyData,
+        avg_scores: avg,
+        notes: "",
+        messages: [],
+        duration: 5
     }
 
-    const ScoreButton = ({name, padding, size}) => {
-        return (
-            <Button
-                className={padding + " shadow-md w-full"}
-                variant={getActive(name)}
-                size={size}
-                onClick={() => {setDisplayedBiomarker(name)}}
-            >
-                {name}
-            </Button>
-        );
+    const prevChatData = chats.length > 1 ? chats[1] : {
+        user: user,
+        date: new Date(),
+        scores: prevDummyData,
+        avg_scores: prevAvg,
+        notes: "",
+        messages: [],
+        duration: 5
+    }
+
+    const calcGoal = (chats) => {
+        const goal = chats % 5;
+        return 5 - goal;
+    }
+
+    const compared = compareScores(chatData, prevChatData);
+
+    const joinScores = (scores) => {
+        var join = "";
+        for (var i = 0; i < scores.length; i++) {
+            if (i == scores.length - 1) {
+                join += scores[i];
+            } else if (i == scores.length - 2) {
+                join += scores[i] + " and ";
+            } else {
+                join += scores[i] + ", ";
+            }
+        }
+        return join;
+    }
+
+    const scoreSummary = () => {
+        var summary = "Compared to the last time we talked, ";
+        if (compared.improved.length > 0) {
+            summary +=  "you have shown improvement in your " + joinScores(compared.improved) + " scores"
+            if (compared.declined.length > 0) {
+                summary += ", but have declined in your " + joinScores(compared.declined) + " scores. "
+            } else {
+                summary += ".";
+            }
+            if (compared.steady.length > 0) {
+                summary += "Your " + joinScores(compared.steady) + " scores did not change. "
+            }
+        } else if (compared.declined > 0) {
+            summary +=  "you have declined in your " + joinScores(compared.declined) + " scores. "
+            if (compared.steady.length > 0) {
+                summary += "Your " + joinScores(compared.steady) + " scores did not change. "
+            }
+        } else {
+            summary += "your " + joinScores(compared.steady) + " scores did not change. "
+        }
+        summary += "Keep up the good work!"
+        return summary;
     }
 
     return (
@@ -50,7 +106,7 @@ function Dashboard() {
             <div className="mx-[2rem] flex flex-col gap-2">
                 <div className="flex items-center gap-4 align-middle">
                     <FaUser size={50}/>
-                    <p className="align-middle">{user.firstName} {user.lastName}</p>
+                    <p className="align-middle">{user?.firstName} {user?.lastName}</p>
                 </div>
                 <Link to="/settings">
                     Update profile
@@ -69,8 +125,9 @@ function Dashboard() {
                         </div>
                         <div className="w-2/3">
                             <p className="font-bold">You're doing fantastic!</p>
-                            <p>You've completed 10 chats with me.</p>
-                            <p>Complete another 5 to reach a new goal!</p>
+                            <p>We've talked for {daysInARow(chats)} in a row.</p>
+                            <p>You've completed {chats.length} {chats.length === 1 ? "chat" : "chats"} with me.</p>
+                            <p>Complete another {calcGoal(chats.length)} to reach a new goal!</p>
                             <Link to='/schedule'>
                                 <Button variant="outline-primary">Schedule a chat</Button>
                             </Link>
@@ -82,9 +139,8 @@ function Dashboard() {
                 </div>
                 <div className="w-full h-full border-1 rounded-lg border-gray-200 p-[1rem] self-stretch">
                     <h3>Radar Track</h3>
-                    <ScoreRadarChart biomarkerData={dummyData} prevBiomarkerData={prevDummyData}/>
-                    Compared to the last time we talked, you have shown improvement in anomia, turn taking, and grammer, but have
-                    declined in prosody, pronunciation, and pragmatics. Keep up the good work!
+                    <ScoreRadarChart biomarkerData={chatData.scores} prevBiomarkerData={prevChatData.scores}/>
+                        {scoreSummary()}
                     <br/>
                     Based on these scores, I suggest the following activities:
                     <div className="flex flex-row gap-4 m-[1rem]">
@@ -97,31 +153,6 @@ function Dashboard() {
                     </div>
                 </div>
             </div>
-            {/* <div className="flex flex-row justify-center m-4 items-center gap-4">
-                <div className='w-1/2'>
-                    <ScoreRadarChart biomarkerData={dummyData}/>
-                </div>
-                <div className="w-1/2">
-                    Hello, {user.firstName}! You've been talking with me for 3 days. During our most recent conversation, you displayed 
-                    less disrupted turn taking. Keep up the good work! You could work on your pragatic impairment score.
-                </div>
-            </div>
-            <h1 className="flex justify-center pb-[2rem]">What do these scores mean?</h1>
-            <span className="flex flex-row space-x-5 mx-[1rem] mb-4 gap-[1rem]">
-                <div className="flex flex-col w-1/5 gap-2">
-                    <ScoreButton padding="p-4" name="Pragmatic" />
-                    <ScoreButton padding="p-4" name="Grammar" />
-                    <ScoreButton padding="p-4" name="Prosody" />
-                    <ScoreButton padding="p-4" name="Pronunciation" />
-                    <ScoreButton padding="p-4" name="Anomia" />
-                    <ScoreButton padding="p-4" name="Turn Taking"  />
-                </div>
-                <BiomarkerDetails 
-                    name={displayedBiomarker}
-                    score={-1}
-                    description={description}
-                />
-            </span> */}
         </>
     )
 }

@@ -19,7 +19,7 @@ function Analysis() {
             <div className="mx-[2rem] mb-[2rem] flex flex-col gap-2">
                 <div className="flex items-center gap-4 align-middle">
                     <FaUser size={50}/>
-                    <p className="align-middle">{user.firstName} {user.lastName}</p>
+                    <p className="align-middle">{user?.firstName} {user?.lastName}</p>
                     <div className="flex float-right ml-auto">
                         <Button variant="outline-primary">Download Report</Button>
                     </div>

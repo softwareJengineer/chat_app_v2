@@ -19,4 +19,5 @@ class ReminderSerializer(serializers.ModelSerializer):
 class ChatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chat
-        fields = ['user', 'chat_id', 'date', 'time', 'scores', 'avg_scores', 'notes', 'messages']
+        fields = ['user', 'chat_id', 'date', 'scores', 'avg_scores', 'notes', 'messages', 'duration']
+        read_only_fields = ['chat_id', 'date']

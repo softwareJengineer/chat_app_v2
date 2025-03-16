@@ -1,21 +1,9 @@
 import React from 'react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, Legend } from 'recharts';
+import getRadarScores from '../functions/getRadarScores';
 
 const ScoreRadarChart = ({biomarkerData, prevBiomarkerData}) => {
-    var data = [];
-
-    for (var i = 0; i < biomarkerData.length; i++) {
-        var name = biomarkerData[i].name;
-        var scores = biomarkerData[i].data;
-        var score = scores.reduce((prev, current) => prev + current) / scores.length;
-        if (prevBiomarkerData) {
-            var prevScores = prevBiomarkerData[i].data;
-            var prevScore = prevScores.reduce((prev, current) => prev + current) / prevScores.length;
-            data.push({name: name, x: score, y: prevScore});
-        } else {
-            data.push({name: name, x: score});
-        }
-    }
+    const data = getRadarScores(biomarkerData, prevBiomarkerData);
  
     return (
         <RadarChart height={500} width={600}

@@ -9,7 +9,7 @@ import { IoExitOutline } from "react-icons/io5";
 import { FaRobot } from "react-icons/fa";
 
 const Header = ({title, page}) => {
-	const { user, setUser } = useContext(UserContext);
+	const { user, setUser, setChats, setReminders, setSettings } = useContext(UserContext);
 	const location = useLocation();
 	const isCaregiver = user?.role !== "Patient";
 	const navigate = useNavigate();
@@ -49,7 +49,30 @@ const Header = ({title, page}) => {
     }
 
     const toLogOut = () => {
-        setUser(null);
+		setUser(null);
+		setChats([]);
+		setReminders([]);
+		setSettings({
+			'patientViewOverall': true,
+			'patientCanSchedule': true,
+		});
+		fetch('http://localhost:8000/api/logout/', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		}).then(response => {
+			const data = response.json();
+			if (data.success) {
+				alert("Log out successful.");
+			} else {
+				console.error("Log out failed: " + data.error);
+			}
+			
+		}).catch(error => {
+			alert(error);
+		});
+        
         navigate('/');
     }
 
@@ -61,37 +84,22 @@ const Header = ({title, page}) => {
         navigate('/analysis');
     }
 
-	// return (
-	// 	<div className='flex pt-[1em] pl-[1em] mr-[1em]'>
-	// 		<p className="font-mono text-lg">AI Assistant Chat</p>
-	// 		<Button onClick={loginCaregiver}>Caregiver</Button>
-	// 		<Button onClick={loginPatient}>Patient</Button>
-	// 		<span className="float-right ml-auto gap-[1em] flex flex-row">
-	// 			{!isCaregiver ? <Link to="/chat">
-	// 				<Button 
-	// 				variant={location.pathname === "/chat" ? "primary" : "outline-primary"}
-	// 				size={window.innerWidth > 700? "lg" : "md"}
-	// 				>
-	// 				Chat
-	// 				</Button>
-	// 			</Link> : null}
-	// 			{isCaregiver ? 
-    //                 <Button size="lg" variant="outline-primary" onClick={toHistory}>Analysis</Button> : 
-    //                 <Button size="lg" variant="outline-primary" onClick={toDashboard}>Dashboard</Button>
-    //             }
-    //             <Button size="lg" variant="outline-primary" onClick={() => toSchedule()}>Schedule</Button>
-    //             <Button size="lg" variant="outline-primary" onClick={() => toSettings()}>Settings</Button>
-    //             <Button size="lg" variant="outline-danger" onClick={() => toLogOut()}>Log Out</Button> 
-	// 		</span>
-	// 	</div>
-	// );
-
-	if (isCaregiver) {
+	if (!user) {
+		return (
+		<>
+			<div className="flex flex-row gap-2">
+				<Button onClick={loginCaregiver}>Caregiver</Button>
+				<Button onClick={loginPatient}>PLwD</Button>
+			</div>
+			<div className="flex items-center">                
+				<h1>{title}</h1>
+			</div>
+		</>
+		)
+	} else if (isCaregiver) {
 		return (
 		<>
 			<div className="mx-[2rem] mt-[2rem] flex flex-col gap-2">
-			<Button onClick={loginCaregiver}>Caregiver</Button>
-			<Button onClick={loginPatient}>PLwD</Button>
 				<div className="flex items-center">                
 					<h1>{title}</h1>
 					<div className="float flex flex-row gap-2 float-right ml-auto">
@@ -138,8 +146,6 @@ const Header = ({title, page}) => {
 		return (
 		<>
 			<div className="mx-[2rem] mt-[2rem] flex flex-col gap-2">
-			<Button onClick={loginCaregiver}>Caregiver</Button>
-			<Button onClick={loginPatient}>Patient</Button>
 				<div className="flex items-center">                
 					<h1>{title}</h1>
 					<div className="float flex flex-row gap-2 float-right ml-auto">
@@ -151,7 +157,7 @@ const Header = ({title, page}) => {
 						>
 							<FaRobot size={25} style={{ marginRight: '2px' }}/> Chat
 						</Button>
-						
+
 						<Button 
 							variant={page==="dashboard" ? "outline-secondary" : "outline-primary"}
 							style={{ display: 'flex', alignItems: 'center' }} 

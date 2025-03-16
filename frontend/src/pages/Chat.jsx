@@ -7,6 +7,7 @@ import { BsStopCircle, BsPlayCircle } from "react-icons/bs";
 import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
 import { useNavigate, useLocation } from "react-router-dom";
 import { UserContext } from "../App";
+import calcAvgBiomarkerScores from "../functions/calcAvgBiomarkerScores";
 
 const SPEECH_KEY = "3249fb4e6d8248569b42d5dbf693c259";
 const SPEECH_REGION = "eastus";
@@ -22,13 +23,14 @@ const ws = new WebSocket(wsUrl);
 
 function Chat() {
     const location = useLocation();
-    const {user, setUser} = useContext(UserContext);
+    const {user, setUser, chats, setChats} = useContext(UserContext);
     const [recording, setRecording] = useState(false);
     const [systemSpeaking, setSystemSpeaking] = useState(false);
     const [userSpeaking, setUserSpeaking] = useState(false);
     const [messages, setMessages] = useState(location.state ? location.state.messages : []);
     const [viewMode, setViewMode] = useState(3);
     const [chatbotMessage, setChatbotMessage] = useState("Hello! I am here to assist you.");
+    const [start, setStart] = useState(null);
     const speechConfig = useRef(null);
     const audioConfig = useRef(null);
     const recognizer = useRef(null);
@@ -38,7 +40,9 @@ function Chat() {
     const stream = useRef(null);
     const source = useRef(null);
     const processorNode = useRef(null);
-    
+    const date = new Date();
+    const navigate = useNavigate();
+
     const [biomarkerData, setBiomarkerData] = useState(location.state? location.state.biomarkerData : [
         {
             name: "Pragmatic",
@@ -98,6 +102,9 @@ function Chat() {
     }, [messages]);
 
     useEffect(() => {
+        if (!start) {
+            setStart(new Date());
+        }
         speechConfig.current = SpeechSDK.SpeechConfig.fromSubscription(
             SPEECH_KEY,
             SPEECH_REGION
@@ -118,7 +125,6 @@ function Chat() {
             if (result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
                 setUserSpeaking(false);
                 const transcription = result.text;
-                const date = new Date();
                 const msgTime = date.getUTCHours() + ':' + date.getUTCMinutes() + ':' + date.getUTCSeconds();
                 console.log(`Recognized: ${transcription}`);
                 addMessageToChat('You', transcription, msgTime);
@@ -143,7 +149,6 @@ function Chat() {
                 console.log('Speech recognition started.');
             });
             initAudioProcessing();
-            
         }
         
         return () => {
@@ -294,31 +299,18 @@ function Chat() {
         setMessages((prevMessages) => [...prevMessages, { sender, message, time }]);
     };
 
-    const navigate = useNavigate();
-
-    const date = new Date();
-
-    const calcAvgBiomarkerScores = (biomarkerData) => {
-        avg = {};
-        for (var i = 0; i < biomarkerData.length; i++) {
-            var name = biomarkerData[i].name;
-            var scores = biomarkerData[i].data;
-            var score = scores.reduce((prev, current) => prev + current) / scores.length;
-            avg[name] = score;
-        }
-        return avg;
-    }
-
     const saveChat = async () => {
         setRecording(false);
+        const end = new Date();
+        const duration = Math.floor(((end - start) / 1000) / 60);
         const chatData = {
             user: user,
-            date: date.getDate(),
-            time: date.getTime(),
+            date: end,
             scores: biomarkerData,
             avg_scores: calcAvgBiomarkerScores(biomarkerData),
             notes: "",
-            messages: messages
+            messages: messages,
+            duration: duration
         }
         try {
             const response = await fetch('http://localhost:8000/api/chat/', {
@@ -331,7 +323,8 @@ function Chat() {
 
             const data = await response.json();
             if (data.success) {
-                navigate('/details', {state: {biomarkerData: biomarkerData, messages: messages}});
+                setChats((prevChats) => [chatData, ...prevChats]);
+                navigate('/details', {state: {chatData: chatData}});
             } else {
                 alert(data.error);
             }

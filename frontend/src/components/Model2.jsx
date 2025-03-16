@@ -6,15 +6,13 @@ function Model2(props) {
     const group = useRef();
     const [animation, setAnimation] = useState(animations[3].name);
     const { actions, mixer } = useAnimations(animations, group);
-
-    console.log(animations)
     
     useEffect(() => {
-        actions[animation]
-        .reset()
-        .fadeIn(mixer.stats.actions.inUse === 0 ? 0 : 0.5)
-        .play();
         if (actions[animation]) {
+            actions[animation]
+            .reset()
+            .fadeIn(mixer.stats.actions.inUse === 0 ? 0 : 0.5)
+            .play();
             return () => actions[animation].fadeOut(0.5);
         }
     }, [animation]);

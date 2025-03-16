@@ -168,11 +168,11 @@ def chat_view(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         date = data.get('date')
-        time = data.get('time')
         scores = data.get('scores')
         avg_scores = data.get('avgScores')
         notes = data.get('notes')
         messages = data.get('messages')
+        duration = data.get('duration')
         username = data.get('user').get('username')
         user = User.objects.get(username=username)
         
@@ -182,16 +182,16 @@ def chat_view(request):
                 'error': 'Could not find the user.'
             })
          
-        chat = Chat.objects.create(user=user, date=date, time=time, scores=scores, avg_scores=avg_scores, notes=notes, messages=messages)
+        chat = Chat.objects.create(user=user, date=date, scores=scores, avg_scores=avg_scores, notes=notes, messages=messages, duration=duration)
         
         return JsonResponse({
             'success': True,
             'date': chat.date,
-            'time': chat.time,
             'scores': chat.scores,
             'avgScores': chat.avg_scores,
             'notes': chat.notes,
             'messages': chat.messages,
+            'duration': chat.duration,
             'id': chat.chat_id
         })
     elif request.method == 'GET':
@@ -216,11 +216,11 @@ def chat_view(request):
         return JsonResponse({
             'success': True,
             'date': chat.date,
-            'time': chat.time,
             'scores': chat.scores,
             'avgScores': chat.avg_scores,
             'notes': chat.notes,
             'messages': chat.messages,
+            'duration': chat.duration,
         })
          
 @csrf_exempt
