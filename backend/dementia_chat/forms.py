@@ -8,13 +8,13 @@ class ChatForm(ModelForm):
     date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date-local'}))
     time = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time-local'}))
     scores = forms.JSONField()
-    avg_scores = forms.JSONField()
+    avgScores = forms.JSONField()
     notes = forms.CharField()
     messages = forms.JSONField()
 
     class Meta:
         model = Chat
-        fields = ['user', 'date', 'time', 'scores', 'avg_scores', 'notes', 'messages']
+        fields = ['user', 'date', 'time', 'scores', 'avgScores', 'notes', 'messages']
 
     def __init__(self, *args, **kwargs):
         # Get the current user from the kwargs (passed in from the view)
@@ -30,7 +30,7 @@ class ChatnUpdateForm(ModelForm):
 
     class Meta:
         model = Chat
-        fields = ['user', 'date', 'time', 'scores', 'avg_scores', 'notes', 'messages']
+        fields = ['user', 'date', 'time', 'scores', 'avgScores', 'notes', 'messages']
         
 class ReminderForm(ModelForm):
     title = forms.CharField()

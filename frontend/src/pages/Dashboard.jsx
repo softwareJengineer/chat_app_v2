@@ -39,7 +39,7 @@ function Dashboard() {
         user: user,
         date: new Date(),
         scores: dummyData,
-        avg_scores: avg,
+        avgScores: avg,
         notes: "",
         messages: [],
         duration: 5
@@ -49,7 +49,7 @@ function Dashboard() {
         user: user,
         date: new Date(),
         scores: prevDummyData,
-        avg_scores: prevAvg,
+        avgScores: prevAvg,
         notes: "",
         messages: [],
         duration: 5

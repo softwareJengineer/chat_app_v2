@@ -50,7 +50,7 @@ const Details = () => {
         user: user,
         date: new Date(),
         scores: biomarkerData,
-        avg_scores: avg,
+        avgScores: avg,
         notes: "",
         messages: [],
         duration: 5

@@ -9,15 +9,15 @@ class ProfileSerializer(serializers.ModelSerializer):
 class UserSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserSettings
-        fields = ['user', 'patient_view_overall', 'patient_can_schedule']
+        fields = ['patientViewOverall', 'patientCanSchedule']
         
 class ReminderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reminder
-        fields = ['user', 'title', 'start', 'end']
+        fields = ['title', 'start', 'end']
         
 class ChatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chat
-        fields = ['user', 'chat_id', 'date', 'scores', 'avg_scores', 'notes', 'messages', 'duration']
-        read_only_fields = ['chat_id', 'date']
+        fields = ['chatID', 'date', 'scores', 'avgScores', 'notes', 'messages', 'duration']
+        read_only_fields = ['chatID', 'date']

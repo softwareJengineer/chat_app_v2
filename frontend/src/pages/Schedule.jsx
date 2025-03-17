@@ -5,11 +5,12 @@ import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import { UserContext } from "../App";
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { useNavigate } from "react-router-dom";
+import { createReminder, getReminders } from "../functions/apiRequests";
 
 
 function Schedule() {
-    const { user, setUser, reminders, setReminders } = useContext(UserContext);
+    const { user, setUser } = useContext(UserContext);
+    const [reminders, setReminders] = useState(getReminders());
     const [showNewReminder, setShowNewReminder] = useState(false);
     const [title, setTitle] = useState('');
     const [startDate, setStartDate] = useState('');
@@ -17,32 +18,8 @@ function Schedule() {
     const [repeat, setRepeat] = useState('');
     const [recurrences, setRecurrences] = useState(0);
     const localizer = momentLocalizer(moment);
-    
-    const createReminder = async (start, end) => {
-        try {
-            const response = await fetch('http://localhost:8000/api/reminders/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    user: user,
-                    title: title,
-                    start: start,
-                    end: end
-                })
-            });
 
-            const data = await response.json();
-            if (!data.success) {
-                alert(data.error);
-            }
-        } catch (error) {
-            console.error('Error with creating reminder:', error);
-        }
-    };
-
-    const addReminder = (event) => {
+    const addReminder = async (event) => {
         event.preventDefault();
         for (let i = 0; i <= recurrences; i++) {
             let start = new Date(startDate);
@@ -54,8 +31,8 @@ function Schedule() {
                 start.setDate(start.getDate() + i * 7);
                 end.setDate(end.getDate() + i * 7);
             }
-            setReminders((prevReminders) => [...prevReminders, { title, start, end }]);
-            createReminder(start, end);
+            const response = await createReminder(user, start, end);
+            if (response) setReminders((prevReminders) => [...prevReminders, { title, start, end }]);
         }
         handleClose();
     };

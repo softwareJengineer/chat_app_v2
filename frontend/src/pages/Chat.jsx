@@ -8,6 +8,7 @@ import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
 import { useNavigate, useLocation } from "react-router-dom";
 import { UserContext } from "../App";
 import calcAvgBiomarkerScores from "../functions/calcAvgBiomarkerScores";
+import { createChat } from "../functions/apiRequests";
 
 const SPEECH_KEY = "3249fb4e6d8248569b42d5dbf693c259";
 const SPEECH_REGION = "eastus";
@@ -307,29 +308,14 @@ function Chat() {
             user: user,
             date: end,
             scores: biomarkerData,
-            avg_scores: calcAvgBiomarkerScores(biomarkerData),
+            avgScores: calcAvgBiomarkerScores(biomarkerData),
             notes: "",
             messages: messages,
             duration: duration
         }
-        try {
-            const response = await fetch('http://localhost:8000/api/chat/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(chatData)
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                setChats((prevChats) => [chatData, ...prevChats]);
-                navigate('/details', {state: {chatData: chatData}});
-            } else {
-                alert(data.error);
-            }
-        } catch (error) {
-            console.error('Error saving chat data:', error);
+        const response = await createChat(user, chatData);
+        if (response) {
+            navigate('/details', {state: {chatData: chatData}});
         }
     }
 

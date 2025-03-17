@@ -5,8 +5,8 @@ const compareScores = (chatData, prevChatData) => {
         declined: [],
         steady: []
     }
-    const avg = chatData.avg_scores;
-    const prevAvg = prevChatData.avg_scores;
+    const avg = chatData.avgScores;
+    const prevAvg = prevChatData.avgScores;
     for (const score in avg) {
         if (avg[score] > prevAvg[score]) {
             compared.improved.push(score);

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
+import { signup } from "../functions/apiRequests";
 
 function SignUp() {
     const navigate = useNavigate();
@@ -33,24 +34,8 @@ function SignUp() {
             alert("Passwords do not match.");
             return;
         }
-        try {
-            const response = await fetch('http://localhost:8000/api/signup/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                navigate('/login');
-            } else {
-                alert(data.error);
-            }
-        } catch (error) {
-            console.error('Signup error:', error);
-        }
+        const response = await signup(formData);
+        if (response) navigate('/login');
     };
 
     return (

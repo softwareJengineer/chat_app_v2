@@ -15,9 +15,9 @@ def index(request):
     return render(request, 'index.html')
 
 @csrf_exempt
-def profile_view(request):
+def profile_view(request, username):
     if request.method == 'GET':
-        user = request.user
+        user = User.objects.get(username=username)
         profile = Profile.objects.get(pk=user)
         
         if profile is None:
@@ -48,8 +48,6 @@ def login_view(request):
             login(request, user)
             profile = Profile.objects.get(pk=user)
             settings = UserSettings.objects.get(user=user)
-            reminders = list(Reminder.objects.filter(user=user))
-            chats = list(Chat.objects.filter(user=user).order_by("-date"))
             
             return JsonResponse({
                 'success': True,
@@ -59,8 +57,6 @@ def login_view(request):
                 "lastName": user.last_name,
                 "role": profile.role,
                 "settings": json.dumps(UserSettingsSerializer(settings).data),
-                "reminders": [json.dumps(ReminderSerializer(reminder).data) for reminder in reminders],
-                "chats": [json.dumps(ChatSerializer(chat).data) for chat in chats],
             })
         else:
             return JsonResponse({
@@ -74,74 +70,100 @@ def logout_view(request):
 @csrf_exempt
 def signup_view(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        username = data.get('username')
-        email = data.get('email')
-        password = data.get('password')
-        first_name = data.get('firstName')
-        last_name = data.get('lastName')
-        role = data.get('role')
-        
-        if User.objects.filter(username=username).exists():
+        try: 
+            data = json.loads(request.body)
+            username = data.get('username')
+            email = data.get('email')
+            password = data.get('password')
+            first_name = data.get('firstName')
+            last_name = data.get('lastName')
+            role = data.get('role')
+            
+            if User.objects.filter(username=username).exists():
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Username already exists'
+                }, status=400)
+                
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+            )
+            
+            profile = Profile.objects.create(user=user, role=role)
+            
+            if role == 'Caregiver':
+                UserSettings.objects.create(user=user)
+            
+            return JsonResponse({
+                'success': True,
+                'username': user.username,
+                'email': user.email,
+                'firstName': user.first_name,
+                "lastName": user.last_name,
+                "role": profile.role,
+            })
+        except json.JSONDecodeError:
+            # Handle invalid JSON error
             return JsonResponse({
                 'success': False,
-                'error': 'Username already exists'
+                'error': 'Invalid JSON format'
             }, status=400)
-            
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password,
-            first_name=first_name,
-            last_name=last_name,
-        )
         
-        profile = Profile.objects.create(user=user, role=role)
-        UserSettings.objects.create(user=user)
-        
-        return JsonResponse({
-            'success': True,
-            'username': user.username,
-            'email': user.email,
-            'firstName': user.first_name,
-            "lastName": user.last_name,
-            "role": profile.role,
-        })
+        except Exception as e:
+            # Catch other potential errors and return a general error message
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
 
 @csrf_exempt
 # @login_required
-def user_settings_view(request):
+def user_settings_view(request, username):
     if request.method == 'PUT':
         data = json.loads(request.body)
-        patient_view_overall = data.get('patientViewOverall')
-        patient_can_schedule = data.get('patientCanSchedule')
-        username = data.get('user').get('username')
+        patientViewOverall = data.get('patientViewOverall')
+        patientCanSchedule = data.get('patientCanSchedule')
         user = User.objects.get(username=username)
+        profile = Profile.objects.get(user=user)
         
-        if Profile.objects.get(user=user) is None:
+        if profile is None:
             return JsonResponse({
                 'success': False,
                 'error': 'Could not find the user.'
             })
             
-        settings = UserSettings.objects.get(user=user)
+        role = profile.role
+        linked_user = profile.linked
+        
+        settings = None
+        if role == 'Caregiver':
+            settings = UserSettings.objects.get(user=user)
+        else:
+            settings = UserSettings.objects.get(linked_plwd=user)
         
         if settings is not None:
-            settings.patient_view_overall=patient_view_overall
-            settings.patient_can_schedule=patient_can_schedule
+            settings.patientViewOverall=patientViewOverall
+            settings.patientCanSchedule=patientCanSchedule
             settings.save()
         else:
-            UserSettings.objects.create(user=user, patient_view_overall=patient_view_overall, patient_can_schedule=patient_can_schedule)
+            if role == 'Caregiver':
+                settings = UserSettings.objects.create(user=user, patientViewOverall=patientViewOverall, patientCanSchedule=patientCanSchedule, linked_plwd=linked_user)
+            else:
+                settings = UserSettings.objects.create(linked_plwd=user, patientViewOverall=patientViewOverall, patientCanSchedule=patientCanSchedule, user=linked_user)
         
         return JsonResponse({
             'success': True,
-            'patientViewOverall': settings.patient_view_overall,
-            'patientCanSchedule': settings.patient_can_schedule
+            'patientViewOverall': settings.patientViewOverall,
+            'patientCanSchedule': settings.patientCanSchedule
         })
         
     elif request.method == 'GET':
-        user = request.user
-        if not user.is_authenticated or user is AnonymousUser:
+        user = User.objects.get(username=username)
+        if user is None:
             return JsonResponse({
                 'success': False,
                 'error': 'User not authenticated.'
@@ -157,23 +179,78 @@ def user_settings_view(request):
         else:
             return JsonResponse({
             'success': True,
-            'patientViewOverall': settings.patient_view_overall,
-            'patientCanSchedule': settings.patient_can_schedule
+            'patientViewOverall': settings.patientViewOverall,
+            'patientCanSchedule': settings.patientCanSchedule
         })
-        
-        
+
 @csrf_exempt
-# @login_required
-def chat_view(request):
+def chats_view(request, username):
     if request.method == 'POST':
         data = json.loads(request.body)
         date = data.get('date')
         scores = data.get('scores')
-        avg_scores = data.get('avgScores')
+        avgScores = data.get('avgScores')
         notes = data.get('notes')
         messages = data.get('messages')
         duration = data.get('duration')
-        username = data.get('user').get('username')
+        user = User.objects.get(username=username)
+        profile = Profile.objects.get(pk=user)
+        
+        if profile is None:
+            return JsonResponse({
+                'success': False,
+                'error': 'Could not find the user.'
+            })
+            
+        role = profile.user
+        linked_user = profile.linked
+        
+        chat = None
+        if role == 'Caregiver':
+            chat = Chat.objects.create(linked_caregiver=user, date=date, scores=scores, avgScores=avgScores, notes=notes, messages=messages, duration=duration, user=linked_user)
+        else:
+            chat = Chat.objects.create(user=user, date=date, scores=scores, avgScores=avgScores, notes=notes, messages=messages, duration=duration, linked_caregiver=linked_user)
+        
+        return JsonResponse({
+            'success': True,
+            'date': chat.date,
+            'scores': chat.scores,
+            'avgScores': chat.avgScores,
+            'notes': chat.notes,
+            'messages': chat.messages,
+            'duration': chat.duration,
+            'id': chat.chatID
+        })
+    elif request.method == 'GET':
+        user = User.objects.get(username=username)
+        profile = Profile.objects.get(user=user)
+        
+        if profile is None:
+            return JsonResponse({
+                'success': False,
+                'error': 'Could not find the user.'
+            })
+        
+        role = profile.role
+        chats = None
+        
+        if role == "Caregiver":
+            chats = Chat.objects.filter(user=user)
+        else:
+            chats = Chat.objects.filter(linked_caregiver=user)
+        
+        response = [json.dumps(ChatSerializer(chat).data) for chat in chats]
+        
+        return JsonResponse({
+            'success': True,
+            'chats': response
+        })
+
+        
+@csrf_exempt
+# @login_required
+def chat_view(request, username, chatID):
+    if request.method == 'GET':
         user = User.objects.get(username=username)
         
         if Profile.objects.get(pk=user) is None:
@@ -181,31 +258,8 @@ def chat_view(request):
                 'success': False,
                 'error': 'Could not find the user.'
             })
-         
-        chat = Chat.objects.create(user=user, date=date, scores=scores, avg_scores=avg_scores, notes=notes, messages=messages, duration=duration)
-        
-        return JsonResponse({
-            'success': True,
-            'date': chat.date,
-            'scores': chat.scores,
-            'avgScores': chat.avg_scores,
-            'notes': chat.notes,
-            'messages': chat.messages,
-            'duration': chat.duration,
-            'id': chat.chat_id
-        })
-    elif request.method == 'GET':
-        user = request.user
-        data = json.loads(request.body)
-        chat_id = data.get('chatID')
-        
-        if Profile.objects.get(pk=user) is None:
-            return JsonResponse({
-                'success': False,
-                'error': 'Could not find the user.'
-            })
             
-        chat = Chat.objects.get(pk=chat_id)
+        chat = Chat.objects.get(pk=chatID)
         
         if chat is None:
             return JsonResponse({
@@ -217,7 +271,7 @@ def chat_view(request):
             'success': True,
             'date': chat.date,
             'scores': chat.scores,
-            'avgScores': chat.avg_scores,
+            'avgScores': chat.avgScores,
             'notes': chat.notes,
             'messages': chat.messages,
             'duration': chat.duration,
@@ -225,22 +279,29 @@ def chat_view(request):
          
 @csrf_exempt
 # @login_required
-def reminder_view(request):
+def reminder_view(request, username):
     if request.method == 'POST':
         data = json.loads(request.body)
         title = data.get('title')
         start = data.get('start')
         end = data.get('end')
-        username = data.get('user').get('username')
         user = User.objects.get(username=username)
+        profile = Profile.objects.get(pk=user)
         
-        if Profile.objects.get(pk=user) is None:
+        if profile is None:
             return JsonResponse({
                 'success': False,
                 'error': 'Could not find the user.'
             })
         
-        reminder = Reminder.objects.create(user=user, title=title, start=start, end=end)
+        role = profile.role
+        linked_user = profile.linked
+        
+        reminder = None
+        if role == 'Caregiver':
+            reminder = Reminder.objects.create(caregiver=user, title=title, start=start, end=end, plwd=linked_user)
+        else:
+            reminder = Reminder.objects.create(plwd=user, title=title, start=start, end=end, caregiver=linked_user)
         
         return JsonResponse({
             'success': True,
@@ -249,23 +310,24 @@ def reminder_view(request):
             'end': reminder.end
         })
     elif request.method == 'GET':
-        user = request.user
+        user = User.objects.get(username=username)
+        profile = Profile.objects.get(user=user)
         
-        if Profile.objects.get(pk=user) is None:
+        if profile is None:
             return JsonResponse({
                 'success': False,
                 'error': 'Could not find the user.'
             })
         
-        reminders = Reminder.objects.filter(user=user)
+        role = profile.role
+        reminders = None
         
-        response = json.dumps(
-            [{
-                'title': reminder.title,
-                'start': reminder.start,
-                'end': reminder.end
-            } for reminder in reminders]
-        )
+        if role == "Caregiver":
+            reminders = Reminder.objects.filter(caregiver=user)
+        else:
+            reminders = Reminder.objects.filter(plwd=user)
+        
+        response = [json.dumps(ReminderSerializer(reminder).data) for reminder in reminders]
         
         return JsonResponse({
             'success': True,
