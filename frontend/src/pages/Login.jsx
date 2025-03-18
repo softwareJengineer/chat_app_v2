@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import { UserContext } from "../App";
+import { login } from "../functions/apiRequests";
 
 
 function Login() {
@@ -21,53 +22,15 @@ function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            const response = await fetch('http://localhost:8000/api/login/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
-            });
-        
-            const data = await response.json();
-            if (data.success) {
-                setUser({
-                    username: data.username,
-                    email: data.email,
-                    role: data.role,
-                    firstName: data.firstName,
-                    lastName: data.lastName,
-                });
-                const settingsJson = JSON.parse(data.settings)
-                setSettings({
-                    patientViewOverall: settingsJson.patient_view_overall,
-                    patientCanSchedule: settingsJson.patient_can_schedule
-                });
-                const chats = data.chats;
-                const reminders = data.reminders;
-                setChats(chats.map(chat => {
-                    let obj = JSON.parse(chat);
-                    obj.date = new Date(obj.date);
-                    return obj;
-                }));
-                setReminders(reminders.map(reminder => {
-                    let obj = JSON.parse(reminder);
-                    obj.start = new Date(obj.start);
-                    obj.end = new Date(obj.end);
-                    return obj;
-                }));
+        const response = await login(formData);
+        const { user, settings } = response;
+        setUser(user);
+        setSettings(settings);
 
-                if (data.role === 'Patient') {
-                    navigate('/chat');
-                } else {
-                    navigate('/analysis');
-                }
-            } else {
-                alert(data.error);
-            }
-        } catch (error) {
-            console.error('Login error:', error);
+        if (user.role === 'Patient') {
+            navigate('/chat');
+        } else {
+            navigate('/analysis');
         }
     };
 

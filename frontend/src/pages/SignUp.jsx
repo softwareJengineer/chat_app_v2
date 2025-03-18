@@ -1,19 +1,23 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
+import { signup } from "../functions/apiRequests";
 
 function SignUp() {
     const navigate = useNavigate();
     const inputStyling = "p-2 border-1 border-gray-400 rounded-md";
 
     const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        username: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        role: ''
+        plwdFirstName: '',
+        plwdLastName: '',
+        plwdUsername: '',
+        plwdPassword: '',
+        plwdConfirmPassword: '',
+        caregiverFirstName: '',
+        caregiverLastName: '',
+        caregiverUsername: '',
+        caregiverPassword: '',
+        caregiverConfirmPassword: '',
     });
 
     const toLogin = () => {
@@ -29,28 +33,15 @@ function SignUp() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (formData.password !== formData.confirmPassword) {
-            alert("Passwords do not match.");
+        if (formData.plwdPassword !== formData.plwdConfirmPassword) {
+            alert("PLwD passwords do not match.");
+            return;
+        } else if (formData.caregiverPassword !== formData.caregiverConfirmPassword) {
+            alert("PLwD passwords do not match.");
             return;
         }
-        try {
-            const response = await fetch('http://localhost:8000/api/signup/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                navigate('/login');
-            } else {
-                alert(data.error);
-            }
-        } catch (error) {
-            console.error('Signup error:', error);
-        }
+        const response = await signup(formData);
+        if (response) navigate('/login');
     };
 
     return (
@@ -58,76 +49,98 @@ function SignUp() {
             <form onSubmit={handleSubmit}>
                 <div className="flex h-[100vh] justify-center items-center">
                     <div className="flex flex-col w-4/5 md:w-1/2 m-[2rem]">
-                        <p className="justify-center flex text-xl font-mono">Sign Up</p>
-                        <div className="flex flex-col gap-3 rounded-lg p-4">
+                        <h1 className="justify-center flex font-mono">Sign Up</h1>
+                        <div className="flex flex-col gap-3 p-4">
+                            <h3>Caregiver information:</h3>
                             <span className="flex flex-row gap-2">
                                 <input 
                                     className={"w-1/2 " + inputStyling} 
-                                    name="firstName"
+                                    name="caregiverFirstName"
                                     placeholder="First Name"
-                                    value={formData.firstName}
+                                    value={formData.caregiverFirstName}
                                     onChange={handleChange}
                                     required
                                 />
                                 <input 
                                     className={"w-1/2 " + inputStyling} 
-                                    name="lastName"
+                                    name="caregiverLastName"
                                     placeholder="Last Name"
-                                    value={formData.lastName}
+                                    value={formData.caregiverLastName}
                                     onChange={handleChange}
                                     required
                                 />
                             </span>
                             <input 
                                 className={inputStyling} 
-                                name="email"
-                                type="email"
-                                placeholder="email@example.com"
-                                value={formData.email}
-                                onChange={handleChange}
-                                required
-                            />
-                            <input 
-                                className={inputStyling} 
-                                name="username"
+                                name="caregiverUsername"
                                 placeholder="Username"
-                                value={formData.username}
+                                value={formData.caregiverUsername}
                                 onChange={handleChange}
                                 required
                             />
                             <input 
                                 type="password" 
-                                name="password"
+                                name="caregiverPassword"
                                 className={inputStyling} 
                                 placeholder="Password"
-                                value={formData.password}
+                                value={formData.caregiverPassword}
                                 onChange={handleChange}
                                 required
                             />
                             <input 
                                 type="password" 
-                                name="confirmPassword"
+                                name="caregiverConfirmPassword"
                                 className={inputStyling} 
                                 placeholder="Confirm Password"
-                                value={formData.confirmPassword}
+                                value={formData.caregiverConfirmPassword}
                                 onChange={handleChange}
                                 required
                             />
-                            <div className="flex flex-row gap-2 items-center">
-                                <label>I am a:</label>
-                                <select
-                                    name="role"
-                                    id="role"
-                                    value={formData.role}
+                            <h3>PLwD information:</h3>
+                            <span className="flex flex-row gap-2">
+                                <input 
+                                    className={"w-1/2 " + inputStyling} 
+                                    name="plwdFirstName"
+                                    placeholder="First Name"
+                                    value={formData.plwdFirstName}
                                     onChange={handleChange}
-                                    className={inputStyling}
                                     required
-                                >
-                                    <option value="" disabled>Select One</option>
-                                    <option value="Patient">PLwD</option>
-                                    <option value="Caregiver">Caregiver</option>
-                                </select>
-                            </div>
+                                />
+                                <input 
+                                    className={"w-1/2 " + inputStyling} 
+                                    name="plwdLastName"
+                                    placeholder="Last Name"
+                                    value={formData.plwdLastName}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </span>
+                            <input 
+                                className={inputStyling} 
+                                name="plwdUsername"
+                                placeholder="Username"
+                                value={formData.plwdUsername}
+                                onChange={handleChange}
+                                required
+                            />
+                            <input 
+                                type="password" 
+                                name="plwdPassword"
+                                className={inputStyling} 
+                                placeholder="Password"
+                                value={formData.plwdPassword}
+                                onChange={handleChange}
+                                required
+                            />
+                            <input 
+                                type="password" 
+                                name="plwdConfirmPassword"
+                                className={inputStyling} 
+                                placeholder="Confirm Password"
+                                value={formData.plwdConfirmPassword}
+                                onChange={handleChange}
+                                required
+                            />
                             <Button type="submit" variant="primary">Sign Up</Button>
                             <p>Already have an account? <a className="hover:cursor-pointer" onClick={() => toLogin()}>Log In</a></p>
                         </div>

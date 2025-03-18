@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
 import Header from '../components/Header';
 import { useLocation, useNavigate } from "react-router-dom";
@@ -6,12 +6,24 @@ import Avatar from "../components/Avatar";
 import { UserContext } from "../App";
 import { GiAlarmClock, GiPartyPopper, GiRobotAntennas } from "react-icons/gi";
 import daysInARow from "../functions/daysInARow";
+import { getChats } from "../functions/apiRequests";
 
 
 const Details = () => {
     const { user } = useContext(UserContext);
+    const [chats, setChats] = useState([]);
     const location = useLocation();
     // const chatData = location.state.chatData;
+
+    useEffect(() => {
+        const fetchChats = async () => {
+            const userChats = await getChats(user);
+            setChats(userChats);
+        };
+
+        fetchChats();
+    }, []);
+
     const biomarkerData =  [
         {
             name: "Pragmatic",
@@ -50,13 +62,11 @@ const Details = () => {
         user: user,
         date: new Date(),
         scores: biomarkerData,
-        avg_scores: avg,
+        avgScores: avg,
         notes: "",
         messages: [],
         duration: 5
     }
-
-    const {chats} = useContext(UserContext);
 
     const navigate = useNavigate();
 

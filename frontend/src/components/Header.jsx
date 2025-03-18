@@ -1,37 +1,42 @@
 import React, { useContext } from "react";
 import { Button } from "react-bootstrap";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { UserContext } from "../App";
-import UserOptions from "./UserOptions";
 import { GoGear, GoGraph } from "react-icons/go";
 import { GrSchedules } from "react-icons/gr";
 import { IoExitOutline } from "react-icons/io5";
 import { FaRobot } from "react-icons/fa";
+import { logout } from "../functions/apiRequests";
+
 
 const Header = ({title, page}) => {
-	const { user, setUser, setChats, setReminders, setSettings } = useContext(UserContext);
+	const { user, setUser, setSettings } = useContext(UserContext);
 	const location = useLocation();
 	const isCaregiver = user?.role !== "Patient";
 	const navigate = useNavigate();
 
 	function loginCaregiver() {
 		setUser({
-			username: "Caregiver",
+			caregiverUsername: "Caregiver",
 			role: "Caregiver",
-			firstName: "Caregiver",
-			lastName: "Caregiver",
-			email: "example@email.com",
+			caregiverFirstName: "Caregiver",
+			caregiverLastName: "Caregiver",
+			plwdUsername: "PLwD",
+			plwdFirstName: "PLwD",
+			plwdLastName: "PLwD",
 			settings: {}
 		})
 	}
 
 	function loginPatient() {
 		setUser({
-			username: "plwd",
+			caregiverUsername: "Caregiver",
 			role: "Patient",
-			firstName: "PLwD",
-			lastName: "PLwD",
-			email: "example@email.com",
+			caregiverFirstName: "Caregiver",
+			caregiverLastName: "Caregiver",
+			plwdUsername: "PLwD",
+			plwdFirstName: "PLwD",
+			plwdLastName: "PLwD",
 			settings: {}
 		})
 	}
@@ -48,31 +53,13 @@ const Header = ({title, page}) => {
         navigate('/schedule');
     }
 
-    const toLogOut = () => {
+    const toLogOut = async () => {
 		setUser(null);
-		setChats([]);
-		setReminders([]);
 		setSettings({
 			'patientViewOverall': true,
 			'patientCanSchedule': true,
 		});
-		fetch('http://localhost:8000/api/logout/', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		}).then(response => {
-			const data = response.json();
-			if (data.success) {
-				alert("Log out successful.");
-			} else {
-				console.error("Log out failed: " + data.error);
-			}
-			
-		}).catch(error => {
-			alert(error);
-		});
-        
+		// await logout(); 
         navigate('/');
     }
 

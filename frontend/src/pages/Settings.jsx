@@ -2,10 +2,11 @@ import React, { useContext, useEffect, useState } from "react"
 import Header from "../components/Header";
 import { UserContext } from "../App";
 import { Button, Form } from "react-bootstrap";
+import { editSettings } from "../functions/apiRequests";
 
 
 function Settings() {
-    const {user, setUser, settings, setSettings} = useContext(UserContext);
+    const {user, settings, setSettings} = useContext(UserContext);
     const [formSettings, setFormSettings] = useState(settings);
 
     const handleChange = (e) => {
@@ -17,26 +18,8 @@ function Settings() {
 
     const saveChanges = async (e) => {
         e.preventDefault();
-        try {
-            const response = await fetch('http://localhost:8000/api/settings/', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                // credentials: 'include',
-                body: JSON.stringify({...formSettings, user: user})
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                alert("Settings successfully set.");
-                setSettings(formSettings);
-            } else {
-                alert(data.error);
-            }
-        } catch (error) {
-            console.error('Error setting user settings:', error);
-        }
+        const response = await editSettings(user, formSettings);
+        if (response) setSettings(formSettings);
     }
 
     return (

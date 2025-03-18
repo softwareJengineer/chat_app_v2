@@ -19,8 +19,6 @@ function App() {
         'patientViewOverall': true,
         'patientCanSchedule': true,
     });
-    const [reminders, setReminders] = useState([]);
-    const [chats, setChats] = useState([]);
     
         return (
         <UserContext.Provider value={{ 
@@ -28,10 +26,7 @@ function App() {
             setUser: setUser, 
             settings: settings, 
             setSettings: setSettings, 
-            reminders: reminders, 
-            setReminders: setReminders, 
-            chats: chats, 
-            setChats: setChats }}>
+        }}>
             <Routes>
                 <Route exact path='/' element={<Home/>}></Route>
                 <Route path='/chat' element={<Chat/>}></Route>

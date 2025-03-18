@@ -67,7 +67,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 raise RuntimeError("LLM not initialized")
             # Rest of connect code...
             self.Chat = apps.get_model('dementia_chat', 'Chat')
-            self.chat_id = str(uuid.uuid4())
+            self.chatID = str(uuid.uuid4())
             self.conversation_start_time = time()
             self.user_utterances = deque(maxlen=100)
             self.overlapped_speech_count = 0
@@ -96,16 +96,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
         logger.info(f"Client disconnected: {self.client_id}")
         
     @database_sync_to_async
-    def store_chat(self, user, date, time, scores, avg_scores, notes, messages):
+    def store_chat(self, user, date, time, scores, avgScores, notes, messages):
         """Store utterance in database asynchronously"""
         try:
             self.Chat.objects.create(
-                chat_id=self.chat_id,
+                chatID=self.chatID,
                 user=user,
                 date=date,
                 time=time,
                 scores=scores,
-                avg_scores=avg_scores,
+                avgScores=avgScores,
                 notes=notes,
                 messages=messages
             )

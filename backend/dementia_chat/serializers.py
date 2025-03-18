@@ -1,23 +1,28 @@
 from rest_framework import serializers
+from django.contrib.auth.models import User
 from .models import Profile, UserSettings, Reminder, Chat
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["username", "first_name", "last_name"]
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ["id", "first_name", "last_name", "email", "password", "role"]
+        fields = ["plwd", "primaryCaregiver"]
 
 class UserSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserSettings
-        fields = ['user', 'patient_view_overall', 'patient_can_schedule']
+        fields = ['patientViewOverall', 'patientCanSchedule']
         
 class ReminderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reminder
-        fields = ['user', 'title', 'start', 'end']
+        fields = ['title', 'start', 'end']
         
 class ChatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chat
-        fields = ['user', 'chat_id', 'date', 'scores', 'avg_scores', 'notes', 'messages', 'duration']
-        read_only_fields = ['chat_id', 'date']
+        fields = ['chatID', 'date', 'scores', 'avgScores', 'notes', 'messages', 'duration']
+        read_only_fields = ['chatID', 'date']
