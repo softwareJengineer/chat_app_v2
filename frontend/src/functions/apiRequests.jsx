@@ -12,11 +12,13 @@ const login = async (loginData) => {
         
         if (data.success) {
             const user = {
-                username: data.username,
-                email: data.email,
                 role: data.role,
-                firstName: data.firstName,
-                lastName: data.lastName,
+                plwdUsername: data.plwdUsername,
+                plwdFirstName: data.plwdFirstName,
+                plwdLastName: data.plwdLastName,
+                caregiverUsername: data.caregiverUsername,
+                caregiverFirstName: data.caregiverFirstName,
+                caregiverLastName: data.caregiverLastName,
             };
             const settingsJson = JSON.parse(data.settings);
             const settings = {
@@ -81,7 +83,8 @@ const signup = async (signupData) => {
 
 const getReminders = async (user) => {
     try {
-        const response = await fetch(`http://localhost:8000/api/reminders/${user.username}/`, {
+        const username = user.role == 'Caregiver' ? user.caregiverUsername : user.plwdUsername;
+        const response = await fetch(`http://localhost:8000/api/reminders/${username}/`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -100,17 +103,18 @@ const getReminders = async (user) => {
             });
         } else {
             console.error("Could not fetch reminders: " + data.error);
-            return false;
+            return [];
         }
     } catch (error) {
-        alert(error);
-        return false;
+        console.error("Could not fetch reminders: " + error);
+        return [];
     }
 }
 
-const createReminder = async (user, start, end) => {
+const createReminder = async (user, title, start, end) => {
     try {
-        const response = await fetch(`http://localhost:8000/api/reminders/${user.username}/`, {
+        const username = user.role == 'Caregiver' ? user.caregiverUsername : user.plwdUsername;
+        const response = await fetch(`http://localhost:8000/api/reminders/${username}/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -137,7 +141,8 @@ const createReminder = async (user, start, end) => {
 
 const editSettings = async (user, settings) => {
     try {
-        const response = await fetch(`http://localhost:8000/api/settings/${user.username}/`, {
+        const username = user.role == 'Caregiver' ? user.caregiverUsername : user.plwdUsername;
+        const response = await fetch(`http://localhost:8000/api/settings/${username}/`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -162,7 +167,8 @@ const editSettings = async (user, settings) => {
 
 const createChat = async (user, chatData) => {
     try {
-        const response = await fetch(`http://localhost:8000/api/chats/${user.username}/`, {
+        const username = user.role == 'Caregiver' ? user.caregiverUsername : user.plwdUsername;
+        const response = await fetch(`http://localhost:8000/api/chats/${username}/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -186,7 +192,8 @@ const createChat = async (user, chatData) => {
 
 const getChats = async (user) => {
     try {
-        const response = await fetch(`http://localhost:8000/api/chats/${user.username}/`, {
+        const username = user.role == 'Caregiver' ? user.caregiverUsername : user.plwdUsername;
+        const response = await fetch(`http://localhost:8000/api/chats/${username}/`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -215,7 +222,8 @@ const getChats = async (user) => {
 
 const getChat = async (user, chatID) => {
     try {
-        const response = await fetch(`http://localhost:8000/api/chat/${user.username}/chatid/${chatID}`, {
+        const username = user.role == 'Caregiver' ? user.caregiverUsername : user.plwdUsername;
+        const response = await fetch(`http://localhost:8000/api/chat/${username}/chatid/${chatID}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

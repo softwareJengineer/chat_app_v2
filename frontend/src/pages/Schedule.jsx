@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Button, Modal, Form } from "react-bootstrap";
 import Header from "../components/Header";
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
@@ -9,8 +9,8 @@ import { createReminder, getReminders } from "../functions/apiRequests";
 
 
 function Schedule() {
-    const { user, setUser } = useContext(UserContext);
-    const [reminders, setReminders] = useState(getReminders());
+    const { user } = useContext(UserContext);
+    const [reminders, setReminders] = useState([]);
     const [showNewReminder, setShowNewReminder] = useState(false);
     const [title, setTitle] = useState('');
     const [startDate, setStartDate] = useState('');
@@ -18,6 +18,15 @@ function Schedule() {
     const [repeat, setRepeat] = useState('');
     const [recurrences, setRecurrences] = useState(0);
     const localizer = momentLocalizer(moment);
+
+    useEffect(() => {
+        const fetchReminders = async () => {
+            const rem = await getReminders(user);
+            setReminders(rem);
+        };
+
+        fetchReminders();
+    }, []);
 
     const addReminder = async (event) => {
         event.preventDefault();
@@ -31,7 +40,7 @@ function Schedule() {
                 start.setDate(start.getDate() + i * 7);
                 end.setDate(end.getDate() + i * 7);
             }
-            const response = await createReminder(user, start, end);
+            const response = await createReminder(user, title, start, end);
             if (response) setReminders((prevReminders) => [...prevReminders, { title, start, end }]);
         }
         handleClose();

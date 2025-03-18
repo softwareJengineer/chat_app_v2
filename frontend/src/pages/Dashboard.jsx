@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { Button } from "react-bootstrap";
 import Header from "../components/Header";
 import ScoreRadarChart from "../components/ScoreRadarChart";
@@ -6,16 +6,27 @@ import dummyData from "../data/dummyData.json";
 import prevDummyData from "../data/dummyDataPrev.json";
 import { UserContext } from "../App";
 import { FaUser } from "react-icons/fa";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Avatar from "../components/Avatar";
 import daysInARow from "../functions/daysInARow";
 import compareScores from "../functions/compareScores";
+import { getChats } from "../functions/apiRequests";
 
 function Dashboard() {
-    const { user, chats } = useContext(UserContext);
-    const location = useLocation();
+    const { user } = useContext(UserContext);
+    const [chats, setChats] = useState([]);
     const date = new Date();
     // const chatData = location.state.chatData;
+
+    useEffect(() => {
+        const fetchChats = async () => {
+            const userChats = await getChats(user);
+            setChats(userChats);
+        };
+
+        fetchChats();
+    }, []);
+
 
     const avg = {
         "Pragmatic": .6,
@@ -106,7 +117,10 @@ function Dashboard() {
             <div className="mx-[2rem] flex flex-col gap-2">
                 <div className="flex items-center gap-4 align-middle">
                     <FaUser size={50}/>
-                    <p className="align-middle">{user?.firstName} {user?.lastName}</p>
+                    <p className="align-middle">{user?.plwdFirstName} {user?.plwdLastName}</p>
+                    Cared for by 
+                    <FaUser size={50}/>
+                    <p className="align-middle">{user?.caregiverFirstName} {user?.caregiverLastName}</p>
                 </div>
                 <Link to="/settings">
                     Update profile

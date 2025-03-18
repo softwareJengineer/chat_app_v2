@@ -1,9 +1,15 @@
 const compareScores = (chatData, prevChatData) => {
-    console.log(chatData, prevChatData)
     var compared = {
         improved: [],
         declined: [],
         steady: []
+    }
+    if (!prevChatData) {
+        return {
+            improved: ["N/A"],
+            declined: ["N/A"],
+            steady: ["N/A"]
+        }
     }
     const avg = chatData.avgScores;
     const prevAvg = prevChatData.avgScores;
@@ -15,6 +21,15 @@ const compareScores = (chatData, prevChatData) => {
         } else {
             compared.steady.push(score);
         }
+    }
+    if (compared.improved.length == 0) {
+        compared.improved = ["N/A"];
+    }
+    if (compared.declined.length == 0) {
+        compared.declined = ["N/A"];
+    }
+    if (compared.steady.length == 0) {
+        compared.steady = ["N/A"];
     }
     return compared;
 }

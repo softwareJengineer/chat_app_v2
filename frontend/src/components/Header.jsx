@@ -17,22 +17,26 @@ const Header = ({title, page}) => {
 
 	function loginCaregiver() {
 		setUser({
-			username: "Caregiver",
+			caregiverUsername: "Caregiver",
 			role: "Caregiver",
-			firstName: "Caregiver",
-			lastName: "Caregiver",
-			email: "example@email.com",
+			caregiverFirstName: "Caregiver",
+			caregiverLastName: "Caregiver",
+			plwdUsername: "PLwD",
+			plwdFirstName: "PLwD",
+			plwdLastName: "PLwD",
 			settings: {}
 		})
 	}
 
 	function loginPatient() {
 		setUser({
-			username: "plwd",
+			caregiverUsername: "Caregiver",
 			role: "Patient",
-			firstName: "PLwD",
-			lastName: "PLwD",
-			email: "example@email.com",
+			caregiverFirstName: "Caregiver",
+			caregiverLastName: "Caregiver",
+			plwdUsername: "PLwD",
+			plwdFirstName: "PLwD",
+			plwdLastName: "PLwD",
 			settings: {}
 		})
 	}
