@@ -68,6 +68,9 @@ function Chat() {
 
     ws.onmessage = (event) => {
         const response = JSON.parse(event.data);
+        if (audioContext.current && audioContext.current.state === 'suspended') {
+            audioContext.current.resume();
+        }
         if (response.type === 'transcription') {
             if (!recording) return;
             const transcription = response.data;
@@ -79,6 +82,7 @@ function Chat() {
             setChatbotMessage(response.data);
         } else if (response.type === 'tts_audio') {
             // Process and play TTS audio chunk
+            console.log("Received TTS audio chunk");
             synthSpeech(response.data);
         } else if (response.type.includes("scores")) {
             updateScores(response);
