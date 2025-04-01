@@ -97,13 +97,15 @@ function Chat() {
         for (let i = 0; i < len; i++) {
             bytes[i] = binaryString.charCodeAt(i);
         }
-        
-        // Ensure an AudioContext exists
+
+        // Ensure an AudioContext exists and resume if it's suspended
         if (!audioContext.current) {
             audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
+        } else if (audioContext.current.state === 'suspended') {
+            audioContext.current.resume();
         }
-        
-        // Decode the audio data and play it
+
+        // Decode the audio data and play this chunk immediately
         audioContext.current.decodeAudioData(bytes.buffer)
         .then((decodedData) => {
             const source = audioContext.current.createBufferSource();

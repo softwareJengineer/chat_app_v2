@@ -23,26 +23,36 @@ tts_client = get_tts_model(model="kokoro")
 async def stream_tts_async(utterance):
     loop = asyncio.get_event_loop()
     queue = asyncio.Queue()
+    # Define a chunk size in bytes for smaller sub-chunks.
+    chunk_size = 1024  # adjust this size as needed
 
     def producer():
         try:
             for audio_chunk in tts_client.stream_tts_sync(utterance):
-                # Schedule putting an item into the queue from this thread.
-                asyncio.run_coroutine_threadsafe(queue.put(audio_chunk), loop)
+                # Extract the audio data if audio_chunk is a tuple
+                audio_data = audio_chunk[1] if isinstance(audio_chunk, tuple) else audio_chunk
+                # If the returned audio data is large, send it in smaller pieces.
+                for i in range(0, len(audio_data), chunk_size):
+                    sub_chunk = audio_data[i:i+chunk_size]
+                    # Schedule putting the sub-chunk into the async queue.
+                    asyncio.run_coroutine_threadsafe(queue.put(sub_chunk), loop)
+                # (Optional) If you need to slow down slightly between chunks, add a tiny sleep.
+                # time.sleep(0.01)
         except Exception as e:
             logger.error(f"TTS producer error: {e}")
         finally:
-            asyncio.run_coroutine_threadsafe(queue.put(None), loop)  # Signal completion
+            # Signal end-of-stream by putting a None marker in the queue.
+            asyncio.run_coroutine_threadsafe(queue.put(None), loop)
 
-    # Run the producer in a thread so it doesn't block the event loop.
+    # Run the producer in a separate thread so it doesn't block the event loop.
     executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
     executor.submit(producer)
 
     while True:
-        audio_chunk = await queue.get()
-        if audio_chunk is None:  # End-of-stream marker
+        sub_chunk = await queue.get()
+        if sub_chunk is None:  # End-of-stream marker received
             break
-        yield audio_chunk
+        yield sub_chunk
 
 async def synthesize_utt_stream(utterance, consumer):
     """
