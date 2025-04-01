@@ -22,6 +22,8 @@ from .biomarker_models.altered_grammer import generate_grammar_score
 from .biomarker_models.coherence_function import coherence
 import os
 from ..services import tts
+import joblib
+import opensmile
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -55,7 +57,6 @@ feature_extractor = opensmile.Smile(
     feature_level=opensmile.FeatureLevel.LowLevelDescriptors,
     sampling_rate=SAMPLE_RATE,
 )
-
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -193,10 +194,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
             
             # Convert to float32
             audio_array = librosa.util.buf_to_float(audio_array, n_bytes=2, dtype=np.float32)
-            
+
+            features = feature_extractor.process_signal(audio_array, sample_rate)
+            print(f"Extracted features: {features.shape}")
+
+            self.prosody_features = features[PROSODY_FEATURES]
+            self.pronunciation_features = features[PRONUNCIATION_FEATURES]
+
+            return self.prosody_features, self.pronunciation_features
+        
         except Exception as e:
             logger.error(f"Error processing audio data: {e}")
-            
+
     def reshape_data(self, X):
         'Reshape 3D data to 2D'
         return X.reshape(X.shape[0], -1)
@@ -220,6 +229,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         scores = self.get_probs(model, feature_array)
         print(f"\tSCORES: {scores}\n")
         return scores
+
+
+    def generate_pragmatic_score(self, user_utt):
+        return random.random()
+
+    def generate_grammar_score(self, user_utt):
+        return random.random()
 
     def generate_pragmatic_score(self, user_utt):
         # Calculate pragmatic score
@@ -303,12 +319,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def generate_prosody_score(self):
         if self.prosody_features is not None:
             try:
+                print("\tGenerating prosody score...")
                 chunk_size = int(WINDOW_SIZE / HOP_LENGTH)
                 score = self.process_scores(self.prosody_features, chunk_size, self.prosody_model)
-                return score
+                return score[0]
             except Exception as e:
                 logger.error(f"Error processing prosody features: {e}")
-                return 1
+                return random.random()
 
     def generate_pronunciation_score(self):
         if self.pronunciation_features is not None:
@@ -319,7 +336,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 return score[0]
             except Exception as e:
                 logger.error(f"Error processing prosody features: {e}")
-                return 1
+                return random.random()
 
     def generate_biomarker_scores(self, user_utt):
         self.user_utterances.append(user_utt)

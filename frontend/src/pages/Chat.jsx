@@ -175,7 +175,7 @@ function Chat() {
             
             // Buffer to accumulate smaller chunks of audio
             const sampleRate = audioContext.current.sampleRate;
-            const chunkBufferSize = sampleRate * 5; 
+            const chunkBufferSize = sampleRate * 2.5; 
             let audioBuffer = new Float32Array(chunkBufferSize);
             let bufferIndex = 0;
             
