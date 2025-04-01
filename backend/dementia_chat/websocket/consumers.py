@@ -21,6 +21,7 @@ from .. import config as cf
 from .biomarker_models.altered_grammer import generate_grammar_score
 from .biomarker_models.coherence_function import coherence
 import os
+from ..services import tts
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -160,6 +161,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'time': system_time.strftime("%H:%M:%S")
                 }))
                 self.global_llm_response = response
+                asyncio.create_task(tts.synthesize_utt_stream(response, self))
                 
                 # Generate biomarker scores
                 biomarker_scores = self.generate_biomarker_scores(user_utt)

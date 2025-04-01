@@ -4,19 +4,12 @@ import Header from '../components/Header';
 import ChatHistory from "../components/ChatHistory";
 import Avatar from "../components/Avatar";
 import { BsStopCircle, BsPlayCircle } from "react-icons/bs";
-import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
 import { useNavigate, useLocation } from "react-router-dom";
 
-const SPEECH_KEY = "3249fb4e6d8248569b42d5dbf693c259";
-const SPEECH_REGION = "eastus";
 const bufferSize = 4096;
-
-// Replace static wsUrl with dynamic version
 const wsUrl = window.location.hostname === 'localhost' 
     ? `ws://${window.location.hostname}:8000/ws/chat/`
     : `ws://${window.location.hostname}/ws/chat/`;
-// const wsUrl = "wss://dementia.ngrok.app";
-
 const ws = new WebSocket(wsUrl);
 
 function Chat() {
@@ -27,12 +20,7 @@ function Chat() {
     const [messages, setMessages] = useState(location.state ? location.state.messages : []);
     const [viewMode, setViewMode] = useState(3);
     const [chatbotMessage, setChatbotMessage] = useState("Hello! I am here to assist you.");
-    const speechConfig = useRef(null);
-    const audioConfig = useRef(null);
-    const recognizer = useRef(null);
-    const synthesizer = useRef(null);
     const audioContext = useRef(null);
-    const audioProcessor = useRef(null);
     const stream = useRef(null);
     const source = useRef(null);
     const processorNode = useRef(null);
@@ -80,81 +68,93 @@ function Chat() {
 
     ws.onmessage = (event) => {
         const response = JSON.parse(event.data);
-        if (!recording) return;
-        if (response.type === 'llm_response') {
-            // console.log(response);
+        if (response.type === 'transcription') {
+            if (!recording) return;
+            const transcription = response.data;
+            const now = new Date();
+            const msgTime = now.getUTCHours() + ':' + now.getUTCMinutes() + ':' + now.getUTCSeconds();
+            addMessageToChat('You', transcription, msgTime);
+        } else if (response.type === 'llm_response') {
             addMessageToChat('AI', response.data, response.time);
             setChatbotMessage(response.data);
-            speakResponse(response.data);
+        } else if (response.type === 'tts_audio') {
+            // Process and play TTS audio chunk
+            synthSpeech(response.data);
         } else if (response.type.includes("scores")) {
             updateScores(response);
         }
+    };
+
+    function synthSpeech(base64Data) {
+        // Convert the base64 string to an ArrayBuffer
+        const binaryString = atob(base64Data);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        
+        // Ensure an AudioContext exists
+        if (!audioContext.current) {
+            audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        
+        // Decode the audio data and play it
+        audioContext.current.decodeAudioData(bytes.buffer)
+        .then((decodedData) => {
+            const source = audioContext.current.createBufferSource();
+            source.buffer = decodedData;
+            source.connect(audioContext.current.destination);
+            source.start(0);
+        })
+        .catch((error) => {
+            console.error("Error decoding audio data", error);
+        });
     }
 
     useEffect(() => {
         console.log(messages);
     }, [messages]);
 
+    // Frontend Transcription using the Web Speech API
     useEffect(() => {
-        speechConfig.current = SpeechSDK.SpeechConfig.fromSubscription(
-            SPEECH_KEY,
-            SPEECH_REGION
-        );
-        speechConfig.current.speechRecognitionLanguage = 'en-US';
-    
-        audioConfig.current = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
-        recognizer.current = new SpeechSDK.SpeechRecognizer(
-            speechConfig.current,
-            audioConfig.current
-        );
-        synthesizer.current = new SpeechSDK.SpeechSynthesizer(speechConfig.current);
-    
-        const processRecognizedTranscript = (event) => {
-            const result = event.result;
-            console.log('Recognition result:', result);
-        
-            if (result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
-                setUserSpeaking(false);
-                const transcription = result.text;
-                const date = new Date();
-                const msgTime = date.getUTCHours() + ':' + date.getUTCMinutes() + ':' + date.getUTCSeconds();
-                console.log(`Recognized: ${transcription}`);
-                addMessageToChat('You', transcription, msgTime);
-                sendTranscriptionToServer(transcription);
-            }
+        if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
+            console.error("Web Speech API is not supported by this browser.");
+            return;
+        }
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = "en-US";
+        recognition.interimResults = false;
+        recognition.continuous = true; // Enable continuous listening
+
+        recognition.onresult = (event) => {
+            // Take the final result from the event
+            const transcript = event.results[event.results.length - 1][0].transcript.trim();
+            setUserSpeaking(false);
+            const date = new Date();
+            const msgTime = date.getUTCHours() + ':' + date.getUTCMinutes() + ':' + date.getUTCSeconds();
+            console.log(`Recognized: ${transcript}`);
+            addMessageToChat('You', transcript, msgTime);
+            sendTranscriptionToServer(transcript);
         };
-    
-        const processRecognizingTranscript = (event) =>{
-            const result = event.result;
-            // console.log('Recognition result:', result);
-            if (result.reason === SpeechSDK.ResultReason.RecognizingSpeech) {
-                setUserSpeaking(true);
-                checkOverlap();
-            }
-        }
-    
-        recognizer.current.recognized = (s, e) => processRecognizedTranscript(e);
-        recognizer.current.recognizing = (s, e) => processRecognizingTranscript(e);
-    
+
+        recognition.onerror = (event) => {
+            console.error("Speech Recognition Error:", event.error);
+        };
+
         if (recording) {
-            recognizer.current.startContinuousRecognitionAsync(() => {
-                console.log('Speech recognition started.');
-            });
-            // initAudioProcessing();
-            
+            recognition.start();
+            console.log('Speech recognition started.');
+            // Optionally, initialize raw audio processing for biomarker analysis
+            initAudioProcessing();
+        } else {
+            recognition.stop();
+            console.log('Speech recognition stopped.');
         }
-        
+
         return () => {
-            recognizer.current.stopContinuousRecognitionAsync(() => {
-                console.log('Speech recognition stopped.');
-            });
-            recognizer.current = undefined;
-            audioConfig.current = undefined;
-            audioProcessor.current = undefined;
-            if (source.current && processorNode.current) {
-                source.current.disconnect(processorNode.current);
-                processorNode.current.disconnect(audioContext.current.destination);
-            }             
+            recognition.abort();
         };
     }, [recording]);
     
@@ -164,48 +164,10 @@ function Chat() {
         }
     }
 
-    function speakResponse(text) {
-        setSystemSpeaking(true);
-        synthesizer.current.speakTextAsync(
-            text, 
-            result => {
-                if (result.reason === SpeechSDK.ResultReason.SynthesizingAudioCompleted) {
-                    console.log("Speech synthesized");
-                    setSystemSpeaking(false);
-                }
-            },
-            error => {
-                console.log(`Error synthesizing speech: ${error}`);
-                setSystemSpeaking(false);
-            }
-        );
-    }
-
-    function checkOverlap() {
-        if (systemSpeaking && userSpeaking) {
-            console.log("Overlapped speech detected!", true);
-            ws.send(JSON.stringify({ type: 'overlapped_speech' }));
-        }
-    }
-
-    // Helper function to convert array buffer to base64
-    function arrayBufferToBase64(buffer) {
-        let binary = '';
-        const bytes = new Uint8Array(buffer);
-        const len = bytes.byteLength;
-        for (let i = 0; i < len; i++) {
-            binary += String.fromCharCode(bytes[i]);
-        }
-        return btoa(binary);
-    }
-
     async function initAudioProcessing() {
         try {
             stream.current = await navigator.mediaDevices.getUserMedia({ audio: true });
-            audioContext.current = new AudioContext({
-                sampleRate: 16000
-            });
-            
+            audioContext.current = new AudioContext({ sampleRate: 16000 });
             source.current = audioContext.current.createMediaStreamSource(stream.current);
     
             // Create ScriptProcessor for direct audio processing
@@ -248,7 +210,7 @@ function Chat() {
                                 data: base64Data,
                                 sampleRate: sampleRate
                             }));
-                            console.log(`Sent audio chunk at ${new Date(timestamp).toISOString()}, length: ${intData.length} samples`);
+                            console.log(`Sent audio chunk at ${new Date(timestamp).toISOString()}, samples: ${intData.length}`);
                         }
                     } catch (error) {
                         console.log(`Error processing audio chunk: ${error.message}`);
@@ -263,18 +225,24 @@ function Chat() {
             // Connect the nodes
             source.current.connect(processorNode.current);
             processorNode.current.connect(audioContext.current.destination);
-            
-            // Store nodes for cleanup
-            audioProcessor.current = processorNode.current;
-            
-            console.log(`Audio processing initialized with 0.5-second chunks at ${sampleRate}Hz`);
+            console.log(`Audio processing initialized with 5-second chunks at ${sampleRate} Hz`);
         } catch (error) {
             console.log(`Error initializing audio: ${error.message}`);
         }
     }
 
+    // Helper function to convert array buffer to base64
+    function arrayBufferToBase64(buffer) {
+        let binary = '';
+        const bytes = new Uint8Array(buffer);
+        for (let i = 0; i < bytes.byteLength; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary);
+    }
+
     function updateScores(scores) {
-        var prevData = biomarkerData;
+        let prevData = [...biomarkerData];
         if (scores.type === "biomarker_scores") {
             prevData[0].data.push(scores.data["pragmatic"]);
             prevData[1].data.push(scores.data["grammar"]);
@@ -290,14 +258,14 @@ function Chat() {
 
     function addMessageToChat(sender, message, time) {
         setMessages((prevMessages) => [...prevMessages, { sender, message, time }]);
-    };
+    }
 
     const navigate = useNavigate();
 
     const toNew = () => {
         setRecording(false);
         navigate('/details', {state: {biomarkerData: biomarkerData, messages: messages}});
-    }
+    };
 
     function getView() {
         if (viewMode == 1) {
@@ -308,17 +276,17 @@ function Chat() {
             );
         } else if (viewMode == 2) {
             return (
-            <div className="flex md:flex-row flex-col h-[65vh] mt-[1em] w-full mb-[2rem]">
-                <div className="md:w-1/2 md:border-r-1 border-blue-200 overflow-y-auto md:border-b-0 border-b-1 w-full md:h-full h-1/2">
-                    <ChatHistory messages={messages} />
-                </div>
-                <div className="md:w-1/2 w-[100vw] md:h-full h-1/2">
-                    <div className="my-[1rem] flex justify-center bg-blue-200 p-[1em] rounded-lg mx-[25%]">
-                            {chatbotMessage}
+                <div className="flex md:flex-row flex-col h-[65vh] mt-[1em] w-full mb-[2rem]">
+                    <div className="md:w-1/2 md:border-r-1 border-blue-200 overflow-y-auto md:border-b-0 border-b-1 w-full md:h-full h-1/2">
+                        <ChatHistory messages={messages} />
                     </div>
-                    <Avatar />
-                </div>
-            </div> 
+                    <div className="md:w-1/2 w-[100vw] md:h-full h-1/2">
+                        <div className="my-[1rem] flex justify-center bg-blue-200 p-[1em] rounded-lg mx-[25%]">
+                            {chatbotMessage}
+                        </div>
+                        <Avatar />
+                    </div>
+                </div> 
             );
         } else {
             return (
@@ -330,7 +298,7 @@ function Chat() {
                         <Avatar />
                     </div>
                 </div>
-            )
+            );
         }
     }
 
@@ -338,40 +306,26 @@ function Chat() {
         <>
             <Header />
             <div className="ml-[1rem] mt-[1rem] flex justify-center">
-                <ToggleButtonGroup 
-                    type="radio"
-                    name="viewMode"
-                    defaultValue={3}
-                >
-                    <ToggleButton id="messages" variant="outline-primary" value={1} onChange={(e) => setViewMode(e.currentTarget.value)}
-                    >
+                <ToggleButtonGroup type="radio" name="viewMode" defaultValue={3}>
+                    <ToggleButton id="messages" variant="outline-primary" value={1} onChange={(e) => setViewMode(e.currentTarget.value)}>
                         Messages
                     </ToggleButton>
-                    <ToggleButton id="split" variant="outline-primary" value={2} onChange={(e) => setViewMode(e.currentTarget.value)}
-                    >
+                    <ToggleButton id="split" variant="outline-primary" value={2} onChange={(e) => setViewMode(e.currentTarget.value)}>
                         Messages & Chatbot
                     </ToggleButton>
-                    <ToggleButton id="avatar" variant="outline-primary" value={3} onChange={(e) => setViewMode(e.currentTarget.value)}
-                    >
+                    <ToggleButton id="avatar" variant="outline-primary" value={3} onChange={(e) => setViewMode(e.currentTarget.value)}>
                         Chatbot
                     </ToggleButton>
                 </ToggleButtonGroup>
             </div>
             {getView()}
             <div className="flex flex-row justify-center mb-[2em] pt-[3em] gap-[4em] items-center">
-                <button
-                    variant="outline-primary"
-                    onClick={() => setRecording(!recording) }>
+                <button variant="outline-primary" onClick={() => setRecording(!recording)}>
                     {recording ? 
                         <BsStopCircle size={50} style={{color: "red"}}/> : 
                         <BsPlayCircle size={50} style={{color: "lightskyblue"}}/>}
                 </button>
-                <Button
-                    className="border-1 p-[1em] rounded-med"
-                    variant="outline-primary"
-                    size="lg"
-                    onClick={() => toNew()}
-                >
+                <Button className="border-1 p-[1em] rounded-med" variant="outline-primary" size="lg" onClick={() => toNew()}>
                     Finish
                 </Button>
             </div>
