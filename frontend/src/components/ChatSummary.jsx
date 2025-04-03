@@ -1,7 +1,10 @@
 import React from "react";
 import compareScores from "../functions/compareScores";
+import { useNavigate } from "react-router-dom";
 
 function ChatSummary({chatData, prevChatData}) {
+    const navigate = useNavigate();
+
     const topics = ["topic 1", "topic 2", "topic 3"];
     const suggested = ["Mad Libs", "Word Matching"];
 
@@ -9,11 +12,15 @@ function ChatSummary({chatData, prevChatData}) {
 
     const compared = compareScores(chatData, prevChatData);
 
+    const toChatDetails = () => {
+        navigate('/chatDetails', {state: {chatData: chatData, prevChatData: prevChatData}});
+    }
+
     return (
         <div className="flex">
             <button 
                 className="border-1 p-[2rem] border-gray-300 rounded w-full hover:shadow-xl" 
-                onClick={() => {console.log("clicked")}}
+                onClick={() => {toChatDetails()}}
             >
                 <div className="flex flex-row gap-4">
                     <div className="flex flex-col gap-1 items-start text-left">

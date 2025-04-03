@@ -2,8 +2,6 @@ import React, { useContext, useState, useEffect } from "react";
 import { Button } from "react-bootstrap";
 import Header from "../components/Header";
 import ScoreRadarChart from "../components/ScoreRadarChart";
-import dummyData from "../data/dummyData.json";
-import prevDummyData from "../data/dummyDataPrev.json";
 import { UserContext } from "../App";
 import { FaUser } from "react-icons/fa";
 import { Link } from "react-router-dom";
@@ -15,56 +13,20 @@ import { getChats } from "../functions/apiRequests";
 function Dashboard() {
     const { user } = useContext(UserContext);
     const [chats, setChats] = useState([]);
+    const [chatData, setChatData] = useState(null);
+    const [prevChatData, setPrevChatData] = useState(null);
     const date = new Date();
-    // const chatData = location.state.chatData;
 
     useEffect(() => {
         const fetchChats = async () => {
             const userChats = await getChats(user);
             setChats(userChats);
+            setChatData(userChats[0]);
+            setPrevChatData((userChats.length > 1 ? userChats[1] : null));
         };
 
         fetchChats();
     }, []);
-
-
-    const avg = {
-        "Pragmatic": .6,
-        "Grammar": .2,
-        "Prosody": .3,
-        "Pronunciation": .4,
-        "Anomia": .5,
-        "Turn Taking": .6
-    };
-
-    const prevAvg = {
-        "Pragmatic": .6,
-        "Grammar": .5,
-        "Prosody": .4,
-        "Pronunciation": .3,
-        "Anomia": .2,
-        "Turn Taking": .1
-    };
-
-    const chatData = {
-        user: user,
-        date: new Date(),
-        scores: dummyData,
-        avgScores: avg,
-        notes: "",
-        messages: [],
-        duration: 5
-    }
-
-    const prevChatData = chats.length > 1 ? chats[1] : {
-        user: user,
-        date: new Date(),
-        scores: prevDummyData,
-        avgScores: prevAvg,
-        notes: "",
-        messages: [],
-        duration: 5
-    }
 
     const calcGoal = (chats) => {
         const goal = chats % 5;

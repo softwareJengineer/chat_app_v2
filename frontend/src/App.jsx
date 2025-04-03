@@ -10,6 +10,7 @@ import Schedule from "./pages/Schedule";
 import Analysis from "./pages/Analysis";
 import Settings from "./pages/Settings";
 import Home from "./pages/Home";
+import ChatDetails from "./pages/ChatDetails";
 
 export const UserContext = React.createContext(null);
 
@@ -38,6 +39,7 @@ function App() {
                 <Route path='/schedule' element={<Schedule/>}></Route>
                 <Route path='/analysis' element={<Analysis/>}></Route>
                 <Route path='/settings' element={<Settings/>}></Route>
+                <Route path='/chatdetails' element={<ChatDetails/>}></Route>
             </Routes>
             </UserContext.Provider>
         );
