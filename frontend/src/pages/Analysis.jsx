@@ -17,20 +17,20 @@ import Avatar from "../components/Avatar";
 function Analysis() {
     const {user} = useContext(UserContext);
     const [chats, setChats] = useState(dummyChats);
-    const [chatData, setChatData] = useState(null);
-    const [prevChatData, setPrevChatData] = useState(null);
+    const [chatData, setChatData] = useState(dummyChats[0]);
+    const [prevChatData, setPrevChatData] = useState(dummyChats[1]);
     const date = new Date();
 
-    useEffect(() => {
-        const fetchChats = async () => {
-            const userChats = await getChats(user);
-            setChats(userChats);
-            setChatData(userChats[0]);
-            setPrevChatData((chats.length > 1 ? userChats[1] : null));
-        };
+    // useEffect(() => {
+    //     const fetchChats = async () => {
+    //         const userChats = await getChats(user);
+    //         setChats(userChats);
+    //         setChatData(userChats[0]);
+    //         setPrevChatData((chats.length > 1 ? userChats[1] : null));
+    //     };
 
-        fetchChats();
-    }, []);
+    //     fetchChats();
+    // }, []);
 
     const calcGoal = (chats) => {
         const goal = chats % 5;
@@ -85,11 +85,11 @@ function Analysis() {
                         <ScoreRadarChart biomarkerData={chatData.scores} prevBiomarkerData={prevChatData.scores}/>
                         <br/>
                         Based on these scores, I suggest the following activities:
-                        <div className="flex flex-row gap-4 m-[1rem]">
-                            <div className="w-1/2 border-1 rounded-md border-gray-200 p-[1rem]">
+                        <div className="flex md:flex-row flex-col gap-4 m-[1rem]">
+                            <div className="md:w-1/2 w-full border-1 rounded-md border-gray-200 p-[1rem]">
                                 <h4>Mad Libs</h4>
                             </div>
-                            <div className="w-1/2 border-1 rounded-md border-gray-200 p-[1rem]">
+                            <div className="md:w-1/2 w-full border-1 rounded-md border-gray-200 p-[1rem]">
                                 <h4>Word Matching</h4>
                             </div>  
                         </div>
@@ -102,8 +102,8 @@ function Analysis() {
                     <h4>Biomarker Track:</h4>
                     <BiomarkerChart biomarkerData={dummyData}/>
                     <h2>Chat History</h2>
-                    <div className="grid grid-cols-3 gap-2">
-                    {chats.map((chat, index) => {
+                    <div className="grid md:grid-cols-3 grid-cols-1 gap-2">
+                    {chats.length > 0 ? chats.map((chat, index) => {
                         const prevChatData = index < chats.length-1 ? chats[index + 1] : null; // Get the previous chat if it exists
                         return (
                         <ChatSummary
@@ -111,7 +111,7 @@ function Analysis() {
                             prevChatData={prevChatData}
                         />
                         );
-                    })}
+                    }) : "No chats available."}
                 </div>
             </div>
         </>

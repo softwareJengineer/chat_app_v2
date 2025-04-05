@@ -26,6 +26,7 @@
     "react-modal": "^3.16.3",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.1.5",
+    "react-wordcloud": "^1.2.7",
     "reactstrap": "^9.2.3",
     "redux": "^5.0.1",
     "tailwindcss": "^4.0.3",

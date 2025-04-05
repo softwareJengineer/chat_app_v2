@@ -24,7 +24,7 @@ const ws = new WebSocket(wsUrl);
 
 function Chat() {
     const location = useLocation();
-    const {user, setUser, chats, setChats} = useContext(UserContext);
+    const {user} = useContext(UserContext);
     const [recording, setRecording] = useState(false);
     const [systemSpeaking, setSystemSpeaking] = useState(false);
     const [userSpeaking, setUserSpeaking] = useState(false);

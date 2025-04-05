@@ -9,24 +9,25 @@ import Avatar from "../components/Avatar";
 import daysInARow from "../functions/daysInARow";
 import compareScores from "../functions/compareScores";
 import { getChats } from "../functions/apiRequests";
+import dummyChats from "../data/dummyChats.json"
 
 function Dashboard() {
     const { user } = useContext(UserContext);
-    const [chats, setChats] = useState([]);
-    const [chatData, setChatData] = useState(null);
-    const [prevChatData, setPrevChatData] = useState(null);
+    const [chats, setChats] = useState([dummyChats]);
+    const [chatData, setChatData] = useState(dummyChats[0]);
+    const [prevChatData, setPrevChatData] = useState(dummyChats[1]);
     const date = new Date();
 
-    useEffect(() => {
-        const fetchChats = async () => {
-            const userChats = await getChats(user);
-            setChats(userChats);
-            setChatData(userChats[0]);
-            setPrevChatData((userChats.length > 1 ? userChats[1] : null));
-        };
+    // useEffect(() => {
+    //     const fetchChats = async () => {
+    //         const userChats = await getChats(user);
+    //         setChats(userChats);
+    //         setChatData(userChats[0]);
+    //         setPrevChatData((userChats.length > 1 ? userChats[1] : null));
+    //     };
 
-        fetchChats();
-    }, []);
+    //     fetchChats();
+    // }, []);
 
     const calcGoal = (chats) => {
         const goal = chats % 5;
@@ -119,11 +120,11 @@ function Dashboard() {
                         {scoreSummary()}
                     <br/>
                     Based on these scores, I suggest the following activities:
-                    <div className="flex flex-row gap-4 m-[1rem]">
-                        <div className="w-1/2 border-1 rounded-md border-gray-200 p-[1rem]">
+                    <div className="flex md:flex-row flex-col gap-4 m-[1rem]">
+                        <div className="md:w-1/2 w-full border-1 rounded-md border-gray-200 p-[1rem]">
                             <h4>Mad Libs</h4>
                         </div>
-                        <div className="w-1/2 border-1 rounded-md border-gray-200 p-[1rem]">
+                        <div className="md:w-1/2 w-full border-1 rounded-md border-gray-200 p-[1rem]">
                             <h4>Word Matching</h4>
                         </div>  
                     </div>
