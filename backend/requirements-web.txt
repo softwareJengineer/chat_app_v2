@@ -75,3 +75,4 @@ fastrtc
 fastrtc[tts,stt]
 joblib
 opensmile
+simpleaudio

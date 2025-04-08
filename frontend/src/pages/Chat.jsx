@@ -24,6 +24,7 @@ function Chat() {
     const stream = useRef(null);
     const source = useRef(null);
     const processorNode = useRef(null);
+    let audioQueue = [];
     
     const [biomarkerData, setBiomarkerData] = useState(location.state? location.state.biomarkerData : [
         {
@@ -90,32 +91,35 @@ function Chat() {
     };
 
     function synthSpeech(base64Data) {
-        // Convert the base64 string to an ArrayBuffer
         const binaryString = atob(base64Data);
         const len = binaryString.length;
         const bytes = new Uint8Array(len);
         for (let i = 0; i < len; i++) {
             bytes[i] = binaryString.charCodeAt(i);
         }
-
-        // Ensure an AudioContext exists and resume if it's suspended
+    
         if (!audioContext.current) {
             audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
-        } else if (audioContext.current.state === 'suspended') {
-            audioContext.current.resume();
         }
-
-        // Decode the audio data and play this chunk immediately
+    
         audioContext.current.decodeAudioData(bytes.buffer)
-        .then((decodedData) => {
+            .then((decodedData) => {
+                audioQueue.push(decodedData);
+                playAudioQueue();
+            })
+            .catch((error) => {
+                console.error("Error decoding audio data", error);
+            });
+    }
+    
+    function playAudioQueue() {
+        if (audioQueue.length > 0 && !audioContext.current.suspended) {
             const source = audioContext.current.createBufferSource();
-            source.buffer = decodedData;
+            source.buffer = audioQueue.shift();
             source.connect(audioContext.current.destination);
             source.start(0);
-        })
-        .catch((error) => {
-            console.error("Error decoding audio data", error);
-        });
+            source.onended = playAudioQueue; // Play the next chunk when the current one ends
+        }
     }
 
     useEffect(() => {
@@ -173,7 +177,7 @@ function Chat() {
     async function initAudioProcessing() {
         try {
             stream.current = await navigator.mediaDevices.getUserMedia({ audio: true });
-            audioContext.current = new AudioContext({ sampleRate: 16000 });
+            audioContext.current = new AudioContext({ sampleRate: 24000 });
             source.current = audioContext.current.createMediaStreamSource(stream.current);
     
             // Create ScriptProcessor for direct audio processing
