@@ -15,7 +15,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 ######################################################### set API keys
 
 # MS Auzre / used at 'tts.py' and 'asr.py' files
-speech_key, service_region = "3249fb4e6d8248569b42d5dbf693c259", "eastus"
+speech_key, service_region = "2qfwkZm1pQckVy9qNlbtaIaPdKbhAfyMafgYz1P3niSLFPX8DiFlJQQJ99BDACYeBjFXJ3w3AAAYACOG1p6q", "eastus"
 speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
 # audio_config = speechsdk.audio.AudioConfig(device_name="{0.0.1.00000000}.{9485502f-1e25-43a1-b32e-f2064ed250be}")
 # audio_config = speechsdk.audio.AudioConfig(device_name="{0.0.1.00000000}.{c600777f-5cb7-44a2-9457-68fe97eb7632}")

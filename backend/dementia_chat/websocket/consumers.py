@@ -317,8 +317,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return {
             'pragmatic': 1.0 - self.generate_pragmatic_score(user_utt),
             'grammar': 1.0 - self.generate_altered_grammar_score(user_utt, current_duration),
-            'prosody': 1.0 - self.generate_prosody_score(user_utt),
-            'pronunciation': 1.0 - self.generate_pronunciation_score(user_utt)
+            'prosody': 1.0 - self.generate_prosody_score(),
+            'pronunciation': 1.0 - self.generate_pronunciation_score()
         }
     
     async def send_periodic_scores(self):  # Remove websocket parameter

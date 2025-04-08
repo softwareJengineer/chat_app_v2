@@ -10,7 +10,7 @@ import { MdOutlineVerticalSplit } from "react-icons/md";
 import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
 import { useNavigate, useLocation } from "react-router-dom";
 
-const SPEECH_KEY = "3249fb4e6d8248569b42d5dbf693c259";
+const SPEECH_KEY = "2qfwkZm1pQckVy9qNlbtaIaPdKbhAfyMafgYz1P3niSLFPX8DiFlJQQJ99BDACYeBjFXJ3w3AAAYACOG1p6q";
 const SPEECH_REGION = "eastus";
 const bufferSize = 4096;
 
@@ -141,7 +141,7 @@ function Chat() {
             recognizer.current.startContinuousRecognitionAsync(() => {
                 console.log('Speech recognition started.');
             });
-            // initAudioProcessing();
+            initAudioProcessing();
             
         }
         
