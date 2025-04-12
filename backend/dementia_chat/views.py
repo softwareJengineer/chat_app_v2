@@ -272,6 +272,8 @@ def chats_view(request, username):
             'notes': chat.notes,
             'messages': chat.messages,
             'duration': chat.duration,
+            'sentiment': chat.sentiment,
+            'topics': chat.topics,
             'id': chat.chatID
         })
     elif request.method == 'GET':
@@ -333,6 +335,8 @@ def chat_view(request, username, chatID):
             'notes': chat.notes,
             'messages': chat.messages,
             'duration': chat.duration,
+            'sentiment': chat.sentiment,
+            'topics': chat.topics
         })
          
 @csrf_exempt

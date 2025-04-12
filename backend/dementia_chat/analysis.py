@@ -51,4 +51,4 @@ def get_topics(text): # From freeCodeCamp
     for token in most_common:
         topics.append(token[0])
         
-    return topics
+    return str(topics)[1:-1].replace("'", "")

@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 function ChatSummary({chatData, prevChatData}) {
     const navigate = useNavigate();
 
-    const topics = ["topic 1", "topic 2", "topic 3"];
     const suggested = ["Mad Libs", "Word Matching"];
 
     const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
@@ -25,7 +24,7 @@ function ChatSummary({chatData, prevChatData}) {
                 <div className="flex flex-row gap-4">
                     <div className="flex flex-col gap-1 items-start text-left">
                         <h4>{chatData.date.toLocaleString("en-US", options)}</h4>
-                        <div><b>Topics covered: </b>{topics.join(", ")}</div>
+                        <div><b>Topics covered: </b>{chatData.topics}</div>
                         <br/>
                         <div><b>Overall Condition:</b></div>
                         <div><b className="text-green-500">Improved</b> in {compared.improved.join(", ")}</div>

@@ -81,7 +81,7 @@ function ChatDetails() {
                 </div>
                 <div className={cardStyle}>
                     {cardHeader("Mood Track")}
-                    <p>You felt </p>
+                    <p>You felt {chatData.sentiment}</p>
                     <p>Because </p>
                 </div>
                 <div className={cardStyle}>
