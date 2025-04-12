@@ -1,8 +1,9 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.db import models
-from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.auth.models import User
 from .models import Profile, Chat, Reminder, UserSettings
-from .serializers import ProfileSerializer, ChatSerializer, ReminderSerializer, UserSettingsSerializer
+from .serializers import ChatSerializer, ReminderSerializer, UserSettingsSerializer
+from .analysis import sentiment_scores, get_message_text, get_topics
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -250,8 +251,18 @@ def chats_view(request, username):
                     'success': False,
                     'error': 'Could not find the user.'
                 })
+
+        sentiment = "N/A"
+        topics = "N/A"
+        message_text = get_message_text(messages)
+        try:
+            sentiment = sentiment_scores(message_text)
+            topics = get_topics(message_text)
+        except:
+            pass
         
-        chat = Chat.objects.create(user=profile, date=date, scores=scores, avgScores=avgScores, notes=notes, messages=messages, duration=duration)
+        chat = Chat.objects.create(user=profile, date=date, scores=scores, avgScores=avgScores, notes=notes, messages=messages, 
+                                   duration=duration, sentiment=sentiment, topics=topics)
 
         return JsonResponse({
             'success': True,

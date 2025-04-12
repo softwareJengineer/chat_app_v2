@@ -21,6 +21,8 @@ class Chat(models.Model):
     notes = models.TextField(null=True, blank=True)
     messages = models.JSONField(null=True, blank=True)
     duration = models.PositiveIntegerField(null=True, blank=True)
+    topics = models.CharField(null=True, blank=True)
+    sentiment = models.CharField(null=True, blank=True)
     
     def __str__(self):
         return self.date

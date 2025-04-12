@@ -10,6 +10,7 @@ import daysInARow from "../functions/daysInARow";
 import compareScores from "../functions/compareScores";
 import { getChats } from "../functions/apiRequests";
 import dummyChats from "../data/dummyChats.json"
+import GoalProgress from "../components/GoalProgress";
 
 function Dashboard() {
     const { user } = useContext(UserContext);
@@ -32,6 +33,11 @@ function Dashboard() {
     const calcGoal = (chats) => {
         const goal = chats % 5;
         return 5 - goal;
+    }
+
+    const getNextGoal = (chats) => {
+        const goal = (Math.floor(chats / 5) + 1) * 5;
+        return {goal: goal, current: chats};
     }
 
     const compared = compareScores(chatData, prevChatData);
@@ -81,7 +87,7 @@ function Dashboard() {
                 <div className="flex items-center gap-4 align-middle">
                     <FaUser size={50}/>
                     <p className="align-middle">{user?.plwdFirstName} {user?.plwdLastName}</p>
-                    Cared for by 
+                    Care Partner
                     <FaUser size={50}/>
                     <p className="align-middle">{user?.caregiverFirstName} {user?.caregiverLastName}</p>
                 </div>
@@ -102,6 +108,7 @@ function Dashboard() {
                         </div>
                         <div className="w-2/3">
                             <p className="font-bold">You're doing fantastic!</p>
+                            <GoalProgress props={getNextGoal(chats.length)}/>
                             <p>We've talked for {daysInARow(chats)} in a row.</p>
                             <p>You've completed {chats.length} {chats.length === 1 ? "chat" : "chats"} with me.</p>
                             <p>Complete another {calcGoal(chats.length)} to reach a new goal!</p>

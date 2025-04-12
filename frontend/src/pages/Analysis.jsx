@@ -44,7 +44,7 @@ function Analysis() {
                 <div className="flex items-center gap-4 align-middle">
                     <FaUser size={50}/>
                     <p className="align-middle">{user?.caregiverFirstName} {user?.caregiverLastName}</p>
-                    Caring for 
+                    Care Partner
                     <FaUser size={50}/>
                     <p className="align-middle">{user?.plwdFirstName} {user?.plwdLastName}</p>
                     <div className="flex float-right ml-auto">
@@ -101,6 +101,7 @@ function Analysis() {
                     <ScoreTrackGraph chats={chats} />
                     <h4>Biomarker Track:</h4>
                     <BiomarkerChart biomarkerData={dummyData}/>
+                    (You can click on a biomarker score to disable it on the graph, or hover over it to see individual scores.)
                     <h2>Chat History</h2>
                     <div className="grid md:grid-cols-3 grid-cols-1 gap-2">
                     {chats.length > 0 ? chats.map((chat, index) => {

@@ -9,6 +9,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { UserContext } from "../App";
 import calcAvgBiomarkerScores from "../functions/calcAvgBiomarkerScores";
 import { createChat } from "../functions/apiRequests";
+import dummyChats from "../data/dummyChats.json";
 
 const SPEECH_KEY = "3249fb4e6d8248569b42d5dbf693c259";
 const SPEECH_REGION = "eastus";
@@ -304,6 +305,12 @@ function Chat() {
         setRecording(false);
         const end = new Date();
         const duration = Math.floor(((end - start) / 1000) / 60);
+
+        //FOR TESTING
+        if (messages.length === 0) {
+            messages = dummyChats[0].messages;
+        }
+
         const chatData = {
             user: user,
             date: end,
