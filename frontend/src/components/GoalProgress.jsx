@@ -1,14 +1,17 @@
 import React from "react";
 import ProgressBar from 'react-bootstrap/ProgressBar';
 
-function GoalProgress({props}) {
-    console.log(props)
-    const percent = Math.round((props.current / props.goal) * 100);
+function GoalProgress({current}) {
+    
+    const getPercent = (chats) => {
+        const goal = (Math.floor(chats / 5) + 1) * 5;
+        return Math.round((chats / goal) * 100);
+    }
 
     return (
-        <>
-            <ProgressBar now={percent} />
-        </>
+        <div className="my-4">
+            <ProgressBar now={getPercent(current)} />
+        </div>
     )
 }
 

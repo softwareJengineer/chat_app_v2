@@ -8,22 +8,22 @@ import { GiAlarmClock, GiPartyPopper, GiRobotAntennas } from "react-icons/gi";
 import daysInARow from "../functions/daysInARow";
 import { getChats } from "../functions/apiRequests";
 
-
 const Details = () => {
     const { user } = useContext(UserContext);
     const [chats, setChats] = useState([]);
     const location = useLocation();
-    // const chatData = location.state.chatData;
+    const chatData1 = location.state?.chatData;
 
-    useEffect(() => {
-        const fetchChats = async () => {
-            const userChats = await getChats(user);
-            setChats(userChats);
-        };
+    // useEffect(() => {
+    //     const fetchChats = async () => {
+    //         const userChats = await getChats(user);
+    //         setChats(userChats);
+    //     };
 
-        fetchChats();
-    }, []);
+    //     fetchChats();
+    // }, []);
 
+    //FOR TESTING
     const biomarkerData =  [
         {
             name: "Pragmatic",
@@ -65,7 +65,9 @@ const Details = () => {
         avgScores: avg,
         notes: "",
         messages: [],
-        duration: 5
+        duration: 5,
+        sentiment: "Positive",
+        topics: "Holiday, daughter, dog"
     }
 
     const navigate = useNavigate();
@@ -91,15 +93,18 @@ const Details = () => {
                 <div className="flex flex-col mx-[2rem] gap-4 justify-center">
                     <div className="flex flex-row items-center gap-4 text-4xl">
                         <GiPartyPopper size={50} color="orange" /> 
-                        We've talked for {daysInARow(chats)} in a row!
+                        <span>We've talked for <b className="text-amber-500 text-5xl"> {daysInARow(chats)} </b> in a row!</span>
                     </div>
                     <div className="flex flex-row items-center gap-4 text-4xl">
                         <GiAlarmClock size={50} color="green" /> 
-                        We talked for {chatData.duration} minutes today!
+                        <span>We talked for <b className="text-green-700 text-5xl"> {chatData.duration} minutes </b> today!</span>
                     </div>
                     <div className="flex flex-row items-center gap-4 text-4xl">
                         <GiRobotAntennas size={50} color="purple" /> 
-                        We talked about 3 topics!
+                        <span>We talked about <b className="text-fuchsia-900 text-5xl"> 3 topics </b> today!</span>
+                    </div>
+                    <div className="text-2xl text-center">
+                        {chatData.topics}
                     </div>
                 </div>
             </div>

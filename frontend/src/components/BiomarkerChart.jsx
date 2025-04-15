@@ -3,10 +3,21 @@ import ReactApexChart from "react-apexcharts";
 
 const BiomarkerChart = ({biomarkerData}) => {
 
+    const newBiomarkerData = (biomarkerData) => {
+        var newData = [];
+        for (var i = 0; i < biomarkerData.length; i++) {
+            var series = biomarkerData[i];
+            if (i >= 2) {
+                series.hidden = "true";
+            }
+            newData.push(series);
+        }
+        return newData;
+    }
+
     const options = {
         chart: {
             height: 350,
-            type: 'line',
             zoom: {
                 enabled: false
             },
@@ -18,7 +29,7 @@ const BiomarkerChart = ({biomarkerData}) => {
                 curve: 'straight'
             },
             xaxis: {
-
+                
             },
             yaxis: {
                 min: 0,
@@ -33,7 +44,7 @@ const BiomarkerChart = ({biomarkerData}) => {
 
     return (
         <div className="flex flex-col space-y-4">
-            <ReactApexChart options={options} series={biomarkerData ? biomarkerData : []} type="line" height={350}/>
+            <ReactApexChart options={options} series={newBiomarkerData(biomarkerData)} type="line" height={350}/>
         </div>
     );
 

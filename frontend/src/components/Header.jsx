@@ -12,7 +12,7 @@ import { logout } from "../functions/apiRequests";
 const Header = ({title, page}) => {
 	const { user, setUser, setSettings } = useContext(UserContext);
 	const location = useLocation();
-	const isCaregiver = user?.role !== "Patient";
+	const isCaregiver = user ? user.role !== "Patient" : false;
 	const navigate = useNavigate();
 
 	function loginCaregiver() {
@@ -100,12 +100,12 @@ const Header = ({title, page}) => {
 						</Button>
 						
 						<Button 
-							variant={page==="analysis" ? "outline-secondary" : "outline-primary"}
+							variant={page==="dashboard" ? "outline-secondary" : "outline-primary"}
 							style={{ display: 'flex', alignItems: 'center' }} 
-							onClick={toAnalysis} 
-							disabled={page==='analysis'}
+							onClick={toDashboard} 
+							disabled={page==='dashboard'}
 						>
-							<GoGraph size={25} style={{ marginRight: '2px' }}/> Analysis
+							<GoGraph size={25} style={{ marginRight: '2px' }}/> Dashboard
 						</Button>
 
 						<Button 

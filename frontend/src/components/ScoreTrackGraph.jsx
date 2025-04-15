@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
+import ReactApexChart from "react-apexcharts";
 
 function ScoreTrackGraph({chats}) {
     const [windowSize, setWindowSize] = useState({
 		width: window.innerWidth,
 		height: window.innerHeight
 	});
+
     useEffect(() => {
 		const handleResize = () => {
 			setWindowSize({
@@ -28,18 +29,74 @@ function ScoreTrackGraph({chats}) {
         for (var i = 0; i < chatData.length; i++) {
             var avgScores = Object.values(chatData[i].avgScores);
             var score = avgScores.reduce((a, b) => a + b, 0) / avgScores.length;
-            scores.push({date: chatData[i].date, score: score});
+            scores.push(score);
         }
-        return scores;
+        return [{data: scores}];
     }
-    
+
+    function getDates(chatData) {
+        var dates = [];
+        for (var i = 0; i < chatData.length; i++) {
+            dates.push(chatData[i].date);
+        }
+        return dates;
+    }
+
+    function getOptions(chatData) {
+        const dates = getDates(chatData);
+        return {
+            xaxis: {
+                categories: dates,
+                type: 'datetime',
+                labels: {
+                    format: "dd MMM yyyy",
+                },
+                tickPlacement: "on",
+            },
+            yaxis: {
+                labels: {
+                    show: false,
+                },
+                axisBorder: {
+                    show: true,
+                },
+                axisTicks: {
+                    show: true,
+                },
+            },
+            plotOptions: {
+                bar: {
+                    borderRadius: 10,
+                    columnWidth: '50%',
+                }
+            },
+            dataLabels: {
+                enabled: false,
+            },
+            tooltip: {
+                enabled: false,
+            },
+            noData: {
+                text: "No data available."
+            },
+            grid: {
+                xaxis: {
+                    lines: {
+                        show: true
+                    }
+                }
+            }
+        }
+    }
 
     return (
-        <BarChart width={windowSize.width * .95} height={windowSize.height / 3} data={getScores(chatsReversed)}>
-            <XAxis dataKey="date" />
-            <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-            <Bar dataKey="score" barSize={30} fill="#8884d8"/>
-        </BarChart>
+        <ReactApexChart 
+            options={getOptions(chatsReversed)} 
+            series={getScores(chatsReversed)} 
+            type="bar" 
+            height={windowSize.height / 3}
+            width={windowSize.width * .95}
+        />
     );
 }
 
