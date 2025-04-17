@@ -10,17 +10,22 @@ import re
 from . import asr
 from .. import config as cf
 
-# set API keys
+# =======================================================================
+# Set API Keys & Logger
+# =======================================================================
+# Speech configuration
 speech_key, service_region = cf.speech_key, cf.service_region
 speech_config = cf.speech_config
 
-# set logger
+# Logging
 logger = cf.logging.getLogger("__tts__")
 
+# =======================================================================
 # MS Azure Text to Speech(TTS) SDK synthesize the sentence
+# =======================================================================
+# Synthesize given text into audio output
 def synthesize_utt(utterance):
-    # get a text and synthesize it
-    
+    # Don't overlap
     if cf.overlap_check == 0 and utterance != None:
         cf.overlap_check = 1
         utt_start_time = round(time.time() - cf.game_start_time,5)
