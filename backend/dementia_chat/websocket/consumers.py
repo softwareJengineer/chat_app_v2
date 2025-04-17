@@ -53,6 +53,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.overlapped_speech_count = 0
             self.global_llm_response = ""
 
+            self.prosody_features       = None
+            self.pronunciation_features = None
             self.chat_history = []  # Add chat_history as instance variable
 
             await self.accept()
@@ -166,11 +168,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
             # Decode base64 to bytes
             audio_bytes = base64.b64decode(base64_data)            
             logger.info(f"Received audio data: {len(audio_bytes)} bytes at {sample_rate}Hz")
+
+            # Normalize audio data
             audio_array = np.frombuffer(audio_bytes, dtype=np.int16)
-            
-            # Normalize audio data & convert to float32
             audio_array = audio_array / np.max(np.abs(audio_array))
+
+            # Resample to 16,000 Hz if necessary
+            if sample_rate != SAMPLE_RATE:  # SAMPLE_RATE is 16000
+                audio_array = librosa.resample(audio_array, orig_sr=sample_rate, target_sr=SAMPLE_RATE)
+                logger.info(f"Resampled audio to {SAMPLE_RATE}Hz")
+
+            # Convert to float32 & extract features
             audio_array = librosa.util.buf_to_float(audio_array, n_bytes=2, dtype=np.float32)
+            features = feature_extractor.process_signal(audio_array, SAMPLE_RATE)
+            logger.info(f"Extracted features: {features.shape}")
+
+            self.prosody_features       = features[PROSODY_FEATURES]
+            self.pronunciation_features = features[PRONUNCIATION_FEATURES]
+
+            return self.prosody_features, self.pronunciation_features
             
         except Exception as e: logger.error(f"Error processing audio data: {e}")
             
