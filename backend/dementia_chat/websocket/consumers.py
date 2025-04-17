@@ -11,22 +11,17 @@ import opensmile
 import joblib
 import uuid
 import librosa
-import math
 from datetime import datetime, timezone
 from django.apps import apps
 from channels.db import database_sync_to_async
 from .. import config as cf
-import os
 
-current_path = os.path.dirname(os.path.abspath(__file__))
-
-vectors_path = current_path + '/biomarker_models/new_LSA.csv'
-entropy_path = current_path + '/biomarker_models/Hoffman_entropy_53758.csv'
-stop_path = current_path + '/biomarker_models/stoplist.txt'
-
-# Constants
-from biomarker_config import *
-from biomarker_scores import generate_biomarker_scores, generate_periodic_scores
+# =======================================================================
+# Imports, Constants, Logging, and openSMILE
+# =======================================================================
+from biomarker_config  import *
+from biomarker_scores  import generate_biomarker_scores, generate_periodic_scores
+from process_utterance import respond_to_user_utt 
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -37,8 +32,6 @@ feature_extractor = opensmile.Smile(
     feature_level=opensmile.FeatureLevel.LowLevelDescriptors,
     sampling_rate=SAMPLE_RATE,
 )
-
-
 
 
 # =======================================================================
@@ -60,20 +53,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.overlapped_speech_count = 0
             self.global_llm_response = ""
 
-            self.vectors = pd.read_csv(vectors_path, index_col=0)
-            self.entropy = pd.read_csv(entropy_path)
-            self.stop_list = pd.read_table(stop_path, header=None)
-            self.history_speech_df = pd.DataFrame(columns=['V1', 'V2'])
-
-            self.prosody_features = None
-            self.pronunciation_features = None
             self.chat_history = []  # Add chat_history as instance variable
 
             await self.accept()
 
             self.periodic_scores_task = asyncio.create_task(self.send_periodic_scores())
-            self.prosody_model = joblib.load(cf.prosody_model_path)
-            self.pronunciation_model = joblib.load(cf.pronunciation_model_path)
+            self.prosody_model        = joblib.load(cf.prosody_model_path)
+            self.pronunciation_model  = joblib.load(cf.pronunciation_model_path)
 
         except Exception as e:
             logger.error(f"Failed to initialize consumer: {e}"); return
@@ -109,26 +95,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # =======================================================================
     def process_user_utterance(self, user_utt):
         try:
-            # Prepare input for LLM
-            history = self.chat_history[-5:] if len(self.chat_history) > 5 else self.chat_history
-            
-            input_text = f"<|system|>\n{cf.prompt}<|end|>"
-            for turn in history:
-                if turn['Speaker'] == 'User':
-                    input_text += f"\n<|user|>\n{turn['Utt']}<|end|>"
-                else:
-                    input_text += f"\n<|assistant|>\n{turn['Utt']}<|end|>"
-            input_text += f"\n<|user|>\n{user_utt}<|end|>\n<|assistant|>\n"
-            
             # Generate response using LLM
-            output = cf.llm(input_text, max_tokens=cf.max_length, stop=["<|end|>",".", "?"], echo=True)
-            system_utt = (output['choices'][0]['text'].split("<|assistant|>")[-1]).strip()
-            
+            system_utt = respond_to_user_utt(user_utt, self.chat_history)
+
             # Update chat history
-            self.chat_history.append({'Speaker': 'User', 'Utt': user_utt})
+            self.chat_history.append({'Speaker': 'User',   'Utt': user_utt  })
             self.chat_history.append({'Speaker': 'System', 'Utt': system_utt})
             
             return system_utt
+        
         except Exception as e:
             logger.error(f"Error in process_user_utterance: {e}")
             return "I'm sorry, I encountered an error while processing your request."
@@ -159,23 +134,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 
                 # Generate LLM response
                 response = self.process_user_utterance(user_utt)
+                self.global_llm_response = response
                 logger.info("Received response!")
                 
                 # Send the LLMs response
                 system_time = datetime.now(timezone.utc)
-                await self.send(json.dumps({
-                    'type': 'llm_response',
-                    'data': response,
-                    'time': system_time.strftime("%H:%M:%S")
-                }))
-                self.global_llm_response = response
+                await self.send(json.dumps({'type': 'llm_response', 'data': response, 'time': system_time.strftime("%H:%M:%S")}))
                 
-                # Generate % send biomarker scores
-                biomarker_scores = generate_biomarker_scores(
-                    user_utt, self.conversation_start_time, 
-                    self.prosody_features, self.prosody_model, 
-                    self.pronunciation_features, self.pronunciation_model
-                    )
+                # Generate & send biomarker scores
+                biomarker_scores = generate_biomarker_scores(user_utt, self.conversation_start_time, self.prosody_model, self.pronunciation_model)
                 await self.send(json.dumps({'type': 'biomarker_scores', 'data': biomarker_scores})) 
 
                 # Add the most recent utterance to the history
