@@ -21,6 +21,8 @@ PRONUNCIATION_FEATURES = [
     'mfcc_sma[13]'
     ] 
 
+# For the LLM
+LAST_X_CHAT_ENTRIES = 5
 
 
 # -----------------------------------------------------------------------
