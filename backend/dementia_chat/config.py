@@ -1,19 +1,34 @@
-######################################################### load packages
-
-# generaL behavior
+# ======================================================================= 
+# Load Packages
+# =======================================================================
+# General behavior
 import os
 import time
 from llama_cpp import Llama
 
-# for logging:
+# For logging
 import warnings, logging
 
-#for TTS
+# For text-to-speech (tts)
 import azure.cognitiveservices.speech as speechsdk
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-######################################################### set API keys
+# =======================================================================
+# Global Variables
+# =======================================================================
+USE_CLOUD     = False   # (return default values instead of using the cloud APIs while testing)
+THIS_LANGUAGE = "en-US"
 
+script_check    = 1
+overlap_check   = 0
+chat_history    = list()
+game_start_time = time.time()
+
+script_path     = './Script/Script' +"("+time.strftime('%y-%m-%d %H-%M', time.localtime(time.time()))+")"+'.csv'
+
+# =======================================================================
+# API Keys & Audio Device Configuration 
+# =======================================================================
 # MS Auzre / used at 'tts.py' and 'asr.py' files
 speech_key, service_region = "3249fb4e6d8248569b42d5dbf693c259", "eastus"
 speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
@@ -21,24 +36,24 @@ speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_r
 # audio_config = speechsdk.audio.AudioConfig(device_name="{0.0.1.00000000}.{c600777f-5cb7-44a2-9457-68fe97eb7632}")
 
 audio_device_name = os.getenv("AUDIO_DEVICE_NAME", None)
-if audio_device_name:
-    audio_config = speechsdk.audio.AudioConfig(device_name=audio_device_name)
-else:
-    audio_config = speechsdk.audio.AudioConfig(use_default_microphone=True)
+if audio_device_name: audio_config = speechsdk.audio.AudioConfig(device_name=audio_device_name)
+else:                 audio_config = speechsdk.audio.AudioConfig(use_default_microphone=True)
 
-######################################################### set logging
+# Final ASR steup
+voice = f"Microsoft Server Speech Text to Speech Voice ({THIS_LANGUAGE}, JennyNeural)"
+speech_config.speech_synthesis_voice_name = voice
 
-# Ignoring the warnings
+# =======================================================================
+# Logging Setup
+# =======================================================================
+# Ignore warnings
 warnings.filterwarnings(action='ignore')
 
-# Making the 'logs' folder if the folder does not exist
-if not os.path.exists("./logs/"):
-    os.mkdir("./logs/")
+# Making the log folders if they do not exist
+if not os.path.exists("./logs/"  ): os.mkdir("./logs/"  )
+if not os.path.exists("./script/"): os.mkdir("./script/")
 
-if not os.path.exists("./script/"):
-    os.mkdir("./script/")
-
-# Set up log file written format ex) 01:39:09
+# Set up log file written format (ex: 01:39:09)
 logging.basicConfig(
     format="%(asctime)s %(levelname)s: %(name)s: %(message)s",
     level=logging.DEBUG,
@@ -51,42 +66,30 @@ logging.basicConfig(
 logging.getLogger("chardet.charsetprober").disabled = True
 logger = logging.getLogger(__name__)
 
-######################################################### set asr
-
-script_check = 1
-chat_history = list()
-THIS_LANGUAGE = 'en-US'
-game_start_time = time.time()
-overlap_check = 0
-script_path = './Script/Script' +"("+time.strftime('%y-%m-%d %H-%M', time.localtime(time.time()))+")"+'.csv'
-
-######################################################### set global variables
-
-voice = f"Microsoft Server Speech Text to Speech Voice ({THIS_LANGUAGE}, JennyNeural)"
-speech_config.speech_synthesis_voice_name = voice
-
-######################################################### set llm settings
-
+# =======================================================================
+# LLM Settings
+# =======================================================================
 current_path = os.path.dirname(os.path.abspath(__file__))
 
+# LLM Parameters
 max_length = 256
 prompt = "You are an assistant for dementia patients. Provide any response as much short as possible."
 
 try:
-    model_path = current_path + "/services/Phi-3_finetuned.gguf"
+    # Get paths to the saved models
+    model_path               = current_path + "/services/Phi-3_finetuned.gguf"
     pronunciation_model_path = current_path + "/services/pronunciation_rf(v4).pkl"
-    prosody_model_path = current_path + "/services/prosody_rf(v1).pkl"
+    prosody_model_path       = current_path + "/services/prosody_rf(v1).pkl"
+
+    # Make sure the saved models exist
     if not os.path.exists(model_path) or not os.path.exists(pronunciation_model_path) or not os.path.exists(prosody_model_path):
         logger.error(f"One of the files not found: {model_path, pronunciation_model_path, prosody_model_path}")
         raise FileNotFoundError(f"Model file not found: {model_path, pronunciation_model_path, prosody_model_path}")
-        
-    llm = Llama(
-        model_path=model_path,
-        n_ctx=max_length,
-        n_threads=16,
-        n_gpu_layers=0
-    )
+
+    # Load the saved LLM    
+    llm = Llama(model_path=model_path, n_ctx=max_length, n_threads=16, n_gpu_layers=0)
     logger.info("LLM initialized successfully")
+
 except Exception as e:
     logger.error(f"Failed to initialize LLM: {e}")
     raise
