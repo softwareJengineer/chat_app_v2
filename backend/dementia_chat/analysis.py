@@ -4,14 +4,9 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 
 def get_message_text(messages):
-    text = ""
-    for message in messages:
-        if message.speaker == "You":
-            text += message.message + " "
-    return text
+    return " ".join([message.message for message in messages if (message.speaker == "You")])
 
 def sentiment_scores(sentence): # From Geeks for Geeks
-
     # Create a SentimentIntensityAnalyzer object.
     sid_obj = SentimentIntensityAnalyzer()
 
@@ -19,12 +14,9 @@ def sentiment_scores(sentence): # From Geeks for Geeks
     # which contains pos, neg, neu, and compound scores.
     sentiment_dict = sid_obj.polarity_scores(sentence)
     
-    if sentiment_dict['compound'] >= 0.05 :
-        return "Positive"
-    elif sentiment_dict['compound'] <= -0.05 :
-        return "Negative"
-    else :
-        return "Neutral"
+    if   sentiment_dict['compound'] >=  0.05: return "Positive"
+    elif sentiment_dict['compound'] <= -0.05: return "Negative"
+    else:                                     return "Neutral"
     
 def get_topics(text): # From freeCodeCamp
     
