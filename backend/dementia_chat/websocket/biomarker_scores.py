@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 
@@ -126,14 +125,14 @@ def generate_altered_grammar_score(user_utt, conversation_start_time):
 
 
 # Prosody
-def generate_prosody_score(prosody_features, prosody_model):
-    try: return process_scores(prosody_features, prosody_model)
+def generate_prosody_score(prosody_model):
+    try: return process_scores(PROSODY_FEATURES, prosody_model)
     except Exception as e: logger.error(f"Error processing prosody features: {e}"); return 1
 
 
 # Pronunciation
-def generate_pronunciation_score(pronunciation_features, pronunciation_model):
-    try: return process_scores(pronunciation_features, pronunciation_model)
+def generate_pronunciation_score(pronunciation_model):
+    try: return process_scores(PRONUNCIATION_FEATURES, pronunciation_model)
     except Exception as e: logger.error(f"Error processing pronunciation features: {e}"); return 1
 
 
@@ -161,12 +160,12 @@ def generate_turntaking_score(overlapped_speech_count):
 # =======================================================================
 # Generate Each Biomarker Score
 # =======================================================================
-def generate_biomarker_scores(user_utt, conversation_start_time, prosody_features, prosody_model, pronunciation_features, pronunciation_model):
+def generate_biomarker_scores(user_utt, conversation_start_time, prosody_model, pronunciation_model):
     return {
-        "pragmatic"     : 1.0 - generate_pragmatic_score      (user_utt                                   ),
-        "grammar"       : 1.0 - generate_altered_grammar_score(user_utt, conversation_start_time          ),
-        "prosody"       : 1.0 - generate_prosody_score        (prosody_features,       prosody_model      ),
-        "pronunciation" : 1.0 - generate_pronunciation_score  (pronunciation_features, pronunciation_model),
+        "pragmatic"     : 1.0 - generate_pragmatic_score      (user_utt                         ),
+        "grammar"       : 1.0 - generate_altered_grammar_score(user_utt, conversation_start_time),
+        "prosody"       : 1.0 - generate_prosody_score        (prosody_model                    ),
+        "pronunciation" : 1.0 - generate_pronunciation_score  (pronunciation_model              ),
     }
 
 def generate_periodic_scores(user_utterances, conversation_start_time, overlapped_speech_count):
