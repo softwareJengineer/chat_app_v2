@@ -30,7 +30,7 @@ function Login() {
         if (user.role === 'Patient') {
             navigate('/chat');
         } else {
-            navigate('/analysis');
+            navigate('/dashboard');
         }
     };
 

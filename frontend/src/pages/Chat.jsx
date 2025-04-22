@@ -308,7 +308,7 @@ function Chat() {
 
         //FOR TESTING
         if (messages.length === 0) {
-            messages = dummyChats[0].messages;
+            setMessages(dummyChats[0].messages);
         }
 
         const chatData = {

@@ -9,6 +9,7 @@ import { Button } from "react-bootstrap";
 import { getChats } from "../functions/apiRequests";
 import ScoreTrackGraph from "../components/ScoreTrackGraph";
 import dummyChats from "../data/dummyChats.json";
+import blankChat from "../data/blankChat.json";
 import daysInARow from "../functions/daysInARow";
 import ScoreRadarChart from "../components/ScoreRadarChart";
 import Avatar from "../components/Avatar";
@@ -18,22 +19,28 @@ import { getExercises } from "../functions/getExercises";
 
 function Dashboard() {
     const {user} = useContext(UserContext);
-    const [chats, setChats] = useState(dummyChats);
-    const [chatData, setChatData] = useState(dummyChats[0]);
-    const [prevChatData, setPrevChatData] = useState(dummyChats[1]);
+
+    //FOR TESTING
+    // const [chats, setChats] = useState(dummyChats);
+    // const [chatData, setChatData] = useState(dummyChats[0]);
+    // const [prevChatData, setPrevChatData] = useState(dummyChats[1]);
+
+    //FOR DEPLOYMENT
     const date = new Date();
-    const isPatient = user.role === "Patient";
+    const [chats, setChats] = useState([]);
+    const [chatData, setChatData] = useState(blankChat);
+    const [prevChatData, setPrevChatData] = useState(blankChat);
 
-    // useEffect(() => {
-    //     const fetchChats = async () => {
-    //         const userChats = await getChats(user);
-    //         setChats(userChats);
-    //         setChatData(userChats[0]);
-    //         setPrevChatData((chats.length > 1 ? userChats[1] : null));
-    //     };
+    useEffect(() => {
+        const fetchChats = async () => {
+            const userChats = await getChats(user);
+            setChats(userChats);
+            setChatData(chats.length > 0 ? userChats[0] : blankChat);
+            setPrevChatData((chats.length > 1 ? userChats[1] : blankChat));
+        };
 
-    //     fetchChats();
-    // }, []);
+        fetchChats();
+    }, []);
 
     const calcGoal = (chats) => {
         const goal = chats % 5;
@@ -46,16 +53,10 @@ function Dashboard() {
             <div className="mx-[2rem] mb-[2rem] flex flex-col gap-2">
                 <div className="flex items-center gap-4 align-middle">
                     <FaUser size={50}/>
-                    {isPatient ?  
-                        <p className="align-middle">{user?.plwdFirstName} {user?.plwdLastName}</p> :
-                        <p className="align-middle">{user?.caregiverFirstName} {user?.caregiverLastName}</p>
-                    }
+                    <p className="align-middle">{user?.caregiverFirstName} {user?.caregiverLastName}</p>
                     Care Partner
                     <FaUser size={50}/>
-                    {isPatient ? 
-                        <p className="align-middle">{user?.caregiverFirstName} {user?.caregiverFirstName}</p> :
-                        <p className="align-middle">{user?.plwdFirstName} {user?.plwdLastName}</p>
-                    }
+                    <p className="align-middle">{user?.plwdFirstName} {user?.plwdLastName}</p>
                     <div className="flex float-right ml-auto">
                         <Button variant="outline-primary">Download Report</Button>
                     </div>
@@ -77,14 +78,13 @@ function Dashboard() {
                             </div>
                             <div className="w-2/3">
                                 <p className="font-bold text-2xl">
-                                    {isPatient ? "You're " : user.plwdFirstName + " is " }
-                                    doing fantastic!
+                                    {user.plwdFirstName} is doing fantastic!
                                 </p>
                                 <GoalProgress current={chats.length}/>
                                 <p className="flex flex-row items-center gap-4 text-xl">
                                     <GiPartyPopper size={40} color="orange" /> 
                                     <span>
-                                        {isPatient ? "You've " : user.plwdFirstName + " has "} talked to me for 
+                                        {user.plwdFirstName} has talked to me for 
                                         <b className="text-amber-500 text-2xl"> {daysInARow(chats)} </b> 
                                         in a row.
                                     </span>
@@ -92,7 +92,7 @@ function Dashboard() {
                                 <p className="flex flex-row items-center gap-4 text-xl">
                                     <GiAlarmClock size={40} color="green" /> 
                                     <span>
-                                        {isPatient ? "You've " : user.plwdFirstName + " has "} completed 
+                                        {user.plwdFirstName} has completed 
                                         <b className="text-green-700 text-2xl"> {chats.length} {chats.length === 1 ? "chat" : "chats"} </b> 
                                         with me.
                                     </span>
@@ -100,7 +100,7 @@ function Dashboard() {
                                 <p className="flex flex-row items-center gap-4 text-xl">
                                     <GiRobotAntennas size={40} color="purple" />
                                     <span className="">
-                                        {isPatient ? "You " : user.plwdFirstName} can complete another 
+                                        {user.plwdFirstName} can complete another 
                                         <b className="text-fuchsia-900 text-2xl"> {calcGoal(chats.length)} </b> 
                                         to reach a new goal!
                                     </span>
@@ -132,7 +132,6 @@ function Dashboard() {
                         </div>
                     </div>
                 </div>
-                {isPatient ? null : 
                 <div className="m-[2rem]">
                     <h2>Trends:</h2>
                     <h4>Overall Score Track:</h4>
@@ -154,7 +153,6 @@ function Dashboard() {
                     </div>
                 
                 </div>
-                }
         </>
     );
 }
