@@ -2,10 +2,9 @@ import React from "react";
 import ReactWordcloud from 'react-wordcloud';
 import dummyChats from "../data/dummyChats.json";
 
-function WordCloud({messages1}) {
+function WordCloud({messages}) {
     const chats = dummyChats;
     const chatData = chats[0];
-    const messages = chatData.messages;
 
     const tokenize = () => {
         // Initialize an empty object to store word frequencies
@@ -50,7 +49,10 @@ function WordCloud({messages1}) {
 
     return (
         <div className="w-full md:h-[30vh] h-[40vh]">
-            <ReactWordcloud words={words} maxWords={30} options={options}/>
+            {messages.length > 0 ? 
+            <ReactWordcloud words={words} maxWords={30} options={options}/> : 
+            <p className="text-5xl">Not available</p>
+            }
         </div>
     )
 }

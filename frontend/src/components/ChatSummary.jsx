@@ -2,7 +2,7 @@ import React from "react";
 import compareScores from "../functions/compareScores";
 import { useNavigate } from "react-router-dom";
 
-function ChatSummary({chatData, prevChatData}) {
+function ChatSummary({chatData, prevChatData, chats}) {
     const navigate = useNavigate();
 
     const suggested = ["Mad Libs", "Word Matching"];
@@ -12,7 +12,7 @@ function ChatSummary({chatData, prevChatData}) {
     const compared = compareScores(chatData, prevChatData);
 
     const toChatDetails = () => {
-        navigate('/chatDetails', {state: {chatData: chatData, prevChatData: prevChatData}});
+        navigate('/chatDetails', {state: {chatData: chatData, prevChatData: prevChatData, chats: chats}});
     }
 
     return (

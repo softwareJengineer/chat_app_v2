@@ -11,9 +11,8 @@ import GoalProgress from "../components/GoalProgress";
 import { IoThumbsUp } from "react-icons/io5";
 
 const Details = () => {
-    const { user } = useContext(UserContext);
+    const { user, setUser, setSettings } = useContext(UserContext);
     const [chats, setChats] = useState([]);
-    // const [chatData, setChatData] = useState(null);
     const location = useLocation();
     const chatData = location.state.chatData;
 
@@ -21,7 +20,6 @@ const Details = () => {
         const fetchChats = async () => {
             const userChats = await getChats(user);
             setChats(userChats);
-            setChatData(userChats[0]);
         };
 
         fetchChats();
@@ -73,29 +71,36 @@ const Details = () => {
     //     sentiment: "Positive",
     //     topics: "Holiday, daughter, dog"
     // }
+    //END FOR TESTING
 
     const navigate = useNavigate();
-
-    const toDashboard = () => {
-        navigate('/dashboard', {state: {chatData: chatData}});
-    }
 
     const calcGoal = (chats) => {
         const goal = chats % 5;
         return 5 - goal;
+    }
+
+    const toLogOut = async () => {
+		setUser(null);
+		setSettings({
+			'patientViewOverall': true,
+			'patientCanSchedule': true,
+		});
+		// await logout(); 
+        navigate('/');
     }
     
     return (
         <>
             <div className="float flex flex-row ml-auto gap-4 m-[1rem] justify-end">
                 <button className="text-blue-700">Go to Personal Page</button>
-                <button className="bg-blue-700 rounded p-2 text-white">Quit</button>
+                <button className="bg-blue-700 rounded p-2 text-white" onClick={() => toLogOut()}>Quit</button>
             </div>
-            <div className="flex md:flex-row flex-col gap-4 my-[1rem]">
+            <div className="flex md:flex-row flex-col gap-4 mt-[1rem] mb-[3rem] md:min-h-[45vh]">
                 <div className="md:w-1/3">
                     <Avatar />
                 </div>
-                <div className="md:w-2/3 mx-[2rem]">
+                <div className="md:w-2/3 mx-[2rem] align-self-center">
                     <p className="font-bold text-2xl">
                        You're doing fantastic!
                     </p>
@@ -107,7 +112,7 @@ const Details = () => {
                         </span>
                     </p>
                     <p className="text-xl">
-                        <span className="">
+                        <span>
                             <b className="text-blue-700 text-2xl"> {calcGoal(chats.length)} </b> 
                             more to reach a new goal!
                         </span>
@@ -124,30 +129,30 @@ const Details = () => {
             </div>
             <div className="grid md:grid-cols-2 grid-cols-1 h-full mx-[2rem] items-center justify-stretch gap-4 mb-[2rem]">
                 <div className="md:border-r-1 md:border-y-0 md:border-l-0 border-y-1 border-gray-300 pr-[2rem]">
-                    <b className="text-xl">Today's Conversation</b>
-                    <p className="flex flex-row items-center gap-4 text-l">
+                    <b className="text-2xl">Today's Conversation</b>
+                    <p className="flex flex-row items-center gap-4 text-xl">
                         <FcClock size={40} />       
                         The conversation was {chatData.duration} minutes long.
                     </p>
-                    <p className="flex flex-row items-center gap-4 text-l">
+                    <p className="flex flex-row items-center gap-4 text-xl">
                         <FcCalendar size={40} />
                         You've had conversations for {daysInARow(chats)} days in a row!
                     </p>
-                    <p className="flex flex-row items-center gap-4 text-l">
+                    <p className="flex flex-row items-center gap-4 text-xl">
                         <FcSms size={40} />
                         You talked about: {chatData.topics}
                     </p>
-                    <p className="flex flex-row items-center gap-4 text-l">
+                    <p className="flex flex-row items-center gap-4 text-xl">
                         <IoThumbsUp color="e5d754" size={40} />
                         Keep it up! You're doing fantastic!
                     </p>
                 </div>
                 <div className="pl-[1rem] h-full">
-                    <b className="text-xl">Fun Activities For You</b>
+                    <b className="text-2xl">Fun Activities For You</b>
                     <div className="flex md:flex-row flex-col gap-4 my-[1rem]">
                         <div className="md:w-1/2 w-full border-1 rounded-md border-gray-300 p-[1rem]">
                             <h4>Mad Libs</h4>
-                            Requires 10 minutes
+                            <p>Requires 10 minutes</p>
                             <div className="flex flex-row gap-4 mt-[1rem]">
                                 <Button variant="outline-primary">Start now</Button>
                                 <Button>Schedule</Button>
@@ -155,7 +160,7 @@ const Details = () => {
                         </div>
                         <div className="md:w-1/2 w-full border-1 rounded-md border-gray-300 p-[1rem]">
                             <h4>Word Matching</h4>
-                            Requires 10 minutes
+                            <p>Requires 10 minutes</p>
                             <div className="flex flex-row gap-4 mt-[1rem]">
                                 <Button variant="outline-primary">Start now</Button>
                                 <Button>Schedule</Button>

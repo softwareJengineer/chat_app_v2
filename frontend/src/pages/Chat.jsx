@@ -307,19 +307,43 @@ function Chat() {
         const duration = Math.floor(((end - start) / 1000) / 60);
 
         //FOR TESTING
-        if (messages.length === 0) {
+        var chatData = null;
+        if (messages.length === 0 || biomarkerData[0].data.length === 0) {
             setMessages(dummyChats[0].messages);
+                chatData = {
+                user: user,
+                date: end,
+                scores: dummyChats[0].scores,
+                avgScores: calcAvgBiomarkerScores(dummyChats[0].scores),
+                notes: "",
+                messages: dummyChats[0].messages,
+                duration: duration
+            }
+        } else {
+            chatData = {
+                user: user,
+                date: end,
+                scores: biomarkerData,
+                avgScores: calcAvgBiomarkerScores(biomarkerData),
+                notes: "",
+                messages: messages,
+                duration: duration
+            }
         }
+        //END FOR TESTING
 
-        const chatData = {
-            user: user,
-            date: end,
-            scores: biomarkerData,
-            avgScores: calcAvgBiomarkerScores(biomarkerData),
-            notes: "",
-            messages: messages,
-            duration: duration
-        }
+        //FOR DEPLOYMENT
+        // const chatData = {
+        //     user: user,
+        //     date: end,
+        //     scores: biomarkerData,
+        //     avgScores: calcAvgBiomarkerScores(biomarkerData),
+        //     notes: "",
+        //     messages: messages,
+        //     duration: duration
+        // }
+        //END FOR DEPLOYMENT
+
         const response = await createChat(user, chatData);
         if (response) {
             navigate('/details', {state: {chatData: chatData}});
