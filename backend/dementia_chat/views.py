@@ -347,6 +347,8 @@ def reminder_view(request, username):
         title = data.get('title')
         start = data.get('start')
         end = data.get('end')
+        rrule = data.get('rrule')
+        duration = data.get('duration')
         user = User.objects.get(username=username)
         profile = None
         try:
@@ -360,13 +362,15 @@ def reminder_view(request, username):
                     'error': 'Could not find the user.'
                 })
         
-        reminder = Reminder.objects.create(user=profile, title=title, start=start, end=end)
+        reminder = Reminder.objects.create(user=profile, title=title, start=start, end=end, rrule=rrule, duration=duration)
         
         return JsonResponse({
             'success': True,
             'title': reminder.title,
             'start': reminder.start,
-            'end': reminder.end
+            'end': reminder.end,
+            'rrule': reminder.rrule,
+            'duration': reminder.duration,
         })
     elif request.method == 'GET':
         user = User.objects.get(username=username)

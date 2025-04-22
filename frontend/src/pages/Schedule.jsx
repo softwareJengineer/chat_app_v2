@@ -6,6 +6,9 @@ import moment from 'moment';
 import { UserContext } from "../App";
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { createReminder, getReminders } from "../functions/apiRequests";
+import FullCalendar from '@fullcalendar/react';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import rrulePlugin from '@fullcalendar/rrule';
 
 
 function Schedule() {
@@ -16,7 +19,6 @@ function Schedule() {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [repeat, setRepeat] = useState('');
-    const [recurrences, setRecurrences] = useState(0);
     const localizer = momentLocalizer(moment);
 
     useEffect(() => {
@@ -29,20 +31,26 @@ function Schedule() {
     }, []);
 
     const addReminder = async (event) => {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
         event.preventDefault();
-        for (let i = 0; i <= recurrences; i++) {
-            let start = new Date(startDate);
-            let end = new Date(endDate);
-            if (repeat === 'Daily') {
-                start.setDate(start.getDate() + i);
-                end.setDate(end.getDate() + i);
-            } else if (repeat === 'Weekly') {
-                start.setDate(start.getDate() + i * 7);
-                end.setDate(end.getDate() + i * 7);
+        if (repeat === 'None') {
+            if (start >= end) {
+                alert("End date must be after start date.");
+                return;
             }
             const response = await createReminder(user, title, start, end);
             if (response) setReminders((prevReminders) => [...prevReminders, { title, start, end }]);
+        } else {
+            const duration = end.getTime() - start.getTime();
+            const rrule = {
+                freq: repeat.toLowerCase(),
+                dtstart: new Date(startDate),
+            }
+            const response = await createReminder(user, title, start, end, rrule, duration);
+            if (response) setReminders((prevReminders) => [...prevReminders, { title, start, end, rrule, duration }]);
         }
+
         handleClose();
     };
 
@@ -65,17 +73,24 @@ function Schedule() {
         <>
             <Header title="Your Schedule" page="schedule"/>
             <div className="h-[75vh] m-[2rem]">
-                <Calendar
+                {/* <Calendar
                     localizer={localizer}
                     events={reminders}
                     startAccessor="start"
                     endAccessor="end"
                     defaultView={Views.WEEK}
+                /> */}
+                <FullCalendar
+                    plugins={[ timeGridPlugin, rrulePlugin ]}
+                    initialView="timeGridWeek"
+                    events={reminders}
+                    height={"100%"}
                 />
             </div>
             <div className="flex justify-center m-[2rem]">
                 <Button onClick={handleShow} size="lg">Create a New Reminder</Button>
             </div>
+
 
             <Modal show={showNewReminder} onHide={handleClose} centered backdrop="static" keyboard={false}>
                 <Modal.Header closeButton>
@@ -121,18 +136,8 @@ function Schedule() {
                                 <option>None</option>
                                 <option>Daily</option>
                                 <option>Weekly</option>
+                                <option>Monthly</option>
                             </Form.Control>
-                        </Form.Group>
-
-                        <Form.Group controlId="formRecurrences">
-                            <Form.Label>Recurrences</Form.Label>
-                            <Form.Control
-                                type="number"
-                                placeholder="0"
-                                disabled={repeat === 'None'}
-                                value={recurrences}
-                                onChange={(e) => setRecurrences(e.target.value)}
-                            />
                         </Form.Group>
                     
                         <Modal.Footer>

@@ -99,6 +99,10 @@ const getReminders = async (user) => {
                 let obj = JSON.parse(reminder);
                 obj.start = new Date(obj.start);
                 obj.end = new Date(obj.end);
+                if (obj.rrule) {
+                    obj.rrule = JSON.parse(obj.rrule);
+                    obj.rrule.dtstart = new Date(obj.rrule.dtstart);
+                }
                 return obj;
             });
         } else {
@@ -111,7 +115,7 @@ const getReminders = async (user) => {
     }
 }
 
-const createReminder = async (user, title, start, end) => {
+const createReminder = async (user, title, start, end, rrule, duration) => {
     try {
         const username = user.role == 'Caregiver' ? user.caregiverUsername : user.plwdUsername;
         const response = await fetch(`http://localhost:8000/api/reminders/${username}/`, {
@@ -122,7 +126,9 @@ const createReminder = async (user, title, start, end) => {
             body: JSON.stringify({
                 title: title,
                 start: start,
-                end: end
+                end: end,
+                rrule: rrule,
+                duration: duration,
             })
         });
 

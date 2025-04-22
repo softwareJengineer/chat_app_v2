@@ -9,7 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ["plwd", "primaryCaregiver"]
+        fields = ["plwd", "caregiver"]
 
 class UserSettingsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,7 +19,7 @@ class UserSettingsSerializer(serializers.ModelSerializer):
 class ReminderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reminder
-        fields = ['title', 'start', 'end']
+        fields = ['title', 'start', 'end', 'rrule', 'duration']
         
 class ChatSerializer(serializers.ModelSerializer):
     class Meta:
