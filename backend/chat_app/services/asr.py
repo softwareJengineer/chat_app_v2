@@ -8,7 +8,7 @@ import datetime
 
 
 import config as cf
-import dementia_chat.services.tts as tts
+import chat_app.services.tts as tts
 
 # set API keys
 speech_key, service_region = cf.speech_key, cf.service_region

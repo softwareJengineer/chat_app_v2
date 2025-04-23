@@ -66,7 +66,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             if not cf.llm:
                 raise RuntimeError("LLM not initialized")
             # Rest of connect code...
-            self.Chat = apps.get_model('dementia_chat', 'Chat')
+            self.Chat = apps.get_model('chat_app', 'Chat')
             self.chatID = str(uuid.uuid4())
             self.conversation_start_time = time()
             self.user_utterances = deque(maxlen=100)

@@ -30,7 +30,7 @@ function Chat() {
     const [systemSpeaking, setSystemSpeaking] = useState(false);
     const [userSpeaking, setUserSpeaking] = useState(false);
     const [messages, setMessages] = useState(location.state ? location.state.messages : []);
-    const [viewMode, setViewMode] = useState(3);
+    // const [viewMode, setViewMode] = useState(3);
     const [chatbotMessage, setChatbotMessage] = useState("Hello! I am here to assist you.");
     const [start, setStart] = useState(null);
     const speechConfig = useRef(null);
@@ -350,40 +350,40 @@ function Chat() {
         }
     }
 
-    function getView() {
-        if (viewMode == 1) {
-            return (
-                <div className="flex justify-self-center md:border-x-1 md:border-blue-200 mb-[2rem] flex-col h-[65vh] mt-[1em] md:w-1/2 w-full">
-                    <ChatHistory messages={messages} />
-                </div> 
-            );
-        } else if (viewMode == 2) {
-            return (
-            <div className="flex md:flex-row flex-col h-[65vh] mt-[1em] w-full mb-[2rem]">
-                <div className="md:w-1/2 md:border-r-1 border-blue-200 overflow-y-auto md:border-b-0 border-b-1 w-full md:h-full h-1/2">
-                    <ChatHistory messages={messages} />
-                </div>
-                <div className="md:w-1/2 w-[100vw] md:h-full h-1/2">
-                    <div className="my-[1rem] flex justify-center bg-blue-200 p-[1em] rounded-lg mx-[25%]">
-                            {chatbotMessage}
-                    </div>
-                    <Avatar />
-                </div>
-            </div> 
-            );
-        } else {
-            return (
-                <div className="h-[65vh] mb-[2rem]">
-                    <div className="my-[1rem] flex justify-center bg-blue-200 p-[1em] rounded-lg mx-[25%]">
-                        {chatbotMessage}
-                    </div>
-                    <div className="h-full mt-[1em] w-full">
-                        <Avatar />
-                    </div>
-                </div>
-            )
-        }
-    }
+    // function getView() {
+    //     if (viewMode == 1) {
+    //         return (
+    //             <div className="flex justify-self-center md:border-x-1 md:border-blue-200 mb-[2rem] flex-col h-[65vh] mt-[1em] md:w-1/2 w-full">
+    //                 <ChatHistory messages={messages} />
+    //             </div> 
+    //         );
+    //     } else if (viewMode == 2) {
+    //         return (
+    //         <div className="flex md:flex-row flex-col h-[65vh] mt-[1em] w-full mb-[2rem]">
+    //             <div className="md:w-1/2 md:border-r-1 border-blue-200 overflow-y-auto md:border-b-0 border-b-1 w-full md:h-full h-1/2">
+    //                 <ChatHistory messages={messages} />
+    //             </div>
+    //             <div className="md:w-1/2 w-[100vw] md:h-full h-1/2">
+    //                 <div className="my-[1rem] flex justify-center bg-blue-200 p-[1em] rounded-lg mx-[25%]">
+    //                         {chatbotMessage}
+    //                 </div>
+    //                 <Avatar />
+    //             </div>
+    //         </div> 
+    //         );
+    //     } else {
+    //         return (
+    //             <div className="h-[65vh] mb-[2rem]">
+    //                 <div className="my-[1rem] flex justify-center bg-blue-200 p-[1em] rounded-lg mx-[25%]">
+    //                     {chatbotMessage}
+    //                 </div>
+    //                 <div className="h-full mt-[1em] w-full">
+    //                     <Avatar />
+    //                 </div>
+    //             </div>
+    //         )
+    //     }
+    // }
 
     const [showModal, setShowModal] = useState(false);
 
@@ -418,7 +418,7 @@ function Chat() {
     return (
         <>
             <Header title="Chat With Me!" page="chat"/>
-            <div className="ml-[1rem] mt-[1rem] flex justify-center">
+            {/* <div className="ml-[1rem] mt-[1rem] flex justify-center">
                 <ToggleButtonGroup 
                     type="radio"
                     name="viewMode"
@@ -437,8 +437,15 @@ function Chat() {
                         Chatbot
                     </ToggleButton>
                 </ToggleButtonGroup>
+            </div> */}
+            <div className="h-[65vh] mb-[2rem]">
+                <div className="my-[1rem] flex justify-center bg-blue-200 p-[1em] rounded-lg mx-[25%]">
+                    {chatbotMessage}
+                </div>
+                <div className="h-full mt-[1em] w-full">
+                    <Avatar />
+                </div>
             </div>
-            {getView()}
             <div className="flex flex-row justify-center mb-[2em] pt-[3em] gap-[4em] items-center">
                 <button
                     variant="outline-primary"

@@ -1,5 +1,5 @@
 """
-ASGI config for interface_app project.
+ASGI config for backend project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -11,9 +11,9 @@ import os
 from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
-from dementia_chat.websocket import routing
+from chat_app.websocket import routing
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'interface_app.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),

@@ -8,6 +8,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+
 import json
 
 
@@ -35,7 +36,7 @@ def profile_view(request, username):
         })
 
 @csrf_exempt
-def login_view(request):
+def login_view(request, TokenObtainPairView):
     if request.method == 'POST':
         data = json.loads(request.body)
         username = data.get('username')
