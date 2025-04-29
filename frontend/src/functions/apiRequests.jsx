@@ -252,5 +252,29 @@ const getChat = async (user, chatID) => {
     }
 };
 
+const getChatCount = async (user) => {
+    try {
+        const username = user.role == 'Caregiver' ? user.caregiverUsername : user.plwdUsername;
+        const response = await fetch(`http://localhost:8000/api/chatcount/${username}/`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
 
-export {login, logout, signup, getReminders, createReminder, editSettings, createChat, getChats, getChat};
+        const data = await response.json();
+
+        if (data.success) {
+            return data.chat_count;
+        } else {
+            console.error("Could not fetch chat: " + data.error);
+            return 0;
+        }
+    } catch (error) {
+        alert(error);
+        return 0;
+    }
+};
+
+
+export {login, logout, signup, getReminders, createReminder, editSettings, createChat, getChats, getChat, getChatCount};

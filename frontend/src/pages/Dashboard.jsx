@@ -16,25 +16,24 @@ function Dashboard() {
     const [activeChart, setActiveChart] = useState("Overall");
 
     //FOR TESTING
-    // const [chats, setChats] = useState(dummyChats);
-    // const [chatData, setChatData] = useState(dummyChats[0]);
-    // const [prevChatData, setPrevChatData] = useState(dummyChats[1]);
+    const chats = dummyChats;
+    const chatData = dummyChats[0];
     //END FOR TESTING
 
     //FOR DEPLOYMENT
-    const [chats, setChats] = useState([]);
-    const [chatData, setChatData] = useState(blankChat);
+    // const [chats, setChats] = useState([]);
+    // const [chatData, setChatData] = useState(blankChat);
 
-    useEffect(() => {
-        const fetchChats = async () => {
-            const userChats = await getChats(user);
-            setChats(userChats);
-            setChatData(chats.length > 0 ? userChats[0] : blankChat);
-            console.log(userChats);
-        };
+    // useEffect(() => {
+    //     const fetchChats = async () => {
+    //         const userChats = await getChats(user);
+    //         setChats(userChats);
+    //         setChatData(chats.length > 0 ? userChats[0] : blankChat);
+    //         console.log(userChats);
+    //     };
 
-        fetchChats();
-    }, []);
+    //     fetchChats();
+    // }, []);
 
     const getStyle = (chart) => {
         if (activeChart === chart) {

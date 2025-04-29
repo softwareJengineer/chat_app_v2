@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { Button, ToggleButton, ToggleButtonGroup, Modal } from "react-bootstrap";
 import Header from '../components/Header';
-import ChatHistory from "../components/ChatHistory";
+import ChatLog from "../components/ChatLog";
 import Avatar from "../components/Avatar";
 import { BsStopCircle, BsPlayCircle } from "react-icons/bs";
 import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
@@ -354,14 +354,14 @@ function Chat() {
     //     if (viewMode == 1) {
     //         return (
     //             <div className="flex justify-self-center md:border-x-1 md:border-blue-200 mb-[2rem] flex-col h-[65vh] mt-[1em] md:w-1/2 w-full">
-    //                 <ChatHistory messages={messages} />
+    //                 <ChatLog messages={messages} />
     //             </div> 
     //         );
     //     } else if (viewMode == 2) {
     //         return (
     //         <div className="flex md:flex-row flex-col h-[65vh] mt-[1em] w-full mb-[2rem]">
     //             <div className="md:w-1/2 md:border-r-1 border-blue-200 overflow-y-auto md:border-b-0 border-b-1 w-full md:h-full h-1/2">
-    //                 <ChatHistory messages={messages} />
+    //                 <ChatLog messages={messages} />
     //             </div>
     //             <div className="md:w-1/2 w-[100vw] md:h-full h-1/2">
     //                 <div className="my-[1rem] flex justify-center bg-blue-200 p-[1em] rounded-lg mx-[25%]">

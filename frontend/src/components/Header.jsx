@@ -53,6 +53,10 @@ const Header = ({title, page}) => {
         navigate('/schedule');
     }
 
+	const toHistory = () => {
+        navigate('/chathistory');
+    }
+
     const toLogOut = async () => {
 		setUser(null);
 		setSettings({
@@ -146,12 +150,21 @@ const Header = ({title, page}) => {
 						</Button>
 
 						<Button 
-							variant={page==="dashboard" ? "outline-secondary" : "outline-primary"}
+							variant={page==="today" ? "outline-secondary" : "outline-primary"}
 							style={{ display: 'flex', alignItems: 'center' }} 
-							onClick={toDashboard} 
-							disabled={page==='dashboard'}
+							onClick={toChat} 
+							disabled={page==='today'}
 						>
-							<GoGraph size={25} style={{ marginRight: '2px' }}/> Dashboard
+							<GoGraph size={25} style={{ marginRight: '2px' }}/> Recent Speech Analysis
+						</Button>
+
+						<Button 
+							variant={page==="history" ? "outline-secondary" : "outline-primary"}
+							style={{ display: 'flex', alignItems: 'center' }} 
+							onClick={toHistory} 
+							disabled={page==='history'}
+						>
+							<FaRobot size={25} style={{ marginRight: '2px' }}/> History
 						</Button>
 
 						<Button 

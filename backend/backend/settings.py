@@ -159,5 +159,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True  # For development only
 
 LOGIN_REDIRECT_URL='/'
-
-AUTH_USER_MODEL = 'chat_app.User'

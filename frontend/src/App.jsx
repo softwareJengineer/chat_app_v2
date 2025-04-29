@@ -10,6 +10,8 @@ import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
 import Home from "./pages/Home";
 import ChatDetails from "./pages/ChatDetails";
+import ChatHistory from "./pages/ChatHistory";
+import Analysis from "./pages/Analysis";
 
 export const UserContext = React.createContext(null);
 
@@ -38,6 +40,8 @@ function App() {
                 <Route path='/schedule' element={<Schedule/>}></Route>
                 <Route path='/settings' element={<Settings/>}></Route>
                 <Route path='/chatdetails' element={<ChatDetails/>}></Route>
+                <Route path="/chathistory" element={<ChatHistory/>}></Route>
+                <Route path="/analysis" element={<Analysis/>}></Route>
             </Routes>
             </UserContext.Provider>
         );

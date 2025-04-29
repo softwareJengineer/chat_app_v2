@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/settings/<str:username>/', views.user_settings_view, name='settings'),
     path('api/chats/<str:username>/', views.chats_view, name='chats'),
     path('api/chat/<str:username>/chatid/<int:chatID>/', views.chat_view, name='chat'),
+    path('api/chatcount/<str:username>/', views.chat_count_view, name='chat_count'),
     path('api/reminders/<str:username>/', views.reminder_view, name='reminders'),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

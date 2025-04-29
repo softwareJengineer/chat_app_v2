@@ -1,9 +1,9 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.db import models
 from django.contrib.auth.models import User
-from .models import Profile, Chat, Reminder, UserSettings
-from .serializers import ChatSerializer, ReminderSerializer, UserSettingsSerializer
-from .analysis import sentiment_scores, get_message_text, get_topics
+from ..models import Profile, Chat, Reminder, UserSettings
+from ..serializers import ChatSerializer, ReminderSerializer, UserSettingsSerializer
+from ..analysis import sentiment_scores, get_message_text, get_topics
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -339,6 +339,33 @@ def chat_view(request, username, chatID):
             'sentiment': chat.sentiment,
             'topics': chat.topics
         })
+        
+@csrf_exempt
+def chat_count_view(request, username):
+    if request.method == 'GET':
+        user = User.objects.get(username=username)
+        profile = None
+        try:
+            profile = Profile.objects.get(plwd=user)
+        except Profile.DoesNotExist:
+            try:
+                profile = Profile.objects.get(caregiver=user)
+            except:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Could not find the user.'
+                })
+    
+
+        chats = Chat.objects.filter(user=profile)
+        chat_count = chats.count()
+        
+        return JsonResponse({
+            'success': True,
+            'chat_count': chat_count
+        })
+        
+        
          
 @csrf_exempt
 # @login_required

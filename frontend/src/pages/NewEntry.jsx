@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import BiomarkerChart from "../components/BiomarkerChart";
 import { Button } from "react-bootstrap";
-import ChatHistory from "../components/ChatHistory";
+import ChatHistory from "../components/ChatLog";
 
 
 function NewEntry() {
