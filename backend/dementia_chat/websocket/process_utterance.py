@@ -23,10 +23,6 @@ speech_config, audio_config   = cf.speech_config, cf.audio_config
 logger = cf.logging.getLogger("__asr__")
 
 
-
-
-
-
 # =======================================================================
 # Response Selection
 # =======================================================================
