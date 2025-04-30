@@ -3,12 +3,15 @@ import { BsStopCircle, BsPlayCircle } from "react-icons/bs";
 import useSpeechEngine from '../hooks/useSpeechEngine';
 
 export default function RecordButton(props) {
-    const { recording, start, stop } = useSpeechEngine(props);
+    const { recording, startRecording, stopRecording } = useSpeechEngine(props);
 
     return (
         <>
-            <Button onClick={recording ? stopRecording : startRecording}>
-                {recording ? <BsStopCircle/> : <BsPlayCircle/>}
+            <Button variant="outline-primary" onClick={recording ? stopRecording : startRecording}>
+                {recording ? 
+                    <BsStopCircle size={50} style={{color: "red"         }}/> : 
+                    <BsPlayCircle size={50} style={{color: "lightskyblue"}}/>
+                }
             </Button>
         </>
     );
