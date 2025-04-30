@@ -3,37 +3,43 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from 'react-bootstrap';
 import { BsStopCircle, BsPlayCircle } from 'react-icons/bs';
 
+// Custom classes
 import { AzureASR, AzureTTS } from './speechProviders/AzureServices'
 import AudioStreamer from './speechProviders/AudioStreamer';
 import toBase64      from '../utils/toBase64';
 
-// Azure keys - move these to env vars in production
+// Azure keys - move these to env vars
 const subscriptionKey = '3249fb4e6d8248569b42d5dbf693c259';
 const serviceRegion   = 'eastus';
 
-
-/* ====================================================================
-    RecordButton => Uses imported files
-==================================================================== */
+// ====================================================================
+// RecordButton (uses imported ASR & TTS classes)
+// ====================================================================
 function RecordButton({ parentCallback }) {
     const [recording,      setRecording     ] = useState(false);
     const [systemSpeaking, setSystemSpeaking] = useState(false);
     const [userSpeaking,   setUserSpeaking  ] = useState(false);
 
-    // -------------------- References ---------------------------------------
+    // --------------------------------------------------------------------
+    // References for user and system speaking status
+    // --------------------------------------------------------------------
+    // Needed for the checkOverlap() function because it is passed to the TTS object
     const systemSpeakingRef = useRef(false);
     const userSpeakingRef   = useRef(false);
 
-    // Keep refs in sync with state
+    // Keep references in sync with state
     useEffect(() => { systemSpeakingRef.current = systemSpeaking; }, [systemSpeaking]);
     useEffect(() => { userSpeakingRef.current   = userSpeaking;   }, [userSpeaking  ]);
     
-    // -------------------- WebSocket ---------------------------------------
+    // --------------------------------------------------------------------
+    // WebSocket Setup
+    // --------------------------------------------------------------------
     const wsUrl = window.location.hostname === 'localhost'
         ? `ws://${window.location.hostname}:8000/ws/chat/`
         : `ws://${window.location.hostname}/ws/chat/`;
     // const wsUrl = "wss://dementia.ngrok.app";
 
+    // Open and close the websocket connection on change of the 'recording' variable
     const wsRef = useRef(null);
     useEffect(() => {
         if (recording) {
@@ -45,8 +51,10 @@ function RecordButton({ parentCallback }) {
         } else if (wsRef.current) {wsRef.current.close();}
         return () => wsRef.current?.close();
       }, [recording]);
-
-    // -------------------- ASR Wrapper -------------------------------------
+    
+    // --------------------------------------------------------------------
+    // ASR Wrapper
+    // --------------------------------------------------------------------
     const asrRef = useRef(null);
     useEffect(() => {
         asrRef.current = new AzureASR({subscriptionKey, serviceRegion,
@@ -57,17 +65,21 @@ function RecordButton({ parentCallback }) {
         return () => asrRef.current?.stop_stream();
     }, []);
 
-    // -------------------- TTS Wrapper -------------------------------------
+    // --------------------------------------------------------------------
+    // TTS Wrapper
+    // --------------------------------------------------------------------
     const ttsRef = useRef(null);
     useEffect(() => {
         ttsRef.current = new AzureTTS({subscriptionKey, serviceRegion,
-            onStart: ()  => setSystemSpeaking(true ),
-            onDone:  ()  => setSystemSpeaking(false),
+            onStart : ()  => setSystemSpeaking(true ),
+            onDone  : ()  => setSystemSpeaking(false),
         });
         return () => ttsRef.current?.stop();
     }, []);
     
-    // -------------------- Audio Streaming Wrapper -------------------------
+    // --------------------------------------------------------------------
+    //  Audio Streaming Wrapper
+    // --------------------------------------------------------------------
     const audioStreamerRef = useRef(null);
     useEffect(() => {
         audioStreamerRef.current = new AudioStreamer({
@@ -89,9 +101,9 @@ function RecordButton({ parentCallback }) {
         return () => audioStreamerRef.current?.stop();   // tidy up on unmount
     }, []);
  
-    /* --------------------------------------------------------------------
-        Start and Stop Recording Handlers
-    -------------------------------------------------------------------- */
+    // --------------------------------------------------------------------
+    // Start & Stop Recording
+    // --------------------------------------------------------------------
     const startRecording = () => {
         // Set the recording variable to true and start streaming for the ASR object
         setRecording(true); 
@@ -104,12 +116,12 @@ function RecordButton({ parentCallback }) {
         asrRef.current.stop_stream();
         audioStreamerRef.current?.stop();
         wsRef.current?.close();
-        ttsRef.current?.stop();     // just in case speech is still playing
+        ttsRef.current?.stop();  // (just in case speech is still playing)
     };
 
-    /* --------------------------------------------------------------------
-        Other Handlers
-    -------------------------------------------------------------------- */
+    // --------------------------------------------------------------------
+    // Other Handlers
+    // --------------------------------------------------------------------
     function handleUtterance (text) {console.log('Recognized:', text); addMessageToChat('You', text); sendToServer({ type: 'transcription', data: text });}
     function addMessageToChat(sender, message) {parentCallback([sender, message]);}
     function speakResponse   (text           ) {ttsRef.current?.speak(text);      }
@@ -122,7 +134,9 @@ function RecordButton({ parentCallback }) {
         }
     }
 
-    // -------------------- UI ----------------------------------------------
+    // --------------------------------------------------------------------
+    // Button UI
+    // --------------------------------------------------------------------
     return (
         <> 
             <Button onClick={recording ? stopRecording : startRecording}>
