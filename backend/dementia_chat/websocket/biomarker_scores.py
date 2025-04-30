@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 
@@ -171,7 +170,7 @@ def generate_biomarker_scores(user_utt, conversation_start_time, prosody_feature
 
 def generate_periodic_scores(user_utterances, conversation_start_time, overlapped_speech_count):
     return {
-        "anomia"     : 1.0 - generate_anomia_score(user_utterances, conversation_start_time),
+        "anomia"     : 1.0 - generate_anomia_score    (user_utterances, conversation_start_time),
         "turntaking" : 1.0 - generate_turntaking_score(overlapped_speech_count)
     }
 

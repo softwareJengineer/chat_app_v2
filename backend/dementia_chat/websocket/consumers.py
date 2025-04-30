@@ -48,20 +48,24 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.Chat = apps.get_model('dementia_chat', 'Chat')
             self.chatID = str(uuid.uuid4())
 
+            # Features
             self.conversation_start_time = time()
-            self.user_utterances = deque(maxlen=100)
+            self.user_utterances         = deque(maxlen=100)
             self.overlapped_speech_count = 0
-            self.global_llm_response = ""
-
-            self.prosody_features       = None
-            self.pronunciation_features = None
-            self.chat_history = []  # Add chat_history as instance variable
+            self.global_llm_response     = ""
+            self.chat_history            = []  # Add chat_history as instance variable
 
             await self.accept()
 
-            self.periodic_scores_task = asyncio.create_task(self.send_periodic_scores())
-            self.prosody_model        = joblib.load(cf.prosody_model_path)
-            self.pronunciation_model  = joblib.load(cf.pronunciation_model_path)
+            # Periodic scores asynchronous task
+            self.periodic_scores_task   = asyncio.create_task(self.send_periodic_scores())
+
+            # Features & models for Prosody and Pronunciation (periodic biomarkers)
+            self.prosody_features       = None
+            self.pronunciation_features = None
+            self.prosody_model          = joblib.load(cf.prosody_model_path)
+            self.pronunciation_model    = joblib.load(cf.pronunciation_model_path)
+            
 
         except Exception as e:
             logger.error(f"Failed to initialize consumer: {e}"); return
