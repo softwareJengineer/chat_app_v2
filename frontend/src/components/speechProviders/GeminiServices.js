@@ -14,6 +14,7 @@ const defaultSampleRateHertz = 16_000;
  *      onUtterance(text)        : final transcript callback
  *      onPartial(text)          : (optional) partial transcript callback
  *      onUserSpeakingChange(b)  : (optional) speaking flag callback
+ *      onUserSpeakingStart()    : (optional) callback fired to check for overlapped speech (should be passed the checkOverlap function)
  *      model                    : Gemini model name, default flash-live
  *
  *  start_stream()               : open live session
@@ -21,7 +22,7 @@ const defaultSampleRateHertz = 16_000;
  *  stop_stream()                : close session
  * ==================================================================== */
 export class GeminiASR {
-    constructor({ apiKey, onUtterance, onPartial, onUserSpeakingChange, model, sourceSampleRateHertz }) {
+    constructor({ apiKey, onUtterance, onPartial, onUserSpeakingChange, onUserSpeakingStart, model, sourceSampleRateHertz }) {
         if (!apiKey) throw new Error('GeminiASR requires an API key.');
 
         this.genai = new GoogleGenAI({ apiKey });
@@ -30,6 +31,7 @@ export class GeminiASR {
         this.onUtterance           = onUtterance;
         this.onPartial             = onPartial             ?? (() => {});
         this.onUserSpeakingChange  = onUserSpeakingChange  ?? (() => {});
+        this.onUserSpeakingStart   = onUserSpeakingStart   ?? (() => {});
         this.sourceSampleRateHertz = sourceSampleRateHertz ?? defaultSampleRateHertz;
 
         this.session   = null;
@@ -51,8 +53,8 @@ export class GeminiASR {
         this._listener = (async () => {
             try {
                 for await (const msg of this.session.stream()) {
-                    if (msg.transcriptPart ) {this.onPartial  (msg.transcriptPart .text); if (!speaking) {speaking = true;  this.onUserSpeakingChange(true );}}
-                    if (msg.transcriptFinal) {this.onUtterance(msg.transcriptFinal.text); if ( speaking) {speaking = false; this.onUserSpeakingChange(false);}}
+                    if (msg.transcriptPart ) {this.onPartial  (msg.transcriptPart .text); if (!speaking) {speaking = true;  this.onUserSpeakingChange(true ); this.onUserSpeakingStart();}}
+                    if (msg.transcriptFinal) {this.onUtterance(msg.transcriptFinal.text); if ( speaking) {speaking = false; this.onUserSpeakingChange(false);                            }}
                 }
             } catch (err) { console.error('GeminiASR stream error:', err); }
         })();

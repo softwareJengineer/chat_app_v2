@@ -8,6 +8,7 @@
  *      serviceRegion     : Azure region string ("eastus")
  *      onUtterance(text) : callback fired with the full utterance text
  *      onUserSpeakingChange(flag) : (optional) callback fired true/false
+ *      onUserSpeakingStart()      : (optional) callback fired to check for overlapped speech (should be passed the checkOverlap function)
  *
  *  start_stream()  : begin continuous recognition
  *  stop_stream()   : stop recognition
@@ -33,7 +34,7 @@ export class AzureASR {
         // Events
         // --------------------------------------------------------------------
         this.recognizer.recognizing = (_s, e) => {
-            if (e.result.reason === SpeechSDK.ResultReason.RecognizingSpeech) {this.onUserSpeakingChange(true);}
+            if (e.result.reason === SpeechSDK.ResultReason.RecognizingSpeech) {this.onUserSpeakingChange(true); this.onUserSpeakingStart();}
         };
 
         this.recognizer.recognized = (_s, e) => {
