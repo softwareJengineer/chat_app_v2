@@ -18,76 +18,72 @@ function RecordButton() {
 
     let ws;
 
+
+    // Loads the config
     const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
     speechConfig.speechRecognitionLanguage = "en-US";
     const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
-    const recognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
+    const recognizer  = new SpeechSDK.SpeechRecognizer (speechConfig, audioConfig);
     const synthesizer = new SpeechSDK.SpeechSynthesizer(speechConfig);
     
-    const startRecording = () => {
-        setRecording(true);
+
+    /* ======================================================================= 
+    ASR & kind of everything else...?
+    ==========================================================================
+    
+    */
+    const startRecording = () => {setRecording(true);
 
         if (recognizer) {
             recognizer.startContinuousRecognitionAsync();
-            recognizer.recognizing = (s, e) => {
-                if (e.result.reason === SpeechSDK.ResultReason.RecognizingSpeech) {
-                    setUserSpeaking(true);
-                    checkOverlap();
-                }
-            };
+            
+            // Subscribe to the recognizing output
+            recognizer.recognizing = (s, e) => {if (e.result.reason === SpeechSDK.ResultReason.RecognizingSpeech) {setUserSpeaking(true); checkOverlap();}};
 
+            // Utterance hhas been completed
             recognizer.recognized = (s, e) => {
                 if (e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
                     setUserSpeaking(false);
+
+                    // Get the transcripted text and: 1) Log it; 2) Add it to the user chat; 3) Send it to the backend
                     const transcription = e.result.text;
                     console.log(`Recognized: ${transcription}`);
                     addMessageToChat('You', transcription);
                     sendTranscriptionToServer(transcription);
                 }
             };
-        } else {
-            console.log("Recognizer not initialized");
-        }
+        } else {console.log("Recognizer not initialized");}
 
+
+
+        // Handle the websocket connection
         ws = new WebSocket(wsUrl);
-        ws.onopen = () => {
-            console.log("WebSocket connected");
-            console.log("Connected to:", wsUrl);
-        };
-        ws.onerror = (error) => {
-            console.log(`WebSocket connection failed`);
-            console.error("WebSocket error:", error);
-        };
-        ws.onclose = (event) => {
-            console.log(`WebSocket closed: ${event.code}`);
-            console.log("WebSocket closed:", event);
-        };
+        ws.onopen    = (     ) => {console.log("WebSocket connected"            ); console.log  ("Connected to:",     wsUrl);};
+        ws.onerror   = (error) => {console.log(`WebSocket connection failed`    ); console.error("WebSocket error:",  error);};
+        ws.onclose   = (event) => {console.log(`WebSocket closed: ${event.code}`); console.log  ("WebSocket closed:", event);};
         ws.onmessage = (event) => {
-            // if (!recording) return;
             const response = JSON.parse(event.data);
-            if (response.type === 'llm_response') {
-                speakResponse(response.data);
-            }
+            if (response.type === 'llm_response') {speakResponse(response.data);}
         };
 
+        // Setup the audio streaming to the backend
         initAudioProcessing();
     }
 
+
+
+    // Stop Recording
     const stopRecording = () => {
         setRecording(false);
-        if (recognizer) {
-            recognizer.stopContinuousRecognitionAsync();
-        } else {
-            console.log("Recognizer is already undefined or not initialized.");
-        }
+        if (recognizer) {recognizer.stopContinuousRecognitionAsync();} 
+        else            {console.log("Recognizer is already undefined or not initialized.");}
         audioConfig.close();
         if (ws) ws.close();
     }
 
+    // Send text transcription to the backend (called earlier)
     function sendTranscriptionToServer(transcription) {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: 'transcription', data: transcription }));
-        }
+        if (ws && ws.readyState === WebSocket.OPEN) {s.send(JSON.stringify({ type: 'transcription', data: transcription }));}
     }
 
     function addMessageToChat(sender, message) {
@@ -101,37 +97,41 @@ function RecordButton() {
         // chatHistory.scrollTop = chatHistory.scrollHeight;
     }
 
+    /* ======================================================================= 
+    TTS Function
+    ==========================================================================
+    Main TTS function
+    
+    */
     function speakResponse(text) {
         setSystemSpeaking(true);
         synthesizer.speakTextAsync(
             text, 
-            result => {
-                if (result.reason === SpeechSDK.ResultReason.SynthesizingAudioCompleted) {
-                    console.log("Speech synthesized");
-                    setSystemSpeaking(false);
-                }
-            },
-            error => {
-                console.log(`Error synthesizing speech: ${error}`);
-                setSystemSpeaking(false);
-            }
+            result => {if (result.reason === SpeechSDK.ResultReason.SynthesizingAudioCompleted) {console.log("Speech synthesized"); setSystemSpeaking(false);}},
+            error  => { console.log(`Error synthesizing speech: ${error}`); setSystemSpeaking(false);}
         );
     }
 
+
+
+    // Utility to make sure we don't talk over the speaker 
+    // (Make sure the user hasn't already begun speaking before the text response was received from the backend)
     function checkOverlap() {
         if (systemSpeaking && userSpeaking) {
-            console.log("Overlapped speech detected!", true);
-            ws.send(JSON.stringify({ type: 'overlapped_speech' }));
+            console.log("Overlapped speech detected!", true); ws.send(JSON.stringify({ type: 'overlapped_speech' }));
         }
     }
 
+    /* ======================================================================= 
+    Audio Handler
+    ==========================================================================
+    This records the incoming audio from the user and sends it to the backend in chunks.
+    */
     async function initAudioProcessing() {
         try {
+            // Start the audio stream
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            audioContext = new AudioContext({
-                sampleRate: 16000
-            });
-            
+            audioContext = new AudioContext({sampleRate: 16000});
             const source = audioContext.createMediaStreamSource(stream);
     
             // Create ScriptProcessor for direct audio processing
@@ -161,9 +161,7 @@ function RecordButton() {
                 const input = e.inputBuffer.getChannelData(0);
                 
                 // Add input to buffer
-                for (let i = 0; i < input.length && bufferIndex < chunkBufferSize; i++) {
-                    audioBuffer[bufferIndex++] = input[i];
-                }
+                for (let i = 0; i < input.length && bufferIndex < chunkBufferSize; i++) { audioBuffer[bufferIndex++] = input[i];}
                 
                 // When we have enough audio data
                 if (bufferIndex >= chunkBufferSize) {
@@ -181,16 +179,14 @@ function RecordButton() {
                         if (ws && ws.readyState === WebSocket.OPEN) {
                             const timestamp = Date.now();
                             ws.send(JSON.stringify({
-                                type: 'audio_data',
-                                timestamp: timestamp,
-                                data: base64Data,
+                                type:      'audio_data',
+                                timestamp:  timestamp,
+                                data:       base64Data,
                                 sampleRate: sampleRate
                             }));
                             console.log(`Sent audio chunk at ${new Date(timestamp).toISOString()}, length: ${intData.length} samples`);
                         }
-                    } catch (error) {
-                        console.log(`Error processing audio chunk: ${error.message}`);
-                    }
+                    } catch (error) {console.log(`Error processing audio chunk: ${error.message}`);}
                     
                     // Reset buffer
                     bufferIndex = 0;
