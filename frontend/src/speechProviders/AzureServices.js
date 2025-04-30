@@ -1,3 +1,7 @@
+// Configuration from .env variables
+const subscriptionKey = process.env.REACT_APP_SPEECH_KEY     || '';
+const serviceRegion   = process.env.REACT_APP_SERVICE_REGION || 'eastus';
+
 /*  ====================================================================
  *  AzureASR
  *  ====================================================================
@@ -14,7 +18,7 @@
  *  stop_stream()   : stop recognition
  * ==================================================================== */
 export class AzureASR {
-    constructor({ subscriptionKey, serviceRegion, onUtterance, onUserSpeakingChange, onUserSpeakingStart }) {
+    constructor({ onUtterance, onUserSpeakingChange, onUserSpeakingStart }) {
         if (!window.SpeechSDK) {throw new Error('SpeechSDK global not found - make sure the Azure SDK script tag is loaded.');}
 
         this.onUtterance          = onUtterance;
@@ -68,7 +72,7 @@ export class AzureASR {
  *  stop()               : void   (cancels any ongoing synthesis/playback)
  * ==================================================================== */
 export class AzureTTS {
-    constructor({ subscriptionKey, serviceRegion, onStart, onDone }) {
+    constructor({ onStart, onDone }) {
       if (!window.SpeechSDK) {throw new Error("SpeechSDK global not found - load Azure Speech script first");}
   
       this.onStart = onStart ?? (() => {});
