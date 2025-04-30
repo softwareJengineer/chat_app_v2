@@ -1,62 +1,64 @@
-/*  AudioStreamer.js
+/*  ====================================================================
+ *  AudioStreamer
+ *  ====================================================================
  *  Captures mic input -> chunks -> Int16 PCM -> calls onChunk().
  *
  *  new AudioStreamer({
- *    sampleRate : 16_000,                    // target output rate
- *    chunkMs    : 5_000,                     // chunk length in ms
+ *    sampleRate : 16_000,                   // target output rate
+ *    chunkMs    : 5_000,                    // chunk length in ms
  *    onChunk    : (int16, ts) => { ... },   // required
  *    onError    : err => {}                 // optional
  *  })
  *
  *  streamer.start();
  *  streamer.stop();
- */
+ * ==================================================================== */
 export default class AudioStreamer {
-    constructor({
-      sampleRate = 16_000,
-      chunkMs    = 5_000,
-      onChunk,
-      onError    = console.error,
-    }) {
-      this.sampleRate = sampleRate;
-      this.chunkSize  = Math.round((sampleRate * chunkMs) / 1_000); // samples
-      this.onChunk    = onChunk;
-      this.onError    = onError;
-  
-      this.buffer     = new Float32Array(this.chunkSize);
-      this.bufIndex   = 0;
-  
-      this.ctx        = null;
-      this.source     = null;
-      this.worklet    = null;
-      this.stream     = null;
-      this.running    = false;
+    constructor({ sampleRate, chunkMs, onChunk, onError }) {
+        this.sampleRate = sampleRate ?? 16_000;
+        this.chunkSize  = Math.round((sampleRate * (chunkMs ?? 5_000)) / 1_000); // samples
+        this.onChunk    = onChunk;
+        this.onError    = onError ?? console.error;
+    
+        this.buffer     = new Float32Array(this.chunkSize);
+        this.bufIndex   = 0;
+    
+        this.ctx        = null;
+        this.source     = null;
+        this.worklet    = null;
+        this.stream     = null;
+        this.running    = false;
     }
-  
-    async start() {
-      if (this.running) return;
-      try {
-        this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        this.ctx    = new AudioContext({ sampleRate: this.sampleRate });
-  
-        // Fallback
-        this.actualRate = this.ctx.sampleRate;
-        if (this.actualRate !== this.sampleRate) {console.warn(`Requested ${this.sampleRate} Hz but got ${this.actualRate} Hz; will resample.`);}
-  
-        await this.ctx.audioWorklet.addModule('/audio-worklet-raw.js');
-  
-        this.source  = this.ctx.createMediaStreamSource(this.stream);
-        this.worklet = new AudioWorkletNode(this.ctx, 'raw-audio-processor');
-        this.worklet.port.onmessage = (e) => this._handleFrame(e.data);
-  
-        this.source.connect(this.worklet); 
-        this.running = true;
-  
-        console.log('AudioStreamer started');
+    
+    // --------------------------------------------------------------------
+    // Start Streaming Audio
+    // --------------------------------------------------------------------
+    async start() {if (this.running) return; // already running
+        try {
+            this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            this.ctx    = new AudioContext({ sampleRate: this.sampleRate });
+    
+            // Fallback
+            this.actualRate = this.ctx.sampleRate;
+            if (this.actualRate !== this.sampleRate) {console.warn(`Requested ${this.sampleRate} Hz but got ${this.actualRate} Hz; will resample.`);}
+    
+            await this.ctx.audioWorklet.addModule('/audio-worklet-raw.js');
+    
+            this.source  = this.ctx.createMediaStreamSource(this.stream);
+            this.worklet = new AudioWorkletNode(this.ctx, 'raw-audio-processor');
+            this.worklet.port.onmessage = (e) => this._handleFrame(e.data);
+    
+            this.source.connect(this.worklet); 
+            this.running = true;
+    
+            console.log('AudioStreamer started');
 
-      } catch (err) {this.onError(err);}
+        } catch (err) {this.onError(err);}
     }
-  
+    
+    // --------------------------------------------------------------------
+    // Stop Stream
+    // --------------------------------------------------------------------
     stop() {
       if (!this.running) return;
       this.running = false;
@@ -71,8 +73,10 @@ export default class AudioStreamer {
       this.bufIndex = 0;
       console.log('AudioStreamer stopped');
     }
-  
-    /* -------------------- Internal Helpers ---------------------- */
+    
+    // --------------------------------------------------------------------
+    // Internal Helpers
+    // --------------------------------------------------------------------
     _handleFrame(float32) {
       if (!this.running) return;
   

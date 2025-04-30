@@ -1,4 +1,9 @@
-// utils/toBase64.js
+/*  ====================================================================
+ *  utils/toBase64.js
+ *  ==================================================================== 
+ *  For sending audio data
+ * 
+ *  ==================================================================== */
 export default function toBase64(int16Array) {
     // Node
     if (typeof Buffer !== 'undefined' && Buffer.from) {return Buffer.from(int16Array.buffer).toString('base64');}

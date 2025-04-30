@@ -28,8 +28,8 @@ function RecordButton({ parentCallback }) {
     const userSpeakingRef   = useRef(false);
 
     // Keep references in sync with state
-    useEffect(() => { systemSpeakingRef.current = systemSpeaking; }, [systemSpeaking]);
-    useEffect(() => { userSpeakingRef.current   = userSpeaking;   }, [userSpeaking  ]);
+    useEffect(() => {systemSpeakingRef.current = systemSpeaking;}, [systemSpeaking]);
+    useEffect(() => {  userSpeakingRef.current =   userSpeaking;}, [  userSpeaking]);
     
     // --------------------------------------------------------------------
     // WebSocket Setup
@@ -98,7 +98,7 @@ function RecordButton({ parentCallback }) {
             },
             onError    : err => console.error('Audio error:', err)
         });
-        return () => audioStreamerRef.current?.stop();   // tidy up on unmount
+        return () => audioStreamerRef.current?.stop(); // (clean up on unmount)
     }, []);
  
     // --------------------------------------------------------------------
