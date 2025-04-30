@@ -84,7 +84,7 @@ function Chat() {
         const duration = Math.floor(((end - start) / 1000) / 60);
 
         //FOR TESTING
-        if (messages.length === 0) {messages = dummyChats[0].messages;}
+        if (messages.length === 0) {messages.state.message = dummyChats[0].messages;}
 
         const chatData = {
             user: user,
