@@ -1,6 +1,10 @@
 // Configuration from .env variables
-const subscriptionKey = process.env.REACT_APP_SPEECH_KEY     || '';
-const serviceRegion   = process.env.REACT_APP_SERVICE_REGION || 'eastus';
+//const subscriptionKey = process.env.REACT_APP_SPEECH_KEY     || '';
+//const serviceRegion   = process.env.REACT_APP_SERVICE_REGION || 'eastus';
+
+const subscriptionKey = import.meta.env.VITE_SPEECH_KEY || '';
+const serviceRegion   = import.meta.env.VITE_SERVICE_REGION || 'eastus';
+
 
 /*  ====================================================================
  *  AzureASR

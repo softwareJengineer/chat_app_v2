@@ -17,7 +17,8 @@ export default function useSpeechEngine({
     // --------------------------------------------------------------------
     // Set up provider (env var or literal) & WebSocket URL
     // --------------------------------------------------------------------
-    const PROVIDER = process.env.REACT_APP_SPEECH_PROVIDER || 'test';  // 'azure' | 'gemini' | 'test'
+    //const PROVIDER = process.env.REACT_APP_SPEECH_PROVIDER || 'test';  // 'azure' | 'gemini' | 'test'
+    const PROVIDER = import.meta.env.VITE_SPEECH_PROVIDER || 'test';
     const { ASR: ASRClass, TTS: TTSClass } = Providers[PROVIDER];
 
     const wsUrl = window.location.hostname === 'localhost'

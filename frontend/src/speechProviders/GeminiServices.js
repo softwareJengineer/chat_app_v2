@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/generative-ai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Default Arguments
 const defaultModel = 'gemini-2.0-flash-live-001';
@@ -25,7 +25,7 @@ export class GeminiASR {
     constructor({ apiKey, onUtterance, onPartial, onUserSpeakingChange, onUserSpeakingStart, model, sourceSampleRateHertz }) {
         if (!apiKey) throw new Error('GeminiASR requires an API key.');
 
-        this.genai = new GoogleGenAI({ apiKey });
+        this.genai = new GoogleGenerativeAI({ apiKey });
         this.model = model ?? defaultModel;
         
         this.onUtterance           = onUtterance;
@@ -98,7 +98,7 @@ export class GeminiTTS {
     constructor({ apiKey, onStart, onDone, model }) {
         if (!apiKey) throw new Error('GeminiTTS requires an API key.');
         
-        this.genai   = new GoogleGenAI({ apiKey });
+        this.genai   = new GoogleGenerativeAI({ apiKey });
         this.model   = model ?? defaultModel;
 
         this.onStart = onStart ?? (() => {});
