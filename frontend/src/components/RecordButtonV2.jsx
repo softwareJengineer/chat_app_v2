@@ -3,10 +3,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from 'react-bootstrap';
 import { BsStopCircle, BsPlayCircle } from 'react-icons/bs';
 
-// Custom classes
-import { AzureASR, AzureTTS } from './speechProviders/AzureServices'
-import AudioStreamer from './speechProviders/AudioStreamer';
+// Custom classes for handling audio
+import AudioStreamer from './speechProviders/AudioStreamer'; // --- needs to be updated to have 2 simultaneous buffers for Gemini ---
 import toBase64      from '../utils/toBase64';
+
+// ASR & TTS classes (have other changes planned to make swapping between these better)
+//import { AzureASR, AzureTTS } from './speechProviders/AzureServices'; // --- the subscriptionKey and serviceRegion shouldn't be passed here ---
+import {  TestASR,  TestTTS } from './speechProviders/TestServices';
 
 // Azure keys - move these to env vars
 const subscriptionKey = '3249fb4e6d8248569b42d5dbf693c259';
@@ -57,7 +60,8 @@ function RecordButton({ parentCallback }) {
     // --------------------------------------------------------------------
     const asrRef = useRef(null);
     useEffect(() => {
-        asrRef.current = new AzureASR({subscriptionKey, serviceRegion,
+        //asrRef.current = new AzureASR({subscriptionKey, serviceRegion,   // (Azure version)
+        asrRef.current = new TestASR({
             onUtterance          : handleUtterance,
             onUserSpeakingChange : setUserSpeaking,
             onUserSpeakingStart  : checkOverlap
@@ -70,7 +74,8 @@ function RecordButton({ parentCallback }) {
     // --------------------------------------------------------------------
     const ttsRef = useRef(null);
     useEffect(() => {
-        ttsRef.current = new AzureTTS({subscriptionKey, serviceRegion,
+        //ttsRef.current = new AzureTTS({subscriptionKey, serviceRegion,   // (Azure version)
+        ttsRef.current = new TestTTS({
             onStart : ()  => setSystemSpeaking(true ),
             onDone  : ()  => setSystemSpeaking(false),
         });
