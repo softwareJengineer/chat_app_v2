@@ -26,7 +26,7 @@ function RecordButton({ parentCallback }) {
     // --------------------------------------------------------------------
     // References for user and system speaking status
     // --------------------------------------------------------------------
-    // Needed for the checkOverlap() function because it is passed to the TTS object
+    // Needed for the checkOverlap() function because it is passed to the ASR object
     const systemSpeakingRef = useRef(false);
     const userSpeakingRef   = useRef(false);
 
