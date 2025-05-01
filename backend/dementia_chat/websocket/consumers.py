@@ -19,9 +19,9 @@ from .. import config as cf
 # =======================================================================
 # Imports, Constants, Logging, and openSMILE
 # =======================================================================
-from biomarker_config  import *
-from biomarker_scores  import generate_biomarker_scores, generate_periodic_scores
-from process_utterance import respond_to_user_utt 
+from .biomarker_config  import *
+from .biomarker_scores  import generate_biomarker_scores, generate_periodic_scores
+from .process_utterance import respond_to_user_utt 
 
 # Configure logging
 logger = logging.getLogger(__name__)
