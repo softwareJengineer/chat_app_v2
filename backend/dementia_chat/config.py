@@ -16,7 +16,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 # =======================================================================
 # Global Variables
 # =======================================================================
-USE_CLOUD     = False   # (return default values instead of using the cloud APIs while testing)
+USE_CLOUD     = False  # (return default values instead of using the cloud APIs while testing)
+USE_LLM       = False  # (--- this might cause problems, but just have a setting where we don't actually need to load the LLM to test) 
 THIS_LANGUAGE = "en-US"
 
 script_check    = 1
@@ -66,9 +67,35 @@ logging.basicConfig(
 logging.getLogger("chardet.charsetprober").disabled = True
 logger = logging.getLogger(__name__)
 
+
 # =======================================================================
-# LLM Settings
+# Testing Utilities
 # =======================================================================
+class DummyLLM:
+    def __init__(self, *args, **kwargs):
+        logger.info("Dummy LLM initialized (no real model loaded)")
+
+    def __call__(self, prompt, max_tokens=None, stop=None, echo=False):
+        logger.info(f"Dummy LLM called with prompt: {prompt}")
+        return {"choices": [{"text": "This is a dummy response from the LLM."}] }
+
+# Check for model files individually
+def check_for_model_files(LLM_model_path, pronunciation_model_path, prosody_model_path):
+    missing_files = []
+    if not os.path.exists( LLM_model_path) and USE_LLM: missing_files.append(f"LLM_model_path: {                    LLM_model_path}")
+    if not os.path.exists(pronunciation_model_path)   : missing_files.append(f"pronunciation_model_path: {pronunciation_model_path}")
+    if not os.path.exists(      prosody_model_path)   : missing_files.append(f"prosody_model_path: {            prosody_model_path}")
+
+    if len(missing_files) > 0:
+        missing_str = f"Missing required file(s): {'; '.join(missing_files)}"
+        logger.error           (missing_str)
+        raise FileNotFoundError(missing_str)
+    
+
+# =======================================================================
+# LLM & Other Models' Settings
+# =======================================================================
+# For checking the model files are there
 current_path = os.path.dirname(os.path.abspath(__file__))
 
 # LLM Parameters
@@ -77,18 +104,19 @@ prompt = "You are an assistant for dementia patients. Provide any response as mu
 
 try:
     # Get paths to the saved models
-    model_path               = current_path + "/services/Phi-3_finetuned.gguf"
+    LLM_model_path           = current_path + "/services/Phi-3_finetuned.gguf"
     pronunciation_model_path = current_path + "/services/pronunciation_rf(v4).pkl"
     prosody_model_path       = current_path + "/services/prosody_rf(v1).pkl"
 
     # Make sure the saved models exist
-    if not os.path.exists(model_path) or not os.path.exists(pronunciation_model_path) or not os.path.exists(prosody_model_path):
-        logger.error(f"One of the files not found: {model_path, pronunciation_model_path, prosody_model_path}")
-        raise FileNotFoundError(f"Model file not found: {model_path, pronunciation_model_path, prosody_model_path}")
+    check_for_model_files(LLM_model_path, pronunciation_model_path, prosody_model_path)
 
-    # Load the saved LLM    
-    llm = Llama(model_path=model_path, n_ctx=max_length, n_threads=16, n_gpu_layers=0)
-    logger.info("LLM initialized successfully")
+    # Load the saved LLM model OR use a testing object that just returns sample data
+    if USE_LLM:
+        llm = Llama(model_path=LLM_model_path, n_ctx=max_length, n_threads=16, n_gpu_layers=0)
+        logger.info("LLM initialized successfully")
+    else:
+        llm = DummyLLM()
 
 except Exception as e:
     logger.error(f"Failed to initialize LLM: {e}")
