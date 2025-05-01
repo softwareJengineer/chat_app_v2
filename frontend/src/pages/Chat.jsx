@@ -5,9 +5,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { UserContext              } from "../App";
 
 import Header       from '../components/Header';
-import ChatHistory  from "../components/ChatHistory";
-import Avatar       from "../components/Avatar";
 import RecordButton from '../components/RecordButton';
+import ChatHistory  from "../components/chat/ChatHistory";
+import AvatarView   from "../components/chat/AvatarView";
 
 import calcAvgBiomarkerScores from "../functions/calcAvgBiomarkerScores";
 import { createChat }         from "../functions/apiRequests";
@@ -46,21 +46,22 @@ function Chat() {
     // on message -> addMessageToChat('AI', response.data, response.time); setChatbotMessage(response.data);
     // scores     -> else if (response.type.includes("scores")) {updateScores(response);}
     /*
-        const msgTime = date.getUTCHours() + ':' + date.getUTCMinutes() + ':' + date.getUTCSeconds();
-        console.log(`Recognized: ${transcription}`);
-        addMessageToChat('You', transcription, msgTime);
         
-        if (!start) { setStart(new Date()); }
+        console.log(`Recognized: ${transcription}`);
+     
+     
     */
 
     if (!start) { setStart(new Date()); }
-
+    
 
 
     
     // ====================================================================
     // Functions
     // ====================================================================
+    function getMessageTime() {const msgDate = new Date(); return msgDate.getUTCHours() + ':' + msgDate.getUTCMinutes() + ':' + msgDate.getUTCSeconds();}
+
     function addMessageToChat(sender, message, time) {setMessages((prevMessages) => [...prevMessages, { sender, message, time }]);};
 
     function updateScores(scores) {
@@ -100,35 +101,25 @@ function Chat() {
     }
 
 
-    // --------------------------------------------------------------------
-    // 
-    // --------------------------------------------------------------------
+    // ====================================================================
+    // Main view for the page
+    // ====================================================================
     function getView() {
-        if (viewMode == 1) {
+        const chatHistoryWrapper1 = "flex flex-col justify-self-center mt-[1em] mb-[2rem] h-[65vh] w-full md:w-1/2 md:border-x-1 md:border-blue-200";
+        const chatHistoryWrapper2 = "overflow-y-auto w-full md:w-1/2 h-1/2 md:h-full md:border-r-1 md:border-b-0 border-b-1 border-blue-200";
+
+        // Chat history or Avatar views separately
+        if      (viewMode == 1) {return (<div className={chatHistoryWrapper1}> <ChatHistory messages      ={ messages       }/> </div>);}
+        else if (viewMode == 3) {return (<div className="h-[65vh] mb-[2rem]">  <AvatarView  chatbotMessage={ chatbotMessage }/> </div>);}
+        
+        // Combined split view
+        else if (viewMode == 2) {
             return (
-                <div className="flex justify-self-center md:border-x-1 md:border-blue-200 mb-[2rem] flex-col h-[65vh] mt-[1em] md:w-1/2 w-full">
-                    <ChatHistory messages={messages} />
+                <div className="flex md:flex-row flex-col h-[65vh] mt-[1em] w-full mb-[2rem]">
+                    <div className={chatHistoryWrapper2}> <ChatHistory messages={messages}/> </div>
+                    <div className="md:w-1/2 w-[100vw] md:h-full h-1/2"> <AvatarView chatbotMessage={ chatbotMessage }/> </div>
                 </div> 
-            );
-        } else if (viewMode == 2) {
-            return (
-            <div className="flex md:flex-row flex-col h-[65vh] mt-[1em] w-full mb-[2rem]">
-                <div className="md:w-1/2 md:border-r-1 border-blue-200 overflow-y-auto md:border-b-0 border-b-1 w-full md:h-full h-1/2">
-                    <ChatHistory messages={messages} />
-                </div>
-                <div className="md:w-1/2 w-[100vw] md:h-full h-1/2">
-                    <div className="my-[1rem] flex justify-center bg-blue-200 p-[1em] rounded-lg mx-[25%]"> {chatbotMessage} </div>
-                    <Avatar />
-                </div>
-            </div> 
-            );
-        } else {
-            return (
-                <div className="h-[65vh] mb-[2rem]">
-                    <div className="my-[1rem] flex justify-center bg-blue-200 p-[1em] rounded-lg mx-[25%]"> {chatbotMessage} </div>
-                    <div className="h-full mt-[1em] w-full"> <Avatar /> </div>
-                </div>
-            )
+                );
         }
     }
 
@@ -152,9 +143,9 @@ function Chat() {
     }
 
 
-    // --------------------------------------------------------------------
-    // 
-    // --------------------------------------------------------------------
+    // ====================================================================
+    // Final returned UI 
+    // ====================================================================
     return (
         <>
             <Header title="Chat With Me!" page="chat"/>
@@ -165,14 +156,17 @@ function Chat() {
                     <ToggleButton id="avatar"   variant="outline-primary" value={3} onChange={(e) => setViewMode(e.currentTarget.value)}> Chatbot            </ToggleButton>
                 </ToggleButtonGroup>
             </div>
+
+            {/* View of the chatHistory and/or Avatar */}
             {getView()}
+            
+            {/* Buttons for starting/stopping the chat & saving the chat history */}
             <div className="flex flex-row justify-center mb-[2em] pt-[3em] gap-[4em] items-center">
                 <RecordButton
-                    onUserUtterance   = {(txt   ) => addMessageToChat ('You', txt, new Date())}
-                    onSystemUtterance = {(txt   ) => setChatbotMessage(txt)                   } 
-                    onScores          = {(scores) => updateScores     (scores)                }
+                    onUserUtterance   = {(txt   ) => addMessageToChat ('You', txt, getMessageTime())}
+                    onSystemUtterance = {(txt   ) => setChatbotMessage(txt)                         } 
+                    onScores          = {(scores) => updateScores     (scores)                      }
                 />
-
                 <Button className="border-1 p-[1em] rounded-med" variant="outline-primary" size="lg" onClick={handleShow}> Finish </Button>
             </div>
             <CloseModal/>
