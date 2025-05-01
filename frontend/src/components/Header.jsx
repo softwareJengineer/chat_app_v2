@@ -1,45 +1,17 @@
 import React, { useContext } from "react";
 import { Button } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
-import { UserContext } from "../App";
+import AuthContext from '../context/AuthContext';
 import { GoGear, GoGraph } from "react-icons/go";
 import { GrSchedules } from "react-icons/gr";
 import { IoExitOutline } from "react-icons/io5";
 import { FaRobot } from "react-icons/fa";
-import { logout } from "../functions/apiRequests";
 
 
 const Header = ({title, page}) => {
-	const { user, setUser, setSettings } = useContext(UserContext);
-	const location = useLocation();
-	const isCaregiver = user ? user.role !== "Patient" : false;
+	const { profile, logoutUser } = useContext(AuthContext);
+	const isCaregiver = profile.role !== "Patient";
 	const navigate = useNavigate();
-
-	function loginCaregiver() {
-		setUser({
-			caregiverUsername: "Caregiver",
-			role: "Caregiver",
-			caregiverFirstName: "Caregiver",
-			caregiverLastName: "Caregiver",
-			plwdUsername: "PLwD",
-			plwdFirstName: "PLwD",
-			plwdLastName: "PLwD",
-			settings: {}
-		})
-	}
-
-	function loginPatient() {
-		setUser({
-			caregiverUsername: "Caregiver",
-			role: "Patient",
-			caregiverFirstName: "Caregiver",
-			caregiverLastName: "Caregiver",
-			plwdUsername: "PLwD",
-			plwdFirstName: "PLwD",
-			plwdLastName: "PLwD",
-			settings: {}
-		})
-	}
 
 	const toDashboard = () => {
         navigate('/dashboard');
@@ -54,40 +26,14 @@ const Header = ({title, page}) => {
     }
 
 	const toHistory = () => {
-        navigate('/chathistory');
-    }
-
-    const toLogOut = async () => {
-		setUser(null);
-		setSettings({
-			'patientViewOverall': true,
-			'patientCanSchedule': true,
-		});
-		// await logout(); 
-        navigate('/');
+        navigate('/history');
     }
 
     const toSettings = () => {
         navigate('/settings');
     }
 
-	const toAnalysis = () => {
-        navigate('/analysis');
-    }
-
-	if (!user) {
-		return (
-		<>
-			<div className="flex flex-row gap-2">
-				<Button onClick={loginCaregiver}>Caregiver</Button>
-				<Button onClick={loginPatient}>PLwD</Button>
-			</div>
-			<div className="flex items-center">                
-				<h1>{title}</h1>
-			</div>
-		</>
-		)
-	} else if (isCaregiver) {
+	if (isCaregiver) {
 		return (
 		<>
 			<div className="mx-[2rem] mt-[2rem] flex flex-col gap-2">
@@ -124,7 +70,7 @@ const Header = ({title, page}) => {
 						<Button 
 							variant="outline-danger" 
 							style={{ display: 'flex', alignItems: 'center' }} 
-							onClick={toLogOut}
+							onClick={logoutUser}
 						>
 							<IoExitOutline size={25} style={{ marginRight: '2px' }}/> Log Out
 						</Button>
@@ -179,7 +125,7 @@ const Header = ({title, page}) => {
 						<Button 
 							variant="outline-danger" 
 							style={{ display: 'flex', alignItems: 'center' }} 
-							onClick={toLogOut}
+							onClick={logoutUser}
 						>
 							<IoExitOutline size={25} style={{ marginRight: '2px' }}/> Log Out
 						</Button>

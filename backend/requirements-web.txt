@@ -72,3 +72,5 @@ zope.event==5.0
 zope.interface==7.0.3
 django-cors-headers==3.14.0
 djangorestframework
+rest_framework_simplejwt
+djangorestframework-simplejwt

@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react"
 import ChatSummary from "../components/ChatSummary"
 import Header from "../components/Header";
-import { UserContext } from "../App";
+import AuthContext from '../context/AuthContext';
 import { FaUser } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import BiomarkerChart from "../components/BiomarkerChart";
@@ -12,28 +12,29 @@ import dummyChats from "../data/dummyChats.json";
 import blankChat from "../data/blankChat.json";
 
 function Dashboard() {
-    const {user} = useContext(UserContext);
+    const {profile, authTokens} = useContext(AuthContext);
     const [activeChart, setActiveChart] = useState("Overall");
 
     //FOR TESTING
-    const chats = dummyChats;
-    const chatData = dummyChats[0];
+    // const chats = dummyChats;
+    // const chatData = dummyChats[0];
     //END FOR TESTING
 
     //FOR DEPLOYMENT
-    // const [chats, setChats] = useState([]);
-    // const [chatData, setChatData] = useState(blankChat);
+    const [chats, setChats] = useState([]);
+    const [chatData, setChatData] = useState(blankChat);
 
-    // useEffect(() => {
-    //     const fetchChats = async () => {
-    //         const userChats = await getChats(user);
-    //         setChats(userChats);
-    //         setChatData(chats.length > 0 ? userChats[0] : blankChat);
-    //         console.log(userChats);
-    //     };
+    useEffect(() => {
+        const fetchChats = async () => {
+            const profileChats = await getChats(authTokens);
+            setChats(profileChats);
+            setChatData(chats.length > 0 ? profileChats[0] : blankChat);
+            console.log(profileChats);
+        };
 
-    //     fetchChats();
-    // }, []);
+        fetchChats();
+    }, []);
+    //END FOR DEPLOYMENT
 
     const getStyle = (chart) => {
         if (activeChart === chart) {
@@ -53,10 +54,10 @@ function Dashboard() {
             <div className="mx-[2rem] mb-[2rem] flex flex-col gap-2">
                 <div className="flex items-center gap-4 align-middle">
                     <FaUser size={50}/>
-                    <p className="align-middle">{user?.caregiverFirstName} {user?.caregiverLastName}</p>
+                    <p className="align-middle">{profile.caregiverFirstName} {profile.caregiverLastName}</p>
                     Care Partner
                     <FaUser size={50}/>
-                    <p className="align-middle">{user?.plwdFirstName} {user?.plwdLastName}</p>
+                    <p className="align-middle">{profile.plwdFirstName} {profile.plwdLastName}</p>
                     <div className="flex float-right ml-auto">
                         <Button variant="outline-primary">Download Report</Button>
                     </div>
@@ -77,7 +78,7 @@ function Dashboard() {
                         </button>
                     </span>
                     <br/>
-                    <p>{user.plwdFirstName}'s performance has remained steady the past few weeks.</p>
+                    <p>{profile.plwdFirstName}'s performance has remained steady the past few weeks.</p>
                     <p>There are 2 big drops on April 1 and April 2nd. You may want to follow up to see what's going on.</p>
                     <p>Good days:</p>
                     <p>Bad days:</p>

@@ -1,104 +1,96 @@
-from django.shortcuts import get_object_or_404, render, redirect
-from django.db import models
+# Django core imports
+from django.shortcuts import get_object_or_404
+from django.db import IntegrityError, transaction
 from django.contrib.auth.models import User
+from django.views.decorators.csrf import csrf_exempt
+
+# Django Rest Framework imports
+from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+# Local imports
 from ..models import Profile, Chat, Reminder, UserSettings
 from ..serializers import ChatSerializer, ReminderSerializer, UserSettingsSerializer
 from ..analysis import sentiment_scores, get_message_text, get_topics
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 
 import json
 
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
 
-# Create your views here.
-def index(request):
-    return render(request, 'index.html')
+        token['username'] = user.username
 
-@csrf_exempt
-def profile_view(request, username):
-    if request.method == 'GET':
-        user = User.objects.get(username=username)
-        profile = Profile.objects.get(pk=user)
-        
-        if profile is None:
-            return JsonResponse({
-                'success': False,
-                'error': 'Could not find the user.'
-            })
-            
-        return JsonResponse({
-            'success': True,
-            'username': user.username,
-            'firstName': user.first_name,
-            "lastName": user.last_name,
-        })
+        return token
 
-@csrf_exempt
-def login_view(request, TokenObtainPairView):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        username = data.get('username')
-        password = data.get('password')
-        
-        user = authenticate(username=username, password=password)
-        
-        if user is not None:
-            login(request, user)            
-            plwd = None
-            caregiver = None
-            role = ""
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
 
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticated]  # Ensure the user is authenticated
+
+    def get(self, request):
+        """Handles GET request to fetch the user's profile information"""
+
+        user = request.user
+
+        plwd = None
+        caregiver = None
+        role = ""
+        profile = None
+
+        # Try to get the Profile for the patient (plwd)
+        try:
+            profile = Profile.objects.get(plwd=user)
+            role = "Patient"
+            plwd = user
+            caregiver = profile.caregiver
+        except Profile.DoesNotExist:
+            # If the user is a caregiver, find the caregiver's profile
             try:
-                profile = Profile.objects.get(plwd=user)
-                role = "Patient"
-                plwd = user
-                caregiver = profile.caregiver
+                profile = Profile.objects.get(caregiver=user)
+                role = "Caregiver"
+                caregiver = user
+                plwd = profile.plwd
             except Profile.DoesNotExist:
-                try:
-                    profile = Profile.objects.get(caregiver=user)
-                    role = "Caregiver"
-                    caregiver = user
-                    plwd = profile.plwd
-                except Profile.DoesNotExist:
-                    try:
-                        profile = Profile.objects.get(linkedUser=user) 
-                        role = "Caregiver"
-                        caregiver = profile.caregiver
-                        plwd = profile.plwd
-                    except Profile.DoesNotExist:
-                        return JsonResponse({
-                            "success": False,
-                            "error": "Could not find the user."
-                        })
-            settings = UserSettings.objects.get(user=profile)
-            
-            return JsonResponse({
-                'success': True,
-                'plwdUsername': plwd.username,
-                'plwdFirstName': plwd.first_name,
-                "plwdLastName": plwd.last_name,
-                'caregiverUsername': caregiver.username,
-                'caregiverFirstName': caregiver.first_name,
-                'caregiverLastName': caregiver.last_name,
-                "role": role,
-                "settings": json.dumps(UserSettingsSerializer(settings).data),
-            })
-        else:
-            return JsonResponse({
-                'success': False,
-                'error': 'Invalid credentials'
-            }, status=400)
+                return Response({
+                    "success": False,
+                    "error": "Could not find the profile."
+                }, status=status.HTTP_404_NOT_FOUND)
 
-def logout_view(request):
-    logout(request)
+        # Get the associated user settings
+        settings = UserSettings.objects.get(user=profile)
+
+        # Serialize the user settings
+        settings_serializer = UserSettingsSerializer(settings)
+
+        # Return the profile information as a response
+        return Response({
+            'success': True,
+            'plwdUsername': plwd.username,
+            'plwdFirstName': plwd.first_name,
+            'plwdLastName': plwd.last_name,
+            'caregiverUsername': caregiver.username,
+            'caregiverFirstName': caregiver.first_name,
+            'caregiverLastName': caregiver.last_name,
+            'role': role,
+            'settings': settings_serializer.data,
+        })
     
-@csrf_exempt
-def signup_view(request):
-    if request.method == 'POST':
-        try: 
-            data = json.loads(request.body)
+class SignupView(APIView):
+    permission_classes = [AllowAny]
+    
+    @transaction.atomic
+    def post(self, request):
+        try:
+            data = request.data
+
+            # Get data from the request
             plwd_username = data.get('plwdUsername')
             plwd_password = data.get('plwdPassword')
             plwd_first_name = data.get('plwdFirstName')
@@ -107,151 +99,166 @@ def signup_view(request):
             caregiver_password = data.get('caregiverPassword')
             caregiver_first_name = data.get('caregiverFirstName')
             caregiver_last_name = data.get('caregiverLastName')
-            
-            
+
+            # Check if PLwD username already exists
             if User.objects.filter(username=plwd_username).exists():
-                return JsonResponse({
+                return Response({
                     'success': False,
                     'error': 'PLwD username already exists.'
-                }, status=400)
-                
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Check if Caregiver username already exists
             if User.objects.filter(username=caregiver_username).exists():
-                return JsonResponse({
+                return Response({
                     'success': False,
                     'error': 'Caregiver username already exists.'
-                }, status=400)
-                
-            plwd_user = User.objects.create_user(
-                username=plwd_username,
-                password=plwd_password,
-                first_name=plwd_first_name,
-                last_name=plwd_last_name,
-            )
-            
-            caregiver_user = User.objects.create_user(
-                username=caregiver_username,
-                password=caregiver_password,
-                first_name=caregiver_first_name,
-                last_name=caregiver_last_name
-            )
-            
-            profile = Profile.objects.create(plwd=plwd_user, caregiver=caregiver_user)
-            UserSettings.objects.create(user=profile)
-            
-            return JsonResponse({
+                }, status=status.HTTP_400_BAD_REQUEST)
+                        
+            # Create users within a transaction
+            with transaction.atomic():
+                try:
+                    # Create PLWD user
+                    plwd_user = User.objects.create_user(
+                        username=plwd_username,
+                        password=plwd_password,
+                        first_name=plwd_first_name,
+                        last_name=plwd_last_name,
+                    )
+
+                    # Create Caregiver user
+                    caregiver_user = User.objects.create_user(
+                        username=caregiver_username,
+                        password=caregiver_password,
+                        first_name=caregiver_first_name,
+                        last_name=caregiver_last_name,
+                    )
+
+                    # Create Profile and link plwd_user and caregiver_user
+                    profile = Profile.objects.create(plwd=plwd_user, caregiver=caregiver_user)
+
+                    # Now create UserSettings, passing the Profile object instead of User
+                    UserSettings.objects.create(user=profile)
+
+                except IntegrityError as e:
+                    return Response({
+                        'success': False,
+                        'error': f"IntegrityError: {str(e)}"
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                except Exception as e:
+                    return Response({
+                        'success': False,
+                        'error': f"Error: {str(e)}"
+                    }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            # Return success response with user data
+            return Response({
                 'success': True,
                 'plwdUsername': plwd_user.username,
                 'plwdFirstName': plwd_user.first_name,
-                "plwdLastName": plwd_user.last_name,
+                'plwdLastName': plwd_user.last_name,
                 'caregiverUsername': caregiver_user.username,
                 'caregiverFirstName': caregiver_user.first_name,
                 'caregiverLastName': caregiver_user.last_name
-            })
+            }, status=status.HTTP_201_CREATED)
         except json.JSONDecodeError:
-            # Handle invalid JSON error
-            return JsonResponse({
+            return Response({
                 'success': False,
                 'error': 'Invalid JSON format'
-            }, status=400)
-        
+            }, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            # Catch other potential errors and return a general error message
-            return JsonResponse({
+            return Response({
                 'success': False,
                 'error': str(e)
-            }, status=500)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@csrf_exempt
-# @login_required
-def user_settings_view(request, username):
-    if request.method == 'PUT':
-        data = json.loads(request.body)
+class UserSettingsView(APIView):
+    permission_classes = [IsAuthenticated]
+    def put(self, request):
+        data = request.data
         patientViewOverall = data.get('patientViewOverall')
         patientCanSchedule = data.get('patientCanSchedule')
-        user = User.objects.get(username=username)
+        user = request.user
         profile = None
         try:
-            profile = Profile.objects.get(plwd=user)
+            profile = Profile.objects.get(plwd=user)  # Try to get the profile for the patient
         except Profile.DoesNotExist:
             try:
-                profile = Profile.objects.get(caregiver=user)
-            except:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Could not find the user.'
-                })
-            
+                profile = Profile.objects.get(caregiver=user)  # If not found, try to get the caregiver profile
+            except Profile.DoesNotExist:
+                return Response({
+                    "success": False,
+                    "error": "Could not find the profile."
+                }, status=status.HTTP_404_NOT_FOUND)            
         settings = UserSettings.objects.get(user=profile)
         
-        if settings is not None:
-            settings.patientViewOverall=patientViewOverall
-            settings.patientCanSchedule=patientCanSchedule
-            settings.save()
-        else:
-            settings = UserSettings.objects.create(user=profile, patientViewOverall=patientViewOverall, patientCanSchedule=patientCanSchedule)
-            
-        return JsonResponse({
-            'success': True,
-            'patientViewOverall': settings.patientViewOverall,
-            'patientCanSchedule': settings.patientCanSchedule
-        })
-        
-    elif request.method == 'GET':
-        user = User.objects.get(username=username)
-        if user is None:
-            return JsonResponse({
-                'success': False,
-                'error': 'Could not find the user.'
-            })
-        
-        profile = None
-        try:
-            profile = Profile.objects.get(plwd=user)
-        except Profile.DoesNotExist:
-            try:
-                profile = Profile.objects.get(caregiver=user)
-            except:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Could not find the user.'
-                })
-            
-        settings = UserSettings.objects.get(user=profile)
-        
-        if settings is None:
-            return JsonResponse({
-                'success': False,
-                'error': 'Could not find the user settings.'
-            })
-        else:
-            return JsonResponse({
-            'success': True,
-            'patientViewOverall': settings.patientViewOverall,
-            'patientCanSchedule': settings.patientCanSchedule
-        })
+         # Try to get or create the UserSettings instance
+        settings, created = UserSettings.objects.get_or_create(user=profile)
+        settings.patientViewOverall = patientViewOverall
+        settings.patientCanSchedule = patientCanSchedule
+        settings.save()
 
-@csrf_exempt
-def chats_view(request, username):
-    if request.method == 'POST':
-        data = json.loads(request.body)
+        # Return success response
+        return Response({
+            'success': True,
+            'patientViewOverall': settings.patientViewOverall,
+            'patientCanSchedule': settings.patientCanSchedule
+        })
+        
+    def get(self, request):
+        user = request.user
+        profile = None
+        # Try to get the profile for either PLwD or Caregiver
+        try:
+            profile = Profile.objects.get(plwd=user)  # Try to get the profile for the patient
+        except Profile.DoesNotExist:
+            try:
+                profile = Profile.objects.get(caregiver=user)  # If not found, try to get the caregiver profile
+            except Profile.DoesNotExist:
+                return Response({
+                    "success": False,
+                    "error": "Could not find the profile."
+                }, status=status.HTTP_404_NOT_FOUND)
+
+        # Fetch user settings related to the profile
+        try:
+            settings = UserSettings.objects.get(user=profile)
+            return Response({
+                'success': True,
+                'patientViewOverall': settings.patientViewOverall,
+                'patientCanSchedule': settings.patientCanSchedule
+            })
+        except UserSettings.DoesNotExist:
+            return Response({
+                'success': False,
+                'error': 'Could not find the profile settings.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+class ChatsView(APIView):
+    permission_classes = [IsAuthenticated]  # Ensure the user is authenticated
+
+    def post(self, request):
+        """Handles POST request to create a new chat entry"""
+        data = request.data  # DRF automatically parses JSON data
         date = data.get('date')
         scores = data.get('scores')
         avgScores = data.get('avgScores')
         notes = data.get('notes')
         messages = data.get('messages')
         duration = data.get('duration')
-        user = User.objects.get(username=username)
+        user = request.user
+        
         profile = None
+        # Try to get the profile for either PLwD or Caregiver
         try:
-            profile = Profile.objects.get(plwd=user)
+            profile = Profile.objects.get(plwd=user)  # Try to get the profile for the patient
         except Profile.DoesNotExist:
             try:
-                profile = Profile.objects.get(caregiver=user)
-            except:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Could not find the user.'
-                })
+                profile = Profile.objects.get(caregiver=user)  # If not found, try to get the caregiver profile
+            except Profile.DoesNotExist:
+                return Response({
+                    "success": False,
+                    "error": "Could not find the profile."
+                }, status=status.HTTP_404_NOT_FOUND)
 
         sentiment = "N/A"
         topics = "N/A"
@@ -259,168 +266,130 @@ def chats_view(request, username):
         try:
             sentiment = sentiment_scores(message_text)
             topics = get_topics(message_text)
-        except:
-            pass
-        
-        chat = Chat.objects.create(user=profile, date=date, scores=scores, avgScores=avgScores, notes=notes, messages=messages, 
-                                   duration=duration, sentiment=sentiment, topics=topics)
+        except Exception as e:
+            pass  # If there is an error in extracting sentiment or topics, we will return "N/A"
 
-        return JsonResponse({
+        # Create the chat entry
+        chat = Chat.objects.create(
+            user=profile, date=date, scores=scores, avgScores=avgScores,
+            notes=notes, messages=messages, duration=duration,
+            sentiment=sentiment, topics=topics
+        )
+
+        # Return the created chat data
+        serializer = ChatSerializer(chat)
+        return Response({
             'success': True,
-            'date': chat.date,
-            'scores': chat.scores,
-            'avgScores': chat.avgScores,
-            'notes': chat.notes,
-            'messages': chat.messages,
-            'duration': chat.duration,
-            'sentiment': chat.sentiment,
-            'topics': chat.topics,
-            'id': chat.chatID
-        })
-    elif request.method == 'GET':
-        user = User.objects.get(username=username)
+            'data': serializer.data
+        } , status=status.HTTP_201_CREATED)
+
+    def get(self, request):
+        """Handles GET request to fetch user's chats"""
+        user = request.user
+        
+        # Try to get the profile for either PLwD or Caregiver
         profile = None
         try:
             profile = Profile.objects.get(plwd=user)
         except Profile.DoesNotExist:
             try:
                 profile = Profile.objects.get(caregiver=user)
-            except:
-                return JsonResponse({
+            except Profile.DoesNotExist:
+                return Response({
                     'success': False,
-                    'error': 'Could not find the user.'
-                })
-    
+                    'error': 'Could not find the profile.'
+                }, status=status.HTTP_404_NOT_FOUND)
 
+        # Fetch chats for the user
         chats = Chat.objects.filter(user=profile).order_by('-date')
-        
-        response = [json.dumps(ChatSerializer(chat).data) for chat in chats]
-        
-        return JsonResponse({
+        serializer = ChatSerializer(chats, many=True)
+
+        # Return the list of chats
+        return Response({
             'success': True,
-            'chats': response
+            'chats': serializer.data
         })
 
-        
-@csrf_exempt
-# @login_required
-def chat_view(request, username, chatID):
-    if request.method == 'GET':
-        user = User.objects.get(username=username)
-        
-        profile = None
-        try:
-            profile = Profile.objects.get(plwd=user)
-        except Profile.DoesNotExist:
-            try:
-                profile = Profile.objects.get(caregiver=user)
-            except:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Could not find the user.'
-                })
-            
-        chat = Chat.objects.get(pk=chatID)
-        
-        if chat is None:
-            return JsonResponse({
-                'success': False,
-                'error': 'Could not find the chat.'
-            })
-        
-        return JsonResponse({
-            'success': True,
-            'date': chat.date,
-            'scores': chat.scores,
-            'avgScores': chat.avgScores,
-            'notes': chat.notes,
-            'messages': chat.messages,
-            'duration': chat.duration,
-            'sentiment': chat.sentiment,
-            'topics': chat.topics
-        })
-        
-@csrf_exempt
-def chat_count_view(request, username):
-    if request.method == 'GET':
-        user = User.objects.get(username=username)
-        profile = None
-        try:
-            profile = Profile.objects.get(plwd=user)
-        except Profile.DoesNotExist:
-            try:
-                profile = Profile.objects.get(caregiver=user)
-            except:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Could not find the user.'
-                })
-    
+class ChatView(APIView):
+    permission_classes = [IsAuthenticated]  # Ensure the user is authenticated
 
-        chats = Chat.objects.filter(user=profile)
-        chat_count = chats.count()
+    def get(self, request, chatID):
+        """Handles GET request to fetch a specific chat"""
         
-        return JsonResponse({
+        # Fetch the chat using `get_object_or_404` for better error handling
+        chat = get_object_or_404(Chat, pk=chatID)
+        
+        # Serialize the chat object to JSON
+        serializer = ChatSerializer(chat)
+        
+        # Return the serialized data
+        return Response({
             'success': True,
-            'chat_count': chat_count
+            'chat': serializer.data
         })
-        
         
          
-@csrf_exempt
-# @login_required
-def reminder_view(request, username):
-    if request.method == 'POST':
-        data = json.loads(request.body)
+class ReminderView(APIView):
+    permission_classes = [IsAuthenticated]  # Ensure the user is authenticated
+
+    def post(self, request):
+        """Handles POST request to create a new reminder"""
+        data = request.data  # DRF automatically parses JSON data
         title = data.get('title')
         start = data.get('start')
         end = data.get('end')
-        rrule = data.get('rrule')
-        duration = data.get('duration')
-        user = User.objects.get(username=username)
+        startTime = data.get('startTime')
+        endTime = data.get('endTime')
+        repeatDay = data.get('repeatDay')
+        user = request.user
+        
         profile = None
+        # Try to get the profile for either PLwD or Caregiver
         try:
-            profile = Profile.objects.get(plwd=user)
+            profile = Profile.objects.get(plwd=user)  # Try to get the profile for the patient
         except Profile.DoesNotExist:
             try:
-                profile = Profile.objects.get(caregiver=user)
-            except:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Could not find the user.'
-                })
+                profile = Profile.objects.get(caregiver=user)  # If not found, try to get the caregiver profile
+            except Profile.DoesNotExist:
+                return Response({
+                    "success": False,
+                    "error": "Could not find the profile."
+                }, status=status.HTTP_404_NOT_FOUND)
+                
+        # Create the reminder
+        reminder = Reminder.objects.create(user=profile, title=title, start=start, end=end, startTime=startTime, endTime=endTime, repeatDay=repeatDay)
         
-        reminder = Reminder.objects.create(user=profile, title=title, start=start, end=end, rrule=rrule, duration=duration)
-        
-        return JsonResponse({
+        # Serialize the reminder and return the response
+        serializer = ReminderSerializer(reminder)
+        return Response({
             'success': True,
-            'title': reminder.title,
-            'start': reminder.start,
-            'end': reminder.end,
-            'rrule': reminder.rrule,
-            'duration': reminder.duration,
-        })
-    elif request.method == 'GET':
-        user = User.objects.get(username=username)
+            'reminder': serializer.data
+        }, status=status.HTTP_201_CREATED)
+
+    def get(self, request):
+        """Handles GET request to fetch all reminders for the authenticated user"""
+        user = request.user
+        
         profile = None
+        # Try to get the profile for either PLwD or Caregiver
         try:
-            profile = Profile.objects.get(plwd=user)
+            profile = Profile.objects.get(plwd=user)  # Try to get the profile for the patient
         except Profile.DoesNotExist:
             try:
-                profile = Profile.objects.get(caregiver=user)
-            except:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Could not find the user.'
-                })
-
+                profile = Profile.objects.get(caregiver=user)  # If not found, try to get the caregiver profile
+            except Profile.DoesNotExist:
+                return Response({
+                    "success": False,
+                    "error": "Could not find the profile."
+                }, status=status.HTTP_404_NOT_FOUND)
+                
+        # Fetch reminders for the user
         reminders = Reminder.objects.filter(user=profile)
-
         
-        response = [json.dumps(ReminderSerializer(reminder).data) for reminder in reminders]
+        # Serialize the list of reminders
+        serializer = ReminderSerializer(reminders, many=True)
         
-        return JsonResponse({
+        return Response({
             'success': True,
-            'reminders': response
+            'reminders': serializer.data
         })
-

@@ -3,7 +3,7 @@ import { Button } from "react-bootstrap";
 import Header from '../components/Header';
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Avatar from "../components/Avatar";
-import { UserContext } from "../App";
+import AuthContext from '../context/AuthContext';
 import { FcCalendar, FcClock, FcSms } from "react-icons/fc";
 import daysInARow from "../functions/daysInARow";
 import { getChats } from "../functions/apiRequests";
@@ -11,71 +11,69 @@ import GoalProgress from "../components/GoalProgress";
 import { IoThumbsUp } from "react-icons/io5";
 
 const Details = () => {
-    const { user, setUser, setSettings } = useContext(UserContext);
+    const { logoutUser, authTokens } = useContext(AuthContext);
     const [chats, setChats] = useState([]);
     const [chatCount, setChatCount] = useState(0);
     const location = useLocation();
-    // const chatData = location.state.chatData;
+    const chatData = location.state.chatData;
 
-    // useEffect(() => {
-    //     const fetchChats = async () => {
-    //         const userChats = await getChats(user);
-    //         setChats(userChats);
-    //         setChatCount(userChats.length);
-    //     };
+    useEffect(() => {
+        const fetchChats = async () => {
+            const userChats = await getChats(authTokens);
+            setChats(userChats);
+            setChatCount(userChats.length);
+        };
 
-    //     fetchChats();
-    // }, []);
+        fetchChats();
+    }, []);
 
     //FOR TESTING
-    const biomarkerData =  [
-        {
-            name: "Pragmatic",
-            data: []
-        },
-        {
-            name: "Grammar",
-            data: []
-        },
-        {
-            name: "Prosody",
-            data: []
-        },
-        {
-            name: "Pronunciation",
-            data: []
-        },
-        {
-            name: "Anomia",
-            data: []
-        },
-        {
-            name: "Turn Taking",
-            data: []
-        },
-    ];
-    const avg = {
-        "Pragmatic": 0,
-        "Grammar": 0,
-        "Prosody": 0,
-        "Pronunciation": 0,
-        "Anomia": 0,
-        "Turn Taking": 0
-    };
-    const chatData = {
-        user: user,
-        date: new Date(),
-        scores: biomarkerData,
-        avgScores: avg,
-        notes: "",
-        messages: [],
-        duration: 5,
-        sentiment: "Positive",
-        topics: "Holiday, daughter, dog"
-    }
+    // const biomarkerData =  [
+    //     {
+    //         name: "Pragmatic",
+    //         data: []
+    //     },
+    //     {
+    //         name: "Grammar",
+    //         data: []
+    //     },
+    //     {
+    //         name: "Prosody",
+    //         data: []
+    //     },
+    //     {
+    //         name: "Pronunciation",
+    //         data: []
+    //     },
+    //     {
+    //         name: "Anomia",
+    //         data: []
+    //     },
+    //     {
+    //         name: "Turn Taking",
+    //         data: []
+    //     },
+    // ];
+    // const avg = {
+    //     "Pragmatic": 0,
+    //     "Grammar": 0,
+    //     "Prosody": 0,
+    //     "Pronunciation": 0,
+    //     "Anomia": 0,
+    //     "Turn Taking": 0
+    // };
+    // const chatData = {
+    //     user: user,
+    //     date: new Date(),
+    //     scores: biomarkerData,
+    //     avgScores: avg,
+    //     notes: "",
+    //     messages: [],
+    //     duration: 5,
+    //     sentiment: "Positive",
+    //     topics: "Holiday, daughter, dog"
+    // }
     //END FOR TESTING
-
-    const navigate = useNavigate();
 
     const calcGoal = (chats) => {
         const goal = chats % 5;
@@ -83,20 +81,16 @@ const Details = () => {
     }
 
     const toLogOut = async () => {
-		setUser(null);
-		setSettings({
-			'patientViewOverall': true,
-			'patientCanSchedule': true,
-		});
-		// await logout(); 
-        navigate('/');
+		logoutUser();
     }
     
     return (
         <>
             <div className="float flex flex-row ml-auto gap-4 m-[1rem] justify-end">
                 <button className="text-blue-700">Go to Personal Page</button>
-                <button className="text-blue-700">Chat History</button>
+                <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/history'>
+                    <button className="text-blue-700 no-underline">Chat History</button>
+                </Link>
                 <button className="bg-blue-700 rounded p-2 text-white" onClick={() => toLogOut()}>Quit</button>
             </div>
             <div className="flex md:flex-row flex-col gap-4 mt-[1rem] mb-[3rem] md:min-h-[45vh]">
@@ -107,7 +101,7 @@ const Details = () => {
                     <p className="font-bold text-2xl">
                        You're doing fantastic!
                     </p>
-                    <GoalProgress current={chatCOunt}/>
+                    <GoalProgress current={chatCount}/>
                     <p className="flex flex-row items-center gap-4 text-xl">
                         <span>
                             <b className="text-blue-700 text-2xl"> {chatCount} </b> 

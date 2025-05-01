@@ -19,7 +19,7 @@ class UserSettingsSerializer(serializers.ModelSerializer):
 class ReminderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reminder
-        fields = ['title', 'start', 'end', 'rrule', 'duration']
+        fields = ['title', 'start', 'end', 'startTime', 'endTime', 'repeatDay']
         
 class ChatSerializer(serializers.ModelSerializer):
     class Meta:

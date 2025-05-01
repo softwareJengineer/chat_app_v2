@@ -1,10 +1,11 @@
 import React, { useContext } from "react";
 import compareScores from "../functions/compareScores";
-import { UserContext } from "../App";
+import AuthContext from '../context/AuthContext';
 import { useNavigate } from "react-router-dom";
 
 function ChatSummary({chatData, prevChatData, chats}) {
-    const {user} = useContext(UserContext);
+    const {profile} = useContext(AuthContext);
+
 
     const navigate = useNavigate();
 
@@ -27,7 +28,7 @@ function ChatSummary({chatData, prevChatData, chats}) {
         day: '2-digit',
       })
 
-    if (user.role === "Caregiver") {
+    if (profile.role === "Caregiver") {
         return (
             <div className="flex">
                 <button 

@@ -1,34 +1,36 @@
-import React, { useContext, useState } from "react"
-import { UserContext } from "../App";
+import React, { useContext, useState, useEffect } from "react"
+import AuthContext from '../context/AuthContext';
 import ChatSummary from "../components/ChatSummary"
 import { getChats } from "../functions/apiRequests";
-import dummyChats from "../data/dummyChats.json";
 import Header from "../components/Header";
 import { FaUser } from "react-icons/fa";
 import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
+import dummyChats from "../data/dummyChats.json";
+import blankChat from "../data/blankChat.json";
+
 function ChatHistory() {
-    const {user} = useContext(UserContext);
+    const {profile, authTokens} = useContext(AuthContext);
 
     //FOR TESTING
-    const chats = dummyChats;
+    // const chats = dummyChats;
     //END FOR TESTING
 
     //FOR DEPLOYMENT
-    // const [chats, setChats] = useState([]);
-    // const [chatData, setChatData] = useState(blankChat);
+    const [chats, setChats] = useState([]);
+    const [chatData, setChatData] = useState(blankChat);
 
-    // useEffect(() => {
-    //     const fetchChats = async () => {
-    //         const userChats = await getChats(user);
-    //         setChats(userChats);
-    //         setChatData(chats.length > 0 ? userChats[0] : blankChat);
-    //         console.log(userChats);
-    //     };
+    useEffect(() => {
+        const fetchChats = async () => {
+            const userChats = await getChats(authTokens);
+            setChats(userChats);
+            setChatData(chats.length > 0 ? userChats[0] : blankChat);
+        };
 
-    //     fetchChats();
-    // }, []);
+        fetchChats();
+    }, []);
+    //END FOR DEPLOYMENT
 
     return (
         <>
@@ -36,10 +38,10 @@ function ChatHistory() {
             <div className="mx-[2rem] mb-[2rem] flex flex-col gap-2">
                 <div className="flex items-center gap-4 align-middle">
                     <FaUser size={50}/>
-                    <p className="align-middle">{user?.caregiverFirstName} {user?.caregiverLastName}</p>
+                    <p className="align-middle">{profile.plwdFirstName} {profile.plwdLastName}</p>
                     Care Partner
                     <FaUser size={50}/>
-                    <p className="align-middle">{user?.plwdFirstName} {user?.plwdLastName}</p>
+                    <p className="align-middle">{profile.caregiverFirstName} {profile.caregiverLastName}</p>
                 </div>
                 <Link to="/settings">
                     Update profile

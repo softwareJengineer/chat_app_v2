@@ -37,11 +37,14 @@ function SignUp() {
             alert("PLwD passwords do not match.");
             return;
         } else if (formData.caregiverPassword !== formData.caregiverConfirmPassword) {
-            alert("PLwD passwords do not match.");
+            alert("Caregiver passwords do not match.");
             return;
         }
         const response = await signup(formData);
-        if (response) navigate('/login');
+        if (response) {
+            alert("Sign up successful!");
+            navigate('/login');
+        }
     };
 
     return (
