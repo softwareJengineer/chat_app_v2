@@ -36,7 +36,7 @@ function Chat() {
         {name: "Turn Taking",   data: []},
     ]);
 
-    useEffect(() => {console.log(messages);}, [messages]);
+    // useEffect(() => {console.log(messages);}, [messages]);
 
     const [showModal, setShowModal] = useState(false);
     const handleShow  = () => setShowModal(true );
@@ -80,7 +80,6 @@ function Chat() {
     };
 
     const saveChat = async () => {
-        setRecording(false);
         const end = new Date();
         const duration = Math.floor(((end - start) / 1000) / 60);
 
@@ -164,7 +163,7 @@ function Chat() {
             <div className="flex flex-row justify-center mb-[2em] pt-[3em] gap-[4em] items-center">
                 <RecordButton
                     onUserUtterance   = {(txt   ) => addMessageToChat ('You', txt, getMessageTime())}
-                    onSystemUtterance = {(txt   ) => setChatbotMessage(txt)                         } 
+                    onSystemUtterance = {(txt   ) => {setChatbotMessage(txt); addMessageToChat ('System', txt, getMessageTime()) }                        } 
                     onScores          = {(scores) => updateScores     (scores)                      }
                 />
                 <Button className="border-1 p-[1em] rounded-med" variant="outline-primary" size="lg" onClick={handleShow}> Finish </Button>
