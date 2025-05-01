@@ -58,7 +58,7 @@ export default function useSpeechEngine({
         wsRef.current.onerror   = (error) => {console.error("WebSocket connection failed, error:",  error);};
         wsRef.current.onmessage = (event) => {
             const { type, data } = JSON.parse(event.data); 
-            if      (type === 'llm_response'    ) {onSystemUtterance(data); speakResponse(data);}
+            if      (type === 'llm_response'    ) {console.log("LLM Response:",       data); onSystemUtterance(data); speakResponse(data);}
             else if (type === 'biomarker_scores') {console.log("Biomarker scores received"); onScores({ type, data });} 
             else if (type === 'periodic_scores' ) {console.log("Periodic scores received" ); onScores({ type, data });}
         };
