@@ -30,9 +30,9 @@ export class TestASR {
             if (!speaking) {
                 // Set speaking to true -> 1.2 seconds later the "utterance" is received
                 speaking = true; this.onUserSpeakingChange(true); this.onUserSpeakingStart();
-                setTimeout(() => {this.onUtterance('[test] Hello world'); speaking = false; this.onUserSpeakingChange(false);}, 1_200);
+                setTimeout(() => {this.onUtterance('[test] Hello world'); speaking = false; this.onUserSpeakingChange(false);}, 2_200);
             }
-        }, 3_000);
+        }, 5_000);
     }
 
     // Stop streaming
