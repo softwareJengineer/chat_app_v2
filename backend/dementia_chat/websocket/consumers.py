@@ -148,11 +148,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.send(json.dumps({'type': 'llm_response', 'data': response, 'time': system_time.strftime("%H:%M:%S")}))
                 
                 # Generate & send biomarker scores
-                biomarker_scores = generate_biomarker_scores(user_utt, self.conversation_start_time, self.prosody_model, self.pronunciation_model)
+                #logger.info(f"\nUser: {user_utt}\nSystem: {response}\n")
+                biomarker_scores = generate_biomarker_scores(
+                    user_utt, self.conversation_start_time, response,
+                    self.prosody_features, self.prosody_model, 
+                    self.pronunciation_features, self.pronunciation_model)
                 await self.send(json.dumps({'type': 'biomarker_scores', 'data': biomarker_scores})) 
 
                 # Add the most recent utterance to the history
                 self.user_utterances.append(user_utt)
+                print("\n\n")
             
             # -----------------------------------------------------------------------
             # Audio Data

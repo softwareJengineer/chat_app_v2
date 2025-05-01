@@ -76,7 +76,7 @@ class DummyLLM:
         logger.info("Dummy LLM initialized (no real model loaded)")
 
     def __call__(self, prompt, max_tokens=None, stop=None, echo=False):
-        logger.info(f"Dummy LLM called with prompt: {prompt}")
+        # logger.info(f"Dummy LLM called with prompt: {prompt}")
         return {"choices": [{"text": "This is a dummy response from the LLM."}] }
 
 # Check for model files individually

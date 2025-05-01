@@ -14,7 +14,7 @@ from .biomarker_models.coherence_function import coherence
 # Constants & Logging Setup
 # =======================================================================
 from .. import config as cf
-from biomarker_config import *
+from .biomarker_config import *
 
 chunk_size = int(WINDOW_SIZE / HOP_LENGTH)
 
@@ -43,12 +43,12 @@ def process_scores(features, model, chunk_size=chunk_size):
     chunks        = get_chunks(features, chunk_size)
     feature_array = reshape_data(np.array(chunks))
 
-    print(f'\tOriginal features shape: {features.shape}')
-    print(f'\tReshaped features shape: {feature_array.shape}')
+    #print(f'\tOriginal features shape: {features.shape}')
+    #print(f'\tReshaped features shape: {feature_array.shape}')
 
     # Use the given classifier to get probability values
     scores = get_probs(model, feature_array)
-    print(f"\tSCORES: {scores}\n")
+    #print(f"\tSCORES: {scores}\n")
     return scores
 
 
@@ -71,12 +71,12 @@ def get_speech_df(user_utt, global_llm_response):
 
     # Prepare the speech data - 'user' or 'robot' repeated for each word in the sentence + words from the utterances
     new_speech_dict = {'V1': user_column+robot_column, 'V2': words+resp_words}
-    print("new_speech_dict", new_speech_dict)    
-    logger.info(f"new_speech_dict conversation: {new_speech_dict}")
+    #print("new_speech_dict", new_speech_dict)    
+    #logger.info(f"new_speech_dict conversation: {new_speech_dict}")
     
     # Create the speech DataFrame
     speech_df = pd.DataFrame(new_speech_dict)
-    logger.info(f"created new history speech dataframe: {speech_df}")
+    #logger.info(f"created new history speech dataframe: {speech_df}")
 
     return speech_df
 
@@ -118,21 +118,27 @@ def generate_altered_grammar_score(user_utt, conversation_start_time):
         current_duration = time() - conversation_start_time
         altered_grammar_score = generate_grammar_score(list(user_utt), current_duration)
     except Exception as e: 
-        logger.error(f"Error calculating altered grammar score: {e}"); return 1
+        logger.error(f"Error calculating altered grammar score: {e}"); altered_grammar_score = 1
     
-    print("altered_grammar_score", altered_grammar_score)
+    logger.info(f"Calculated Altered Grammar Score: {altered_grammar_score:.4f}")
     return altered_grammar_score
 
 
 # Prosody
 def generate_prosody_score(prosody_features, prosody_model):
-    try: return process_scores(prosody_features, prosody_model)
+    try:
+        score = process_scores(prosody_features, prosody_model)[0]
+        logger.info(f"Prosody Score: {score:.4f}")
+        return score
     except Exception as e: logger.error(f"Error processing prosody features: {e}"); return 1
 
 
 # Pronunciation
 def generate_pronunciation_score(pronunciation_features, pronunciation_model):
-    try: return process_scores(pronunciation_features, pronunciation_model)
+    try: 
+        score = process_scores(pronunciation_features, pronunciation_model)[0]
+        logger.info(f"Pronunciation Score: {score:.4f}")
+        return score
     except Exception as e: logger.error(f"Error processing pronunciation features: {e}"); return 1
 
 
@@ -160,9 +166,9 @@ def generate_turntaking_score(overlapped_speech_count):
 # =======================================================================
 # Generate Each Biomarker Score
 # =======================================================================
-def generate_biomarker_scores(user_utt, conversation_start_time, prosody_features, prosody_model, pronunciation_features, pronunciation_model):
+def generate_biomarker_scores(user_utt, conversation_start_time, LLM_response, prosody_features, prosody_model, pronunciation_features, pronunciation_model):
     return {
-        "pragmatic"     : 1.0 - generate_pragmatic_score      (user_utt                                   ),
+        "pragmatic"     : 1.0 - generate_pragmatic_score      (user_utt, LLM_response                     ),
         "grammar"       : 1.0 - generate_altered_grammar_score(user_utt, conversation_start_time          ),
         "prosody"       : 1.0 - generate_prosody_score        (prosody_features,       prosody_model      ),
         "pronunciation" : 1.0 - generate_pronunciation_score  (pronunciation_features, pronunciation_model),

@@ -1,16 +1,8 @@
-import sys
-import keyboard
-import re
-import azure.cognitiveservices.speech as speechsdk
-import csv
-import time
-import datetime
-
 # Imports
-import config as cf
+from .. import config as cf
 import dementia_chat.services.tts as tts
 
-from biomarker_config import LAST_X_CHAT_ENTRIES
+from .biomarker_config import LAST_X_CHAT_ENTRIES
 
 # =======================================================================
 # Set API Keys & Logger
@@ -64,8 +56,9 @@ def respond_to_user_utt(user_utt, chat_history):
         system_utt = (output['choices'][0]['text'].split("<|assistant|>")[-1]).strip()
 
         # Synthesize the utterance into audio output (text-to-speech)
-        if cf.USE_CLOUD: tts.synthesize_utt(system_utt)
-        else: print(f"TESTING MODE: Skipping TTS. Response would have been: {system_utt}")
+        #if cf.USE_CLOUD: tts.synthesize_utt(system_utt)
+        #else: print(f"TESTING MODE: Skipping TTS. Response would have been: {system_utt}")
+        return system_utt
 
     # If error occurs, write down the error at the logs/dm.log file
     except Exception as err:

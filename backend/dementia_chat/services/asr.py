@@ -7,7 +7,7 @@ import time
 import datetime
 
 # Imports
-import config as cf
+from .. import config as cf
 import dementia_chat.services.tts as tts
 
 # =======================================================================
