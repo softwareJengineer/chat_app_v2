@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext'
+
 import Chat from './pages/Chat';
 import Details from './pages/Details';
 import NewEntry from "./pages/NewEntry";
@@ -12,38 +14,30 @@ import Home from "./pages/Home";
 import ChatDetails from "./pages/ChatDetails";
 import ChatHistory from "./pages/ChatHistory";
 import Analysis from "./pages/Analysis";
+import LoadingPage from "./pages/LoadingPage";
 
-export const UserContext = React.createContext(null);
+import PrivateRoute from './utils/PrivateRoute';
 
-function App() {
-    const [user, setUser] = useState(null);
-    const [settings, setSettings] = useState({
-        'patientViewOverall': true,
-        'patientCanSchedule': true,
-    });
-    
+
+function App() {    
         return (
-        <UserContext.Provider value={{ 
-            user: user, 
-            setUser: setUser, 
-            settings: settings, 
-            setSettings: setSettings, 
-        }}>
+        <AuthProvider>
             <Routes>
                 <Route exact path='/' element={<Home/>}></Route>
-                <Route path='/chat' element={<Chat/>}></Route>
-                <Route path='/details' element={<Details/>}></Route>
-                <Route path='/new' element={<NewEntry/>}></Route>
-                <Route path='/dashboard' element={<Dashboard/>}></Route>
                 <Route path='/login' element={<Login/>}></Route>
                 <Route path='/signup' element={<SignUp/>}></Route>
-                <Route path='/schedule' element={<Schedule/>}></Route>
-                <Route path='/settings' element={<Settings/>}></Route>
-                <Route path='/chatdetails' element={<ChatDetails/>}></Route>
-                <Route path="/chathistory" element={<ChatHistory/>}></Route>
-                <Route path="/analysis" element={<Analysis/>}></Route>
+                <Route path='/chat' element={<PrivateRoute><Chat/></PrivateRoute>}></Route>
+                <Route path='/details' element={<PrivateRoute><Details/></PrivateRoute>}></Route>
+                <Route path='/new' element={<PrivateRoute><NewEntry/></PrivateRoute>}></Route>
+                <Route path='/dashboard' element={<PrivateRoute><Dashboard/></PrivateRoute>}></Route>
+                <Route path='/schedule' element={<PrivateRoute><Schedule/></PrivateRoute>}></Route>
+                <Route path='/settings' element={<PrivateRoute><Settings/></PrivateRoute>}></Route>
+                <Route path='/chatdetails' element={<PrivateRoute><ChatDetails/></PrivateRoute>}></Route>
+                <Route path="/chathistory" element={<PrivateRoute><ChatHistory/></PrivateRoute>}></Route>
+                <Route path="/analysis" element={<PrivateRoute><Analysis/></PrivateRoute>}></Route>
+                <Route path='/loading' element={<PrivateRoute><LoadingPage/></PrivateRoute>}></Route>
             </Routes>
-            </UserContext.Provider>
+            </AuthProvider>
         );
 }
 

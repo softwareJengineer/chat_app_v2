@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 import { Button } from "react-bootstrap";
 import Header from "../components/Header";
 import ScoreRadarChart from "../components/ScoreRadarChart";
-import { UserContext } from "../App";
+import AuthContext from '../context/AuthContext';
 import { FaUser } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import Avatar from "../components/Avatar";
@@ -14,7 +14,7 @@ import GoalProgress from "../components/GoalProgress";
 import { GiAlarmClock, GiPartyPopper, GiRobotAntennas } from "react-icons/gi";
 
 function OgDashboard() {
-    const { user } = useContext(UserContext);
+    const { user } = useContext(AuthContext);
     const [chats, setChats] = useState([dummyChats]);
     const [chatData, setChatData] = useState(dummyChats[0]);
     const [prevChatData, setPrevChatData] = useState(dummyChats[1]);

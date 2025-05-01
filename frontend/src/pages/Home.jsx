@@ -1,11 +1,11 @@
 import React, { useContext, useState } from "react"
-import { UserContext } from "../App";
+import AuthContext from '../context/AuthContext';
 import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 
 function Home() {
-    const {user, setUser} = useContext(UserContext);
+    const {user} = useContext(AuthContext);
 
     const navigate = useNavigate();
 

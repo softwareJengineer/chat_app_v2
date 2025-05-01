@@ -1,41 +1,3 @@
-const login = async (loginData) => {
-    try {
-        const response = await fetch('http://localhost:8000/api/login/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(loginData)
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            const user = {
-                role: data.role,
-                plwdUsername: data.plwdUsername,
-                plwdFirstName: data.plwdFirstName,
-                plwdLastName: data.plwdLastName,
-                caregiverUsername: data.caregiverUsername,
-                caregiverFirstName: data.caregiverFirstName,
-                caregiverLastName: data.caregiverLastName,
-            };
-            const settingsJson = JSON.parse(data.settings);
-            const settings = {
-                patientViewOverall: settingsJson.patientViewOverall,
-                patientCanSchedule: settingsJson.patientCanSchedule
-            };
-            return { user, settings }; 
-        } else {
-            alert(data.error);
-            return false;
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        return false;
-    }
-}
-
 const logout = async () => {
     try {
         const response = await fetch('http://localhost:8000/api/logout/', {
@@ -81,10 +43,9 @@ const signup = async (signupData) => {
     }
 }
 
-const getReminders = async (user) => {
+const getReminders = async () => {
     try {
-        const username = user.role == 'Caregiver' ? user.caregiverUsername : user.plwdUsername;
-        const response = await fetch(`http://localhost:8000/api/reminders/${username}/`, {
+        const response = await fetch(`http://localhost:8000/api/reminders/`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -115,10 +76,9 @@ const getReminders = async (user) => {
     }
 }
 
-const createReminder = async (user, title, start, end, rrule, duration) => {
+const createReminder = async (title, start, end, rrule, duration) => {
     try {
-        const username = user.role == 'Caregiver' ? user.caregiverUsername : user.plwdUsername;
-        const response = await fetch(`http://localhost:8000/api/reminders/${username}/`, {
+        const response = await fetch(`http://localhost:8000/api/reminders/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -145,15 +105,14 @@ const createReminder = async (user, title, start, end, rrule, duration) => {
     }
 };
 
-const editSettings = async (user, settings) => {
+const editSettings = async (settings) => {
     try {
-        const username = user.role == 'Caregiver' ? user.caregiverUsername : user.plwdUsername;
-        const response = await fetch(`http://localhost:8000/api/settings/${username}/`, {
+        const response = await fetch(`http://localhost:8000/api/settings/`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ ...settings, user: user })
+            body: JSON.stringify({ ...settings })
         });
 
         const data = await response.json();
@@ -171,10 +130,9 @@ const editSettings = async (user, settings) => {
     }
 };
 
-const createChat = async (user, chatData) => {
+const createChat = async (chatData) => {
     try {
-        const username = user.role == 'Caregiver' ? user.caregiverUsername : user.plwdUsername;
-        const response = await fetch(`http://localhost:8000/api/chats/${username}/`, {
+        const response = await fetch(`http://localhost:8000/api/chats/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -196,10 +154,9 @@ const createChat = async (user, chatData) => {
     }
 };
 
-const getChats = async (user) => {
+const getChats = async () => {
     try {
-        const username = user.role == 'Caregiver' ? user.caregiverUsername : user.plwdUsername;
-        const response = await fetch(`http://localhost:8000/api/chats/${username}/`, {
+        const response = await fetch(`http://localhost:8000/api/chats/`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -226,10 +183,9 @@ const getChats = async (user) => {
 };
 
 
-const getChat = async (user, chatID) => {
+const getChat = async (chatID) => {
     try {
-        const username = user.role == 'Caregiver' ? user.caregiverUsername : user.plwdUsername;
-        const response = await fetch(`http://localhost:8000/api/chat/${username}/chatid/${chatID}`, {
+        const response = await fetch(`http://localhost:8000/api/chat/chatid/${chatID}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -252,10 +208,9 @@ const getChat = async (user, chatID) => {
     }
 };
 
-const getChatCount = async (user) => {
+const getChatCount = async () => {
     try {
-        const username = user.role == 'Caregiver' ? user.caregiverUsername : user.plwdUsername;
-        const response = await fetch(`http://localhost:8000/api/chatcount/${username}/`, {
+        const response = await fetch(`http://localhost:8000/api/chatcount/`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -277,4 +232,4 @@ const getChatCount = async (user) => {
 };
 
 
-export {login, logout, signup, getReminders, createReminder, editSettings, createChat, getChats, getChat, getChatCount};
+export {logout, signup, getReminders, createReminder, editSettings, createChat, getChats, getChat, getChatCount};

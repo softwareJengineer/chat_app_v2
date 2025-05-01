@@ -1,8 +1,9 @@
 import React from "react";
-import ReactWordcloud from 'react-wordcloud';
+// import ReactWordcloud from 'react-wordcloud';
+import { WordCloud } from "@isoterik/react-word-cloud";
 import dummyChats from "../data/dummyChats.json";
 
-function WordCloud({messages}) {
+function MyWordCloud({messages}) {
     const chats = dummyChats;
     const chatData = chats[0];
 
@@ -50,11 +51,12 @@ function WordCloud({messages}) {
     return (
         <div className="w-full md:h-[30vh] h-[40vh]">
             {messages.length > 0 ? 
-            <ReactWordcloud words={words} maxWords={30} options={options}/> : 
+            <WordCloud words={words} width={500} height={500} />:
+            // <ReactWordcloud words={words} maxWords={30} options={options}/> : 
             <p className="text-5xl">Not available</p>
             }
         </div>
     )
 }
 
-export default WordCloud;
+export default MyWordCloud;

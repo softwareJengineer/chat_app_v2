@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react"
-import { UserContext } from "../App";
+import AuthContext from '../context/AuthContext';
 import ChatSummary from "../components/ChatSummary"
 import { getChats } from "../functions/apiRequests";
 import dummyChats from "../data/dummyChats.json";
@@ -9,26 +9,26 @@ import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 function ChatHistory() {
-    const {user} = useContext(UserContext);
+    const {user} = useContext(AuthContext);
 
     //FOR TESTING
-    const chats = dummyChats;
+    // const chats = dummyChats;
     //END FOR TESTING
 
     //FOR DEPLOYMENT
-    // const [chats, setChats] = useState([]);
-    // const [chatData, setChatData] = useState(blankChat);
+    const [chats, setChats] = useState([]);
+    const [chatData, setChatData] = useState(blankChat);
 
-    // useEffect(() => {
-    //     const fetchChats = async () => {
-    //         const userChats = await getChats(user);
-    //         setChats(userChats);
-    //         setChatData(chats.length > 0 ? userChats[0] : blankChat);
-    //         console.log(userChats);
-    //     };
+    useEffect(() => {
+        const fetchChats = async () => {
+            const userChats = await getChats(user);
+            setChats(userChats);
+            setChatData(chats.length > 0 ? userChats[0] : blankChat);
+            console.log(userChats);
+        };
 
-    //     fetchChats();
-    // }, []);
+        fetchChats();
+    }, []);
 
     return (
         <>

@@ -6,7 +6,7 @@ import Avatar from "../components/Avatar";
 import { BsStopCircle, BsPlayCircle } from "react-icons/bs";
 import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
 import { useNavigate, useLocation } from "react-router-dom";
-import { UserContext } from "../App";
+import AuthContext from '../context/AuthContext';
 import calcAvgBiomarkerScores from "../functions/calcAvgBiomarkerScores";
 import { createChat } from "../functions/apiRequests";
 import dummyChats from "../data/dummyChats.json";
@@ -25,7 +25,7 @@ const ws = new WebSocket(wsUrl);
 
 function Chat() {
     const location = useLocation();
-    const {user} = useContext(UserContext);
+    const {user} = useContext(AuthContext);
     const [recording, setRecording] = useState(false);
     const [systemSpeaking, setSystemSpeaking] = useState(false);
     const [userSpeaking, setUserSpeaking] = useState(false);

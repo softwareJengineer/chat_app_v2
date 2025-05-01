@@ -1,10 +1,10 @@
 import React, { useContext } from "react";
 import compareScores from "../functions/compareScores";
-import { UserContext } from "../App";
+import AuthContext from '../context/AuthContext';
 import { useNavigate } from "react-router-dom";
 
 function ChatSummary({chatData, prevChatData, chats}) {
-    const {user} = useContext(UserContext);
+    const {user} = useContext(AuthContext);
 
     const navigate = useNavigate();
 

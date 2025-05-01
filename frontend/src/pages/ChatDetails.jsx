@@ -1,9 +1,8 @@
 import React, { useContext } from "react";
 import Header from "../components/Header";
-import { UserContext } from "../App";
 import { FaUser } from "react-icons/fa";
 import { Link, useLocation } from "react-router-dom";
-import WordCloud from "../components/WordCloud";
+import MyWordCloud from "../components/WordCloud";
 import Avatar from "../components/Avatar";
 import GoalProgress from "../components/GoalProgress";
 import { Button } from "react-bootstrap";
@@ -12,7 +11,7 @@ import { IoThumbsUp } from "react-icons/io5";
 import daysInARow from "../functions/daysInARow";
 
 function ChatDetails() {
-    const { user } = useContext(UserContext);
+    const { user } = useContext(AuthContext);
     const location = useLocation();
     const chatData = location.state?.chatData;
     const prevChatData = location.state?.prevChatData ? 
@@ -162,7 +161,7 @@ function ChatDetails() {
             <div className="grid md:grid-cols-2 grid-cols-1 h-full justify-stretch m-[2rem] gap-4">
                 <div className={cardStyle}>
                     {cardHeader("Daily Topics")}
-                    <WordCloud messages={chatData.messages} />
+                    <MyWordCloud messages={chatData.messages} />
                 </div>
                 <div className={cardStyle}>
                     {cardHeader("Mood Track")}

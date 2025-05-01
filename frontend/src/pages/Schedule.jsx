@@ -3,7 +3,7 @@ import { Button, Modal, Form } from "react-bootstrap";
 import Header from "../components/Header";
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
-import { UserContext } from "../App";
+import AuthContext from '../context/AuthContext';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { createReminder, getReminders } from "../functions/apiRequests";
 import FullCalendar from '@fullcalendar/react';
@@ -12,7 +12,7 @@ import rrulePlugin from '@fullcalendar/rrule';
 
 
 function Schedule() {
-    const { user } = useContext(UserContext);
+    const { user } = useContext(AuthContext);
     const [reminders, setReminders] = useState([]);
     const [showNewReminder, setShowNewReminder] = useState(false);
     const [title, setTitle] = useState('');

@@ -10,7 +10,7 @@ class Profile(models.Model):
     linkedUser = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
     
     def __str__(self):
-        return self.user.username + " is linked to " + self.linked.username
+        return self.plwd.username + " is linked to " + self.caregiver.username
 
 class Chat(models.Model):
     chatID = models.BigAutoField(auto_created=True, primary_key=True, serialize=False)
