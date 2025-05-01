@@ -10,7 +10,7 @@ import { Link, useLocation } from "react-router-dom";
 import ChatLog from "../components/ChatLog";
 
 function Analysis() {
-    const {user} = useContext(AuthContext);
+    const {profile, authTokens} = useContext(AuthContext);
     const location = useLocation();
     const chatData = location.state.chatData;
     const prevChatData = location.state.prevChatData;
@@ -20,7 +20,7 @@ function Analysis() {
         <>
             <Header title="Transcript Analysis" page="analysis" />
             <div className="m-[2rem]">
-                <ChatLog messages={chatData.messages} firstName={user.plwdFirstName} lastName={user.plwdLastName} date={chatData.date}/>
+                <ChatLog messages={chatData.messages} firstName={profile.plwdFirstName} lastName={profile.plwdLastName} date={chatData.date}/>
             </div>
         </>
     )

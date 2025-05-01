@@ -1,30 +1,9 @@
-const logout = async () => {
-    try {
-        const response = await fetch('http://localhost:8000/api/logout/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            alert("Log out successful.");
-        } else {
-            console.error("Log out failed: " + data.error);
-        }
-    } catch (error) {
-        alert(error);
-    }
-}
-
 const signup = async (signupData) => {
     try {
         const response = await fetch('http://localhost:8000/api/signup/', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(signupData)
         });
@@ -43,12 +22,13 @@ const signup = async (signupData) => {
     }
 }
 
-const getReminders = async () => {
+const getReminders = async (authTokens) => {
     try {
         const response = await fetch(`http://localhost:8000/api/reminders/`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization':'Bearer ' + String(authTokens.access)
             }
         });
 
@@ -57,13 +37,9 @@ const getReminders = async () => {
         if (data.success) {
             const reminders = data.reminders;
             return reminders.map(reminder => {
-                let obj = JSON.parse(reminder);
-                obj.start = new Date(obj.start);
-                obj.end = new Date(obj.end);
-                if (obj.rrule) {
-                    obj.rrule = JSON.parse(obj.rrule);
-                    obj.rrule.dtstart = new Date(obj.rrule.dtstart);
-                }
+                let obj = reminder;
+                if (obj.start) obj.start = new Date(obj.start);
+                if (obj.end) obj.end = new Date(obj.end);
                 return obj;
             });
         } else {
@@ -76,19 +52,18 @@ const getReminders = async () => {
     }
 }
 
-const createReminder = async (title, start, end, rrule, duration) => {
+const createReminder = async (title, start, end, authTokens) => {
     try {
         const response = await fetch(`http://localhost:8000/api/reminders/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization':'Bearer ' + String(authTokens.access)
             },
             body: JSON.stringify({
                 title: title,
                 start: start,
                 end: end,
-                rrule: rrule,
-                duration: duration,
             })
         });
 
@@ -105,12 +80,42 @@ const createReminder = async (title, start, end, rrule, duration) => {
     }
 };
 
-const editSettings = async (settings) => {
+const createRepeatReminder = async (title, startTime, endTime, repeatDay, authTokens) => {
+    try {
+        const response = await fetch(`http://localhost:8000/api/reminders/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization':'Bearer ' + String(authTokens.access)
+            },
+            body: JSON.stringify({
+                title: title,
+                startTime: startTime,
+                endTime: endTime,
+                repeatDay: repeatDay
+            })
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            alert(data.error);
+            return false;
+        }
+        return true;
+    } catch (error) {
+        console.error('Error with creating reminder:', error);
+        return false;
+    }
+};
+
+const editSettings = async (settings, authTokens) => {
     try {
         const response = await fetch(`http://localhost:8000/api/settings/`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization':'Bearer ' + String(authTokens.access)
             },
             body: JSON.stringify({ ...settings })
         });
@@ -130,12 +135,13 @@ const editSettings = async (settings) => {
     }
 };
 
-const createChat = async (chatData) => {
+const createChat = async (chatData, authTokens) => {
     try {
         const response = await fetch(`http://localhost:8000/api/chats/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization':'Bearer ' + String(authTokens.access)
             },
             body: JSON.stringify(chatData)
         });
@@ -154,12 +160,13 @@ const createChat = async (chatData) => {
     }
 };
 
-const getChats = async () => {
+const getChats = async (authTokens) => {
     try {
         const response = await fetch(`http://localhost:8000/api/chats/`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization':'Bearer ' + String(authTokens.access)
             }
         });
 
@@ -168,7 +175,7 @@ const getChats = async () => {
         if (data.success) {
             const chats = data.chats;
             return chats.map(chat => {
-                let obj = JSON.parse(chat);
+                let obj = chat;
                 obj.date = new Date(obj.date);
                 return obj;
             });
@@ -183,19 +190,20 @@ const getChats = async () => {
 };
 
 
-const getChat = async (chatID) => {
+const getChat = async (chatID, authTokens) => {
     try {
         const response = await fetch(`http://localhost:8000/api/chat/chatid/${chatID}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization':'Bearer ' + String(authTokens.access)
             }
         });
 
         const data = await response.json();
 
         if (data.success) {
-            let chat = JSON.parse(data.chat);
+            let chat = chat;
             chat.date = new Date(chat.date);
             return chat;
         } else {
@@ -208,28 +216,5 @@ const getChat = async (chatID) => {
     }
 };
 
-const getChatCount = async () => {
-    try {
-        const response = await fetch(`http://localhost:8000/api/chatcount/`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
 
-        const data = await response.json();
-
-        if (data.success) {
-            return data.chat_count;
-        } else {
-            console.error("Could not fetch chat: " + data.error);
-            return 0;
-        }
-    } catch (error) {
-        alert(error);
-        return 0;
-    }
-};
-
-
-export {logout, signup, getReminders, createReminder, editSettings, createChat, getChats, getChat, getChatCount};
+export {signup, getReminders, createReminder, createRepeatReminder, editSettings, createChat, getChats, getChat};

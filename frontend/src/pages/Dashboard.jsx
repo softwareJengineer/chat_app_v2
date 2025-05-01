@@ -12,7 +12,7 @@ import dummyChats from "../data/dummyChats.json";
 import blankChat from "../data/blankChat.json";
 
 function Dashboard() {
-    const {profile} = useContext(AuthContext);
+    const {profile, authTokens} = useContext(AuthContext);
     const [activeChart, setActiveChart] = useState("Overall");
 
     //FOR TESTING
@@ -26,7 +26,7 @@ function Dashboard() {
 
     useEffect(() => {
         const fetchChats = async () => {
-            const profileChats = await getChats();
+            const profileChats = await getChats(authTokens);
             setChats(profileChats);
             setChatData(chats.length > 0 ? profileChats[0] : blankChat);
             console.log(profileChats);
@@ -34,6 +34,7 @@ function Dashboard() {
 
         fetchChats();
     }, []);
+    //END FOR DEPLOYMENT
 
     const getStyle = (chart) => {
         if (activeChart === chart) {

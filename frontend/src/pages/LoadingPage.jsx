@@ -19,8 +19,7 @@ const LoadingPage = () => {
         }
         })
         let data = await response.json()
-        console.log(data)
-        if(response.status === 200){
+        if(data.success) {
             setProfile({
                 plwdFirstName: data.plwdFirstName,
                 plwdLastName: data.plwdLastName,
@@ -30,14 +29,17 @@ const LoadingPage = () => {
                 caregiverUsername: data.caregiverUsername,
                 role: data.role
             });
-            setSettings(JSON.parse(data.settings));
+            setSettings(data.settings);
             if (data.role === 'Patient') {
                 navigate('/chat');
             } else {
                 navigate('/dashboard')
             }
         } else if(response.statusText === 'Unauthorized') {
-            logoutUser()
+            logoutUser();
+        } else {
+            alert(data.error);
+            logoutUser();
         }
     }
 

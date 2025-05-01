@@ -4,7 +4,8 @@ import AuthContext from '../context/AuthContext';
 import { useNavigate } from "react-router-dom";
 
 function ChatSummary({chatData, prevChatData, chats}) {
-    const {user} = useContext(AuthContext);
+    const {profile} = useContext(AuthContext);
+
 
     const navigate = useNavigate();
 
@@ -27,7 +28,7 @@ function ChatSummary({chatData, prevChatData, chats}) {
         day: '2-digit',
       })
 
-    if (user.role === "Caregiver") {
+    if (profile.role === "Caregiver") {
         return (
             <div className="flex">
                 <button 

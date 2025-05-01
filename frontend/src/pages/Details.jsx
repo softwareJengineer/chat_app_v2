@@ -11,7 +11,7 @@ import GoalProgress from "../components/GoalProgress";
 import { IoThumbsUp } from "react-icons/io5";
 
 const Details = () => {
-    const { user, setUser, setSettings } = useContext(AuthContext);
+    const { logoutUser, authTokens } = useContext(AuthContext);
     const [chats, setChats] = useState([]);
     const [chatCount, setChatCount] = useState(0);
     const location = useLocation();
@@ -19,7 +19,7 @@ const Details = () => {
 
     useEffect(() => {
         const fetchChats = async () => {
-            const userChats = await getChats();
+            const userChats = await getChats(authTokens);
             setChats(userChats);
             setChatCount(userChats.length);
         };
@@ -75,28 +75,22 @@ const Details = () => {
     // }
     //END FOR TESTING
 
-    const navigate = useNavigate();
-
     const calcGoal = (chats) => {
         const goal = chats % 5;
         return 5 - goal;
     }
 
     const toLogOut = async () => {
-		setUser(null);
-		setSettings({
-			'patientViewOverall': true,
-			'patientCanSchedule': true,
-		});
-		// await logout(); 
-        navigate('/');
+		logoutUser();
     }
     
     return (
         <>
             <div className="float flex flex-row ml-auto gap-4 m-[1rem] justify-end">
                 <button className="text-blue-700">Go to Personal Page</button>
-                <button className="text-blue-700">Chat History</button>
+                <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/history'>
+                    <button className="text-blue-700 no-underline">Chat History</button>
+                </Link>
                 <button className="bg-blue-700 rounded p-2 text-white" onClick={() => toLogOut()}>Quit</button>
             </div>
             <div className="flex md:flex-row flex-col gap-4 mt-[1rem] mb-[3rem] md:min-h-[45vh]">
@@ -107,7 +101,7 @@ const Details = () => {
                     <p className="font-bold text-2xl">
                        You're doing fantastic!
                     </p>
-                    <GoalProgress current={chatCOunt}/>
+                    <GoalProgress current={chatCount}/>
                     <p className="flex flex-row items-center gap-4 text-xl">
                         <span>
                             <b className="text-blue-700 text-2xl"> {chatCount} </b> 

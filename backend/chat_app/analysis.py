@@ -6,8 +6,8 @@ from nltk.corpus import stopwords
 def get_message_text(messages):
     text = ""
     for message in messages:
-        if message.speaker == "You":
-            text += message.message + " "
+        if message['sender'] == "You":
+            text += message['message'] + " "
     return text
 
 def sentiment_scores(sentence): # From Geeks for Geeks

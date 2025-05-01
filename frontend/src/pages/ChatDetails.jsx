@@ -11,7 +11,7 @@ import { IoThumbsUp } from "react-icons/io5";
 import daysInARow from "../functions/daysInARow";
 
 function ChatDetails() {
-    const { user } = useContext(AuthContext);
+    const { profile } = useContext(AuthContext);
     const location = useLocation();
     const chatData = location.state?.chatData;
     const prevChatData = location.state?.prevChatData ? 
@@ -82,10 +82,10 @@ function ChatDetails() {
             <div className="mx-[2rem] flex flex-col gap-2">
                 <div className="flex items-center gap-4 align-middle">
                     <FaUser size={50}/>
-                    <p className="align-middle">{user?.caregiverFirstName} {user?.caregiverLastName}</p>
+                    <p className="align-middle">{profile.caregiverFirstName} {profile.caregiverLastName}</p>
                     Care Partner
                     <FaUser size={50}/>
-                    <p className="align-middle">{user?.plwdFirstName} {user?.plwdLastName}</p>
+                    <p className="align-middle">{profile.plwdFirstName} {profile.plwdLastName}</p>
                 </div>
                 <Link to="/settings">
                     Update profile
@@ -101,7 +101,7 @@ function ChatDetails() {
                 </div>
                 <div className="md:w-2/3 mx-[2rem] align-self-center">
                     <p className="font-bold text-2xl">
-                       {user.plwdFirstName} is doing fantastic!
+                       {profile.plwdFirstName} is doing fantastic!
                     </p>
                     <GoalProgress current={chats}/>
                     <p className="flex flex-row items-center gap-4 text-xl">
@@ -130,19 +130,19 @@ function ChatDetails() {
                     </p>
                     <p className="flex flex-row items-center gap-4 text-xl">
                         <FcCalendar size={40} />
-                        {user.plwdFirstName} has had conversations with me for {daysInARow(chats)} days in a row!
+                        {profile.plwdFirstName} has had conversations with me for {daysInARow(chats)} days in a row!
                     </p>
                     <p className="flex flex-row items-center gap-4 text-xl">
                         <FcSms size={40} />
-                        {user.plwdFirstName} talked about: {chatData.topics}
+                        {profile.plwdFirstName} talked about: {chatData.topics}
                     </p>
                     <p className="flex flex-row items-center gap-4 text-xl">
                         <IoThumbsUp color="e5d754" size={40} />
-                        Tell {user.plwdFirstName} to keep it up! They're doing fantastic!
+                        Tell {profile.plwdFirstName} to keep it up! They're doing fantastic!
                     </p>
                 </div>
                 <div className="pl-[1rem] h-full">
-                    <b className="text-2xl">Suggested Activities for {user.plwdFirstName}</b>
+                    <b className="text-2xl">Suggested Activities for {profile.plwdFirstName}</b>
                     <div className="flex md:flex-row flex-col gap-4 my-[1rem]">
                         <div className="md:w-1/2 w-full border-1 rounded-md border-gray-300 p-[1rem]">
                             <h4>Mad Libs</h4>

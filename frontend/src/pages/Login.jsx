@@ -22,16 +22,6 @@ function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         loginUser(formData);
-        // const response = await login(formData);
-        // const { user, settings } = response;
-        // setUser(user);
-        // setSettings(settings);
-
-        // if (user.role === 'Patient') {
-        //     navigate('/chat');
-        // } else {
-        //     navigate('/dashboard');
-        // }
     };
 
     return (

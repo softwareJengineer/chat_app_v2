@@ -1,29 +1,31 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Button, Modal, Form } from "react-bootstrap";
 import Header from "../components/Header";
-import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
-import moment from 'moment';
 import AuthContext from '../context/AuthContext';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { createReminder, getReminders } from "../functions/apiRequests";
+import { createReminder, createRepeatReminder, getReminders } from "../functions/apiRequests";
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import rrulePlugin from '@fullcalendar/rrule';
 
 
 function Schedule() {
-    const { user } = useContext(AuthContext);
+    const { authTokens } = useContext(AuthContext);
     const [reminders, setReminders] = useState([]);
     const [showNewReminder, setShowNewReminder] = useState(false);
+    const [showNewRepeatReminder, setShowNewRepeatReminder] = useState(false);
     const [title, setTitle] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
-    const [repeat, setRepeat] = useState('');
-    const localizer = momentLocalizer(moment);
+    const [titleRepeat, setTitleRepeat] = useState('');
+    const [startTime, setStartTime] = useState('');
+    const [endTime, setEndTime] = useState('');
+    const [repeatDay, setRepeatDay] = useState('Sunday');
 
     useEffect(() => {
         const fetchReminders = async () => {
-            const rem = await getReminders();
+            const rem = await getReminders(authTokens);
+            console.log(rem)
             setReminders(rem);
         };
 
@@ -31,25 +33,29 @@ function Schedule() {
     }, []);
 
     const addReminder = async (event) => {
+        event.preventDefault();
         const start = new Date(startDate);
         const end = new Date(endDate);
-        event.preventDefault();
-        if (repeat === 'None') {
-            if (start >= end) {
-                alert("End date must be after start date.");
-                return;
-            }
-            const response = await createReminder(title, start, end);
-            if (response) setReminders((prevReminders) => [...prevReminders, { title, start, end }]);
-        } else {
-            const duration = end.getTime() - start.getTime();
-            const rrule = {
-                freq: repeat.toLowerCase(),
-                dtstart: new Date(startDate),
-            }
-            const response = await createReminder(title, start, end, rrule, duration);
-            if (response) setReminders((prevReminders) => [...prevReminders, { title, start, end, rrule, duration }]);
+        if (start >= end) {
+            alert("End date must be after start date.");
+            return;
         }
+        
+        const response = await createReminder(title, start, end, authTokens);
+        if (response) setReminders((prevReminders) => [...prevReminders, { title, start, end }]);
+
+        handleClose();
+    };
+
+    const addRepeatReminder = async (event) => {
+        event.preventDefault();
+        if (startTime >= endTime) {
+            alert("End time must be after start date.");
+            return;
+        }
+        
+        const response = await createRepeatReminder(title, startTime, endTime, repeatDay, authTokens);
+        if (response) setReminders((prevReminders) => [...prevReminders, { title, startTime, endTime, repeatDay }]);
 
         handleClose();
     };
@@ -61,13 +67,38 @@ function Schedule() {
 
     const handleShow = () => setShowNewReminder(true);
 
+    const handleRepeatShow = () => setShowNewRepeatReminder(true);
+
+    const handleRepeatClose = () => {
+        setShowNewRepeatReminder(false);
+        resetRepeatForm();
+    }
+
     const resetForm = () => {
         setTitle('');
         setStartDate('');
         setEndDate('');
-        setRepeat('');
-        setRecurrences(0);
     };
+
+    const resetRepeatForm = () => {
+        setTitleRepeat('');
+        setStartTime('');
+        setEndTime('');
+        setRepeatDay('Sunday');
+    };
+
+    const events = [
+        {
+            title: 'example',
+            start: new Date(),
+            end: new Date(new Date().getTime() + 60 * 60 * 1000), // 1 hour later
+            rrule: {
+                freq: 'daily',
+                dtstart: new Date(),
+                until: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000) // 1 week later
+            }, 
+        }
+    ]
 
     return (
         <>
@@ -87,8 +118,9 @@ function Schedule() {
                     height={"100%"}
                 />
             </div>
-            <div className="flex justify-center m-[2rem]">
+            <div className="flex flex-row gap-4 justify-center m-[2rem]">
                 <Button onClick={handleShow} size="lg">Create a New Reminder</Button>
+                <Button onClick={handleRepeatShow} size="lg">Create a New Repeating Reminder</Button>
             </div>
 
 
@@ -125,23 +157,72 @@ function Schedule() {
                                 onChange={(e) => setEndDate(e.target.value)}
                             />
                         </Form.Group>
+                    
+                        <Modal.Footer>
+                            <Button variant="outline-danger" onClick={handleClose}>
+                                Cancel
+                            </Button>
+                            <Button variant="primary" type="submit">
+                                Create
+                            </Button>
+                        </Modal.Footer>
+                    </Modal.Body>
+                </Form>
+            </Modal>
+
+            <Modal show={showNewRepeatReminder} onHide={handleRepeatClose} centered backdrop="static" keyboard={false}>
+                <Modal.Header closeButton>
+                <Modal.Title>Create New Reminder</Modal.Title>
+                </Modal.Header>
+                <Form onSubmit={addRepeatReminder}>
+                    <Modal.Body>
+                        <Form.Group controlId="formTitle">
+                            <Form.Label>Reminder Label</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder="Enter label"
+                                value={titleRepeat}
+                                onChange={(e) => setTitleRepeat(e.target.value)}
+                            />
+                        </Form.Group>
+            
+                        <Form.Group controlId="formStartTime">
+                            <Form.Label>Start Time</Form.Label>
+                            <Form.Control
+                                type="time-local"
+                                value={startTime}
+                                onChange={(e) => setStartTime(e.target.value)}
+                            />
+                        </Form.Group>
+            
+                        <Form.Group controlId="formEndTime">
+                            <Form.Label>End Time</Form.Label>
+                            <Form.Control
+                                type="time-local"
+                                value={endTime}
+                                onChange={(e) => setEndTime(e.target.value)}
+                            />
+                        </Form.Group>
 
                         <Form.Group controlId="formRepeat">
-                            <Form.Label>Repeat</Form.Label>
+                            <Form.Label>Day to Repeat</Form.Label>
                             <Form.Control 
                                 as="select"
-                                value={repeat}
-                                onChange={(e) => setRepeat(e.target.value)}
+                                value={repeatDay}
+                                onChange={(e) => setRepeatDay(e.target.value)}
                             >
-                                <option>None</option>
-                                <option>Daily</option>
-                                <option>Weekly</option>
-                                <option>Monthly</option>
+                                <option>Sunday</option>
+                                <option>Monday</option>
+                                <option>Tuesday</option>
+                                <option>Wednesday</option>
+                                <option>Thursday</option>
+                                <option>Friday</option>
+                                <option>Saturday</option>
                             </Form.Control>
                         </Form.Group>
                     
                         <Modal.Footer>
-                            <Button variant="outline-danger" onClick={handleClose}>
+                            <Button variant="outline-danger" onClick={handleRepeatClose}>
                                 Cancel
                             </Button>
                             <Button variant="primary" type="submit">

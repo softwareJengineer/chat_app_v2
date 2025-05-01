@@ -4,7 +4,6 @@ import { AuthProvider } from './context/AuthContext'
 
 import Chat from './pages/Chat';
 import Details from './pages/Details';
-import NewEntry from "./pages/NewEntry";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Schedule from "./pages/Schedule";
@@ -28,12 +27,11 @@ function App() {
                 <Route path='/signup' element={<SignUp/>}></Route>
                 <Route path='/chat' element={<PrivateRoute><Chat/></PrivateRoute>}></Route>
                 <Route path='/details' element={<PrivateRoute><Details/></PrivateRoute>}></Route>
-                <Route path='/new' element={<PrivateRoute><NewEntry/></PrivateRoute>}></Route>
                 <Route path='/dashboard' element={<PrivateRoute><Dashboard/></PrivateRoute>}></Route>
                 <Route path='/schedule' element={<PrivateRoute><Schedule/></PrivateRoute>}></Route>
                 <Route path='/settings' element={<PrivateRoute><Settings/></PrivateRoute>}></Route>
                 <Route path='/chatdetails' element={<PrivateRoute><ChatDetails/></PrivateRoute>}></Route>
-                <Route path="/chathistory" element={<PrivateRoute><ChatHistory/></PrivateRoute>}></Route>
+                <Route path="/history" element={<PrivateRoute><ChatHistory/></PrivateRoute>}></Route>
                 <Route path="/analysis" element={<PrivateRoute><Analysis/></PrivateRoute>}></Route>
                 <Route path='/loading' element={<PrivateRoute><LoadingPage/></PrivateRoute>}></Route>
             </Routes>

@@ -30,13 +30,14 @@ class Chat(models.Model):
 class Reminder(models.Model):
     user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="reminder_user")
     title = models.CharField(max_length=100)
-    start = models.DateTimeField()
-    end = models.DateTimeField()
-    rrule = models.JSONField(null=True,  blank=True)
-    duration = models.PositiveIntegerField(null=True, blank=True)
+    start = models.DateTimeField(null=True, blank=True)
+    end = models.DateTimeField(null=True, blank=True)
+    startTime = models.TimeField(null=True, blank=True)
+    endTime = models.TimeField(null=True, blank=True)
+    repeatDay = models.CharField(null=True, blank=True)
     
     def __str__(self):
-        return self.title + " starting at " + self.start + "and ending at " + self.end
+        return self.title
     
 class UserSettings(models.Model):
     user = models.OneToOneField(Profile, on_delete=models.CASCADE, primary_key=True, related_name="settings_user")

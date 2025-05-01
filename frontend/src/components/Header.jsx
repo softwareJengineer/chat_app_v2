@@ -9,8 +9,8 @@ import { FaRobot } from "react-icons/fa";
 
 
 const Header = ({title, page}) => {
-	const { user, logoutUser } = useContext(AuthContext);
-	const isCaregiver = user ? user.role !== "Patient" : false;
+	const { profile, logoutUser } = useContext(AuthContext);
+	const isCaregiver = profile.role !== "Patient";
 	const navigate = useNavigate();
 
 	const toDashboard = () => {
@@ -26,19 +26,14 @@ const Header = ({title, page}) => {
     }
 
 	const toHistory = () => {
-        navigate('/chathistory');
+        navigate('/history');
     }
 
     const toSettings = () => {
         navigate('/settings');
     }
 
-	if (!user) {
-		return (
-		<>
-		</>
-		)
-	} else if (isCaregiver) {
+	if (isCaregiver) {
 		return (
 		<>
 			<div className="mx-[2rem] mt-[2rem] flex flex-col gap-2">

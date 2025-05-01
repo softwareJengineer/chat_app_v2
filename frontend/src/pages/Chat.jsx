@@ -25,7 +25,7 @@ const ws = new WebSocket(wsUrl);
 
 function Chat() {
     const location = useLocation();
-    const {user} = useContext(AuthContext);
+    const {user, authTokens} = useContext(AuthContext);
     const [recording, setRecording] = useState(false);
     const [systemSpeaking, setSystemSpeaking] = useState(false);
     const [userSpeaking, setUserSpeaking] = useState(false);
@@ -344,7 +344,7 @@ function Chat() {
         // }
         //END FOR DEPLOYMENT
 
-        const response = await createChat(chatData);
+        const response = await createChat(chatData, authTokens);
         if (response) {
             navigate('/details', {state: {chatData: chatData}});
         }

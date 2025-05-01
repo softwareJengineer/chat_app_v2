@@ -6,7 +6,7 @@ import { editSettings } from "../functions/apiRequests";
 
 
 function Settings() {
-    const {settings, setSettings} = useContext(AuthContext);
+    const {settings, setSettings, authTokens} = useContext(AuthContext);
     const [formSettings, setFormSettings] = useState(settings);
 
     const handleChange = (e) => {
@@ -18,7 +18,7 @@ function Settings() {
 
     const saveChanges = async (e) => {
         e.preventDefault();
-        const response = await editSettings(formSettings);
+        const response = await editSettings(formSettings, authTokens);
         if (response) setSettings(formSettings);
     }
 
