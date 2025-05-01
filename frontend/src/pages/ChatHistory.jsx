@@ -21,7 +21,7 @@ function ChatHistory() {
 
     useEffect(() => {
         const fetchChats = async () => {
-            const userChats = await getChats(user);
+            const userChats = await getChats();
             setChats(userChats);
             setChatData(chats.length > 0 ? userChats[0] : blankChat);
             console.log(userChats);

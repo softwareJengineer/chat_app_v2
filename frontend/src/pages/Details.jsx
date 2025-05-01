@@ -19,7 +19,7 @@ const Details = () => {
 
     useEffect(() => {
         const fetchChats = async () => {
-            const userChats = await getChats(user);
+            const userChats = await getChats();
             setChats(userChats);
             setChatCount(userChats.length);
         };

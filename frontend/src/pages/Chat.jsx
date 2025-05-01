@@ -344,7 +344,7 @@ function Chat() {
         // }
         //END FOR DEPLOYMENT
 
-        const response = await createChat(user, chatData);
+        const response = await createChat(chatData);
         if (response) {
             navigate('/details', {state: {chatData: chatData}});
         }

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react"
+import React, { useContext, useState } from "react"
 import Header from "../components/Header";
 import AuthContext from '../context/AuthContext';
 import { Button, Form } from "react-bootstrap";
@@ -6,7 +6,7 @@ import { editSettings } from "../functions/apiRequests";
 
 
 function Settings() {
-    const {user, settings, setSettings} = useContext(AuthContext);
+    const {settings, setSettings} = useContext(AuthContext);
     const [formSettings, setFormSettings] = useState(settings);
 
     const handleChange = (e) => {
@@ -18,7 +18,7 @@ function Settings() {
 
     const saveChanges = async (e) => {
         e.preventDefault();
-        const response = await editSettings(user, formSettings);
+        const response = await editSettings(formSettings);
         if (response) setSettings(formSettings);
     }
 

@@ -23,7 +23,7 @@ function Schedule() {
 
     useEffect(() => {
         const fetchReminders = async () => {
-            const rem = await getReminders(user);
+            const rem = await getReminders();
             setReminders(rem);
         };
 
@@ -39,7 +39,7 @@ function Schedule() {
                 alert("End date must be after start date.");
                 return;
             }
-            const response = await createReminder(user, title, start, end);
+            const response = await createReminder(title, start, end);
             if (response) setReminders((prevReminders) => [...prevReminders, { title, start, end }]);
         } else {
             const duration = end.getTime() - start.getTime();
@@ -47,7 +47,7 @@ function Schedule() {
                 freq: repeat.toLowerCase(),
                 dtstart: new Date(startDate),
             }
-            const response = await createReminder(user, title, start, end, rrule, duration);
+            const response = await createReminder(title, start, end, rrule, duration);
             if (response) setReminders((prevReminders) => [...prevReminders, { title, start, end, rrule, duration }]);
         }
 

@@ -26,7 +26,7 @@ function Dashboard() {
 
     useEffect(() => {
         const fetchChats = async () => {
-            const profileChats = await getChats(profile);
+            const profileChats = await getChats();
             setChats(profileChats);
             setChatData(chats.length > 0 ? profileChats[0] : blankChat);
             console.log(profileChats);

@@ -6,7 +6,6 @@ import { GoGear, GoGraph } from "react-icons/go";
 import { GrSchedules } from "react-icons/gr";
 import { IoExitOutline } from "react-icons/io5";
 import { FaRobot } from "react-icons/fa";
-import { logout } from "../functions/apiRequests";
 
 
 const Header = ({title, page}) => {
