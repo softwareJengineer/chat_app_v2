@@ -27,6 +27,14 @@ game_start_time = time.time()
 
 script_path     = './Script/Script' +"("+time.strftime('%y-%m-%d %H-%M', time.localtime(time.time()))+")"+'.csv'
 
+# Colors for logging
+RED    = "\033[0;31m"
+GREEN  = "\033[0;32m"
+YELLOW = "\033[0;33m"
+BLUE   = "\033[0;34m"
+RESET  = "\033[0m"
+
+
 # =======================================================================
 # API Keys & Audio Device Configuration 
 # =======================================================================

@@ -28,7 +28,7 @@ def format_turn(turn):
 def prepare_LLM_input(user_utt, chat_history):
     # Only use the last X entries of the chat_history
     history = chat_history[-LAST_X_CHAT_ENTRIES:]
-    logger.info("history: " + str(history))
+    #logger.info("history: " + str(history))
     
     # Start the LLM input string with the specified prompt from configuration
     LLM_input = f"<|system|>\n{cf.prompt}<|end|>"
@@ -38,7 +38,7 @@ def prepare_LLM_input(user_utt, chat_history):
 
     # Finally, to complete the LLM input, add the most recent user's utterance & a tag for the LLM to respond            
     LLM_input += f"\n<|user|>\n{user_utt}<|end|>\n<|assistant|>\n"
-    logger.info("input_text: " + LLM_input)
+    #logger.info("input_text: " + LLM_input)
 
     # Return the completed prompt
     return LLM_input
