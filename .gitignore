@@ -4,4 +4,8 @@ node_modules/
 new_LSA.csv
 stanford-parser-4.2.0-models.jar
 
+# Mac
 .DS_Store
+
+# Not sure tbh
+0001_initial.py
