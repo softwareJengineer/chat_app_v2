@@ -52,7 +52,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.conversation_start_time = time()
             self.user_utterances         = deque(maxlen=100)
             self.overlapped_speech_count = 0
-            self.global_llm_response     = ""
             self.chat_history            = []  # Add chat_history as instance variable
 
             await self.accept()
@@ -70,14 +69,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             logger.error(f"Failed to initialize consumer: {e}"); return
 
+    # --------------------------------------------------------------------
+    # Disconnect
+    # --------------------------------------------------------------------
     async def disconnect(self, close_code):
         if hasattr(self, 'periodic_scores_task'):
             self.periodic_scores_task.cancel()
+            try: await self.periodic_scores_task
+            except asyncio.CancelledError: logger.info("Periodic scores task successfully cancelled.")
+
         self.conversation_start_time = None
         self.user_utterances.clear()
         self.overlapped_speech_count = 0
+        
         logger.info(f"Client disconnected: {self.client_id}")
         
+
     @database_sync_to_async
     def store_chat(self, user, date, time, scores, avgScores, notes, messages):
         """Store utterance in database asynchronously"""
@@ -128,7 +135,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             # -----------------------------------------------------------------------
             if data['type'] == 'overlapped_speech':
                 self.overlapped_speech_count += 1
-                logger.info(f"Overlapped speech detected. Count: {self.overlapped_speech_count}")
+                logger.info(f"{cf.YELLOW}Overlapped speech detected. Count: {self.overlapped_speech_count}")
             
             # -----------------------------------------------------------------------
             # Transcription
@@ -136,34 +143,37 @@ class ChatConsumer(AsyncWebsocketConsumer):
             elif data['type'] == 'transcription':
                 # Format the utterance
                 user_utt = data['data'].lower()
-                logger.info(f"Received user utterance: {user_utt}")
+                logger.info(f"{cf.YELLOW}Text data received: {user_utt}")
                 
                 # Generate LLM response
+                LLM_start_time = time()
                 response = self.process_user_utterance(user_utt)
-                self.global_llm_response = response
-                logger.info("Received response!")
+                LLM_response_time = time() - LLM_start_time
+                logger.info(f"{cf.BLUE}Received LLM response in: {LLM_response_time:.2f}s")
                 
                 # Send the LLMs response
                 system_time = datetime.now(timezone.utc)
                 await self.send(json.dumps({'type': 'llm_response', 'data': response, 'time': system_time.strftime("%H:%M:%S")}))
                 
                 # Generate & send biomarker scores
-                #logger.info(f"\nUser: {user_utt}\nSystem: {response}\n")
+                biomarker_start_time = time()
                 biomarker_scores = generate_biomarker_scores(
                     user_utt, self.conversation_start_time, response,
-                    self.prosody_features, self.prosody_model, 
+                    self.prosody_features,       self.prosody_model, 
                     self.pronunciation_features, self.pronunciation_model)
+                
+                logger.info(f"{cf.BLUE}Biomarkers calculated in: {time() - biomarker_start_time:.2f}s")
                 await self.send(json.dumps({'type': 'biomarker_scores', 'data': biomarker_scores})) 
 
                 # Add the most recent utterance to the history
                 self.user_utterances.append(user_utt)
-                print("\n\n")
+                print("\n")
             
             # -----------------------------------------------------------------------
             # Audio Data
             # -----------------------------------------------------------------------
             elif data['type'] == 'audio_data':
-                print("AUDIO DATA RECEIVED")
+                logger.info(f"{cf.YELLOW}AUDIO DATA RECEIVED")
                 await self.process_audio_data(data['data'], data['sampleRate'])
                 
         except json.JSONDecodeError as e: logger.error(f"JSON decode error: {e}")
