@@ -17,6 +17,7 @@ export class TestASR {
         this.onUserSpeakingChange = onUserSpeakingChange ?? (() => {});
         this.onUserSpeakingStart  = onUserSpeakingStart  ?? (() => {});
         this._timer               = null;
+        this._msg_num             = 0;
     }
 
     // --------------------------------------------------------------------
@@ -29,8 +30,8 @@ export class TestASR {
         this._timer = setInterval(() => {
             if (!speaking) {
                 // Set speaking to true -> 1.2 seconds later the "utterance" is received
-                speaking = true; this.onUserSpeakingChange(true); this.onUserSpeakingStart();
-                setTimeout(() => {this.onUtterance('[test] Hello world'); speaking = false; this.onUserSpeakingChange(false);}, 2_200);
+                speaking = true; this.onUserSpeakingChange(true); this.onUserSpeakingStart(); this._msg_num += 1;
+                setTimeout(() => {this.onUtterance('[test] Hello world ' + this._msg_num); speaking = false; this.onUserSpeakingChange(false);}, 2_200);
             }
         }, 5_000);
     }
