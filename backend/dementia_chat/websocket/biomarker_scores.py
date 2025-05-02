@@ -10,21 +10,36 @@ import logging
 from .biomarker_models.altered_grammer    import generate_grammar_score
 from .biomarker_models.coherence_function import coherence
 
-# =======================================================================
-# Constants & Logging Setup
-# =======================================================================
 from .. import config as cf
 from .biomarker_config import *
 
-chunk_size = int(WINDOW_SIZE / HOP_LENGTH)
-
-# Configure logging
+# =======================================================================
+# Configure Logging
+# =======================================================================
+# Set up logger
 logger = logging.getLogger(__name__)
+
+# Mute the generate_grammar_score logs
+logging.getLogger(".biomarker_models.altered_grammer").setLevel(logging.CRITICAL)
+
+
+# Logging helpers
+GREEN = "\033[0;32m"
+
+prag = f"{GREEN}Pragmatic:      "
+gram = f"{GREEN}Altered Grammar:"
+pros = f"{GREEN}Prosody:        "
+pron = f"{GREEN}Pronunciation:  "
+anom = f"{GREEN}Anomia:         "
+turn = f"{GREEN}Turntaking:     "
 
 
 # =======================================================================
 # Process Scores (uses pretrained models)
 # =======================================================================
+# Default chunk size (calculated from constants defined in biomarker_config.py)
+chunk_size = int(WINDOW_SIZE / HOP_LENGTH)
+
 # Seperate features in 5-second non-overlapping chunks
 def get_chunks(features, chunk_size=chunk_size):
     return [features.iloc[i:i+chunk_size].values for i in range(0, len(features), chunk_size) if len(features.iloc[i:i+chunk_size]) == chunk_size]
@@ -104,45 +119,54 @@ def generate_pragmatic_score(user_utt, global_llm_response):
         else:                    adjusted_pragmatic_score = 0
         
         # Print/log the scores before returning the adjusted score
-        print(f"pragmatic_score: {pragmatic_score}, adjusted_pragmatic_score: {adjusted_pragmatic_score}")
-        logger.info(f"Generated Adj. Pragmatic Score: {adjusted_pragmatic_score}")
+        #print(f"pragmatic_score: {pragmatic_score}, adjusted_pragmatic_score: {adjusted_pragmatic_score}")
+        #logger.info(f"Generated Adj. Pragmatic Score: {adjusted_pragmatic_score}")
+
+        logger.info(f"{prag} {adjusted_pragmatic_score:.4f}")
+
         return adjusted_pragmatic_score
     
     except Exception as e:
         logger.error(f"Error calculating pragmatic score: {e}"); return 1
         
-
+# -----------------------------------------------------------------------
 # Altered Grammar
+# -----------------------------------------------------------------------
 def generate_altered_grammar_score(user_utt, conversation_start_time):
     try:
         current_duration = time() - conversation_start_time
-        altered_grammar_score = generate_grammar_score(list(user_utt), current_duration)
+        altered_grammar_score = generate_grammar_score([user_utt], current_duration)
     except Exception as e: 
         logger.error(f"Error calculating altered grammar score: {e}"); altered_grammar_score = 1
     
-    logger.info(f"Calculated Altered Grammar Score: {altered_grammar_score:.4f}")
+    logger.info(f"{gram} {altered_grammar_score:.4f}")
     return altered_grammar_score
 
-
+# -----------------------------------------------------------------------
 # Prosody
+# -----------------------------------------------------------------------
 def generate_prosody_score(prosody_features, prosody_model):
-    try:
-        score = process_scores(prosody_features, prosody_model)[0]
-        logger.info(f"Prosody Score: {score:.4f}")
-        return score
-    except Exception as e: logger.error(f"Error processing prosody features: {e}"); return 1
+    try: score = process_scores(prosody_features, prosody_model)[0]
+    except Exception as e: 
+        logger.error(f"Error processing prosody features: {e}"); score = 1
+    
+    logger.info(f"{pros} {score:.4f}")
+    return score
 
-
+# -----------------------------------------------------------------------
 # Pronunciation
+# -----------------------------------------------------------------------
 def generate_pronunciation_score(pronunciation_features, pronunciation_model):
-    try: 
-        score = process_scores(pronunciation_features, pronunciation_model)[0]
-        logger.info(f"Pronunciation Score: {score:.4f}")
-        return score
-    except Exception as e: logger.error(f"Error processing pronunciation features: {e}"); return 1
+    try: score = process_scores(pronunciation_features, pronunciation_model)[0]
+    except Exception as e: 
+        logger.error(f"Error processing pronunciation features: {e}"); score = 1
+    
+    logger.info(f"{pron} {score:.4f}")
+    return score
 
-
+# -----------------------------------------------------------------------
 # Anomia
+# -----------------------------------------------------------------------
 def generate_anomia_score(user_utterances, conversation_start_time):
     # Find filler words used in the speech
     pattern = r'\b(u+h+|a+h+|u+m+|h+m+|h+u+h+|m+h+|h+m+|h+a+h+)\b'
@@ -154,12 +178,17 @@ def generate_anomia_score(user_utterances, conversation_start_time):
     # Filler words per minute
     duration_minutes   = (time() - conversation_start_time) / 60
     fillers_per_minute = len(all_fillers) / duration_minutes if duration_minutes > 0 else 0
-    return min(fillers_per_minute / 10, 1)
+    anomia_score = min(fillers_per_minute / 10, 1)
 
+    logger.info(f"{anom} {anomia_score:.4f}")
+    return anomia_score
 
+# -----------------------------------------------------------------------
 # Turntaking
+# -----------------------------------------------------------------------
 def generate_turntaking_score(overlapped_speech_count):
     normalized_score = min(overlapped_speech_count / 10, 1)
+    logger.info(f"{turn} {normalized_score:.4f}")
     return normalized_score
 
 
@@ -167,12 +196,13 @@ def generate_turntaking_score(overlapped_speech_count):
 # Generate Each Biomarker Score
 # =======================================================================
 def generate_biomarker_scores(user_utt, conversation_start_time, LLM_response, prosody_features, prosody_model, pronunciation_features, pronunciation_model):
-    return {
+    biomarker_scores = {
         "pragmatic"     : 1.0 - generate_pragmatic_score      (user_utt, LLM_response                     ),
         "grammar"       : 1.0 - generate_altered_grammar_score(user_utt, conversation_start_time          ),
         "prosody"       : 1.0 - generate_prosody_score        (prosody_features,       prosody_model      ),
         "pronunciation" : 1.0 - generate_pronunciation_score  (pronunciation_features, pronunciation_model),
     }
+    return biomarker_scores
 
 def generate_periodic_scores(user_utterances, conversation_start_time, overlapped_speech_count):
     return {
