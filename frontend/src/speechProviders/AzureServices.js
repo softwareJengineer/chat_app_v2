@@ -6,6 +6,8 @@ const subscriptionKey = import.meta.env.VITE_SPEECH_KEY || '';
 const serviceRegion   = import.meta.env.VITE_SERVICE_REGION || 'eastus';
 
 
+import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
+
 /*  ====================================================================
  *  AzureASR
  *  ====================================================================
@@ -23,7 +25,7 @@ const serviceRegion   = import.meta.env.VITE_SERVICE_REGION || 'eastus';
  * ==================================================================== */
 export class AzureASR {
     constructor({ onUtterance, onUserSpeakingChange, onUserSpeakingStart }) {
-        if (!window.SpeechSDK) {throw new Error('SpeechSDK global not found - make sure the Azure SDK script tag is loaded.');}
+        //if (!window.SpeechSDK) {throw new Error('SpeechSDK global not found - make sure the Azure SDK script tag is loaded.');}
 
         this.onUtterance          = onUtterance;
         this.onUserSpeakingChange = onUserSpeakingChange ?? (() => {});
@@ -77,7 +79,7 @@ export class AzureASR {
  * ==================================================================== */
 export class AzureTTS {
     constructor({ onStart, onDone }) {
-      if (!window.SpeechSDK) {throw new Error("SpeechSDK global not found - load Azure Speech script first");}
+      //if (!window.SpeechSDK) {throw new Error("SpeechSDK global not found - load Azure Speech script first");}
   
       this.onStart = onStart ?? (() => {});
       this.onDone  = onDone  ?? (() => {});
@@ -100,6 +102,9 @@ export class AzureTTS {
     }
   
     // Cancels any ongoing synthesis & audio playback
-    stop() {this.synthesizer.stopSpeakingAsync(); this.onDone();}
+    stop() {
+        this.synthesizer.close(); // stopSpeakingAsync(); 
+        this.onDone();
+    }
   }
   
