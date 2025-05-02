@@ -46,6 +46,11 @@ export default function useSpeechEngine({
     useEffect(() => {  userSpeakingRef.current =   userSpeaking;}, [  userSpeaking]);
 
     // --------------------------------------------------------------------
+    // Timing
+    // --------------------------------------------------------------------
+    //const ttsStartRef = useRef(0);
+
+    // --------------------------------------------------------------------
     // WebSocket Setup
     // --------------------------------------------------------------------
     // Open and close the websocket connection on change of the 'recording' variable
