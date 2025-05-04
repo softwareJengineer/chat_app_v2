@@ -1,9 +1,14 @@
-import { Button } from "react-bootstrap";
+import { useEffect                  } from 'react';
+import { Button                     } from "react-bootstrap";
 import { BsStopCircle, BsPlayCircle } from "react-icons/bs";
 import useSpeechEngine from '../hooks/useSpeechEngine';
 
-export default function RecordButton(props) {
-    const { recording, startRecording, stopRecording } = useSpeechEngine(props);
+export default function RecordButton({onRecordingChange, ...restProps}) {
+    // SpeechEngine (ASR, TTS, etc.)
+    const { recording, startRecording, stopRecording } = useSpeechEngine(restProps);
+
+    // Lift the "recording" boolean flag up (this could be done with useSpeaking, systemSpeaking as well)
+    useEffect(() => {onRecordingChange?.(recording);}, [recording, onRecordingChange]);
 
     return (
         <>
