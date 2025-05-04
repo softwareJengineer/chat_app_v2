@@ -34,9 +34,9 @@ To Do:
 
 1. Getting a bunch of warnings about vulnerabilities from react-wordcloud
 2. Add a .env.example for frontend
-3. the recording thing in chat might need to stay/be updated somehow
-4. If the first utterance is shorter than our audio buffer chunk size (5 seconds), the audio based scores (prosody, pronunciation) are generated with an error.
+3. If the first utterance is shorter than our audio buffer chunk size (5 seconds), the audio based scores (prosody, pronunciation) are generated with an error.
     - Should these be done in another separate async task on reception of audio data? If no audio has been recieved between utterances, the scores will be the same anyways, so there is no reason to re-calculate them.
-5. Seems like altered grammar thinks the speech time is longer than it was
+4. Seems like altered grammar thinks the speech time is longer than it was
     - need to fix conversation start time in useSpeechEngine
+    - know how to do this now, just havent gotten to it
 
