@@ -20,9 +20,12 @@ function Chat() {
     const {user} = useContext(UserContext);
 
     const [messages,       setMessages      ] = useState(location.state ? location.state.messages : []);
-    const [viewMode,       setViewMode      ] = useState(3);
+    const [viewMode,       setViewMode      ] = useState(2);
     const [chatbotMessage, setChatbotMessage] = useState("Hello! I am here to assist you.");
     const [start,          setStart         ] = useState(null);
+
+    // Passed to RecordButton
+    const [recording, setRecording] = useState(false);
 
     const date = new Date();
     const navigate = useNavigate();
@@ -161,12 +164,14 @@ function Chat() {
             
             {/* Buttons for starting/stopping the chat & saving the chat history */}
             <div className="flex flex-row justify-center mb-[2em] pt-[3em] gap-[4em] items-center">
-                <RecordButton
-                    onUserUtterance   = {(txt   ) => addMessageToChat ('You', txt, getMessageTime())}
-                    onSystemUtterance = {(txt   ) => {setChatbotMessage(txt); addMessageToChat ('System', txt, getMessageTime()) }                        } 
-                    onScores          = {(scores) => updateScores     (scores)                      }
+                <RecordButton onRecordingChange = {setRecording}
+                    onUserUtterance   = {(txt   ) => {addMessageToChat('You',    txt, getMessageTime());                        }}
+                    onSystemUtterance = {(txt   ) => {addMessageToChat('System', txt, getMessageTime()); setChatbotMessage(txt);}} 
+                    onScores          = {(scores) => {updateScores(scores);}}
                 />
                 <Button className="border-1 p-[1em] rounded-med" variant="outline-primary" size="lg" onClick={handleShow}> Finish </Button>
+
+                {recording && <div> <span className="dot"/> <p>test</p> </div> }   {/* red dot indicator */}
             </div>
             <CloseModal/>
         </>
