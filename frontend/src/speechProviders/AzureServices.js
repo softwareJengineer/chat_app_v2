@@ -74,30 +74,31 @@ export class AzureASR {
  * ==================================================================== */
 export class AzureTTS {
     constructor({ onStart, onDone }) {
-      this.onStart = onStart ?? (() => {});
-      this.onDone  = onDone  ?? (() => {});
-  
-      // Azure setup 
-      const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
-      this.synthesizer   = new SpeechSDK.SpeechSynthesizer(speechConfig);
+        this.onStart = onStart ?? (() => {});
+        this.onDone  = onDone  ?? (() => {});
+    
+        // Azure Setup 
+        const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
+        this.synthesizer   = new SpeechSDK.SpeechSynthesizer(speechConfig);
+
+        // Timing the start and end of audio synthesis
+        let firstChunk = true;
+        this.synthesizer.synthesizing       = () => {if (firstChunk) {this.onStart(); firstChunk = false;}}
+        this.synthesizer.synthesisCompleted = () => {this.onDone(); firstChunk = true;}
     }
   
     // --------------------------------------------------------------------
     // Synthesize audio for the given text
     // --------------------------------------------------------------------
+    // might not need the result.reason thing if we can just do stuff like above...
     speak(text) {if (!text) return;
-      this.onStart();
-      this.synthesizer.speakTextAsync(
-        text,
-        (result) => {if (result.reason === SpeechSDK.ResultReason.SynthesizingAudioCompleted) {console.log("Speech synthesized"); this.onDone()}},
-        (error ) => {console.error("AzureTTS error:", error); this.onDone();}
-      );
+        this.synthesizer.speakTextAsync(
+            text,
+            (result) => {if (result.reason === SpeechSDK.ResultReason.SynthesizingAudioCompleted) {console.log("Speech synthesized"); this.onDone();}},
+            (error ) => {console.error("AzureTTS error:", error); this.onDone();}
+        );
     }
   
-    // Cancels any ongoing synthesis & audio playback
-    stop() {
-        this.synthesizer.close(); // stopSpeakingAsync(); 
-        this.onDone();
-    }
-  }
-  
+    // Cancels any ongoing synthesis & audio playback 
+    stop() { this.onDone(); }
+}
