@@ -1,5 +1,4 @@
 import logging
-from .. import biomarker_config as BioConfig
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -42,8 +41,6 @@ def generate_pragmatic_score(user_utt: str, llm_response: str):
 
         # Adjusted pragmatic score
         adjusted_pragmatic_score = 0 if (pragmatic_score == 0) else (1.0 - pragmatic_score)
-        
-        logger.info(f"{BioConfig.PRAG} {adjusted_pragmatic_score:.4f}")
         return adjusted_pragmatic_score
     
     except Exception as e: logger.error(f"Error calculating pragmatic score: {e}"); return 1.0
