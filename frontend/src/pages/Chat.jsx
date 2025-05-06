@@ -10,7 +10,7 @@ import { MdOutlineVerticalSplit } from "react-icons/md";
 import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
 import { useNavigate, useLocation } from "react-router-dom";
 
-const SPEECH_KEY = "2qfwkZm1pQckVy9qNlbtaIaPdKbhAfyMafgYz1P3niSLFPX8DiFlJQQJ99BDACYeBjFXJ3w3AAAYACOG1p6q";
+const SPEECH_KEY = import.meta.env.VITE_SPEECH_KEY;
 const SPEECH_REGION = "eastus";
 const bufferSize = 4096;
 
