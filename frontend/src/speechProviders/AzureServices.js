@@ -21,10 +21,10 @@ import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
  *  stop_stream()   : stop recognition
  * ==================================================================== */
 export class AzureASR {
-    constructor({ onUtterance, onUserSpeakingChange, onUserSpeakingStart }) {
-        this.onUtterance          = onUtterance;
-        this.onUserSpeakingChange = onUserSpeakingChange ?? (() => {});
-        this.onUserSpeakingStart  = onUserSpeakingStart  ?? (() => {});
+    constructor({ onUserSpeaking, onUserSpeakingStart, onUserSpeakingEnd }) {
+        this.onUserSpeaking      = onUserSpeaking      ?? (() => {});
+        this.onUserSpeakingStart = onUserSpeakingStart ?? (() => {});
+        this.onUserSpeakingEnd   = onUserSpeakingEnd   ?? (() => {});
 
         // --------------------------------------------------------------------
         // Azure Setup
@@ -38,16 +38,21 @@ export class AzureASR {
         // --------------------------------------------------------------------
         // Events
         // --------------------------------------------------------------------
-        this.recognizer.recognizing = (_s, e) => {
-            if (e.result.reason === SpeechSDK.ResultReason.RecognizingSpeech) {this.onUserSpeakingChange(true); this.onUserSpeakingStart();}
-        };
+        let firstResult = true;
+
+        // Mark the beginning of the utterance (first speech recognized)...
+        // & check for overlapped speech each chunk (not sure about keeping this, might slow things slightly)
+        this.recognizer.recognizing = () => {
+            if (firstResult) {this.onUserSpeakingStart(); firstResult = false;} 
+            this.onUserSpeaking();
+        }
 
         this.recognizer.recognized = (_s, e) => {
             if (e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
-                this.onUserSpeakingChange(false);
-                if (e.result.text) {this.onUtterance(e.result.text);}
-            }
-        };
+                if (e.result.text) {this.onUserSpeakingEnd(e.result.text);}
+                firstResult = true;
+            };
+        }
     }
 
     // --------------------------------------------------------------------
@@ -56,6 +61,7 @@ export class AzureASR {
     start_stream() {this.recognizer.startContinuousRecognitionAsync();}
     stop_stream () {this.recognizer.stopContinuousRecognitionAsync ();}
 }
+
 
 
 /*  ====================================================================
