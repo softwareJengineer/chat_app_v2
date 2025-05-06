@@ -11,6 +11,7 @@
     "recharts": "^2.15.1"
   },
   "devDependencies": {
-    "microsoft-cognitiveservices-speech-sdk": "^1.42.0"
+    "microsoft-cognitiveservices-speech-sdk": "^1.42.0",
+    "vite-plugin-pwa": "^1.0.0"
   }
 }
