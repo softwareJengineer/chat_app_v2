@@ -3,8 +3,13 @@
     "name": "AI Assistant Chat with Biomarkers",
     "icons": [
         {
-            "src": "3d-icon-robot.png",
-            "sizes": "1920x1920",
+            "src": "images/3d-icon-robot-1.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "images/3d-icon-robot-2.png", 
+            "sizes": "512x512",
             "type": "image/png"
         }
     ],
