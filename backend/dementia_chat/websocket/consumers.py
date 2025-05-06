@@ -8,7 +8,7 @@ import pandas as pd
 import asyncio
 import numpy as np
 import opensmile
-import joblib
+
 import uuid
 import librosa
 from datetime import datetime, timezone
@@ -51,7 +51,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             # Features
             self.conversation_start_time = time()
             self.user_utterances         = deque(maxlen=100)
-            self.overlapped_speech_count = 0
+            self.overlapped_speech_count = 5 # --- should start at 0, but im testing it
             self.chat_history            = []  # Add chat_history as instance variable
 
             await self.accept()
@@ -62,8 +62,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             # Features & models for Prosody and Pronunciation (periodic biomarkers)
             self.prosody_features       = None
             self.pronunciation_features = None
-            self.prosody_model          = joblib.load(cf.prosody_model_path)
-            self.pronunciation_model    = joblib.load(cf.pronunciation_model_path)
             
 
         except Exception as e:
@@ -143,26 +141,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
             elif data['type'] == 'transcription':
                 # Format the utterance
                 user_utt = data['data'].lower()
-                logger.info(f"{cf.YELLOW}Text data received: {user_utt}")
+                logger.info(f"{cf.YELLOW}[ASR] Text data received: {user_utt}")
                 
                 # Generate LLM response
                 LLM_start_time = time()
                 response = self.process_user_utterance(user_utt)
-                LLM_response_time = time() - LLM_start_time
-                logger.info(f"{cf.BLUE}Received LLM response in: {LLM_response_time:.2f}s")
+                logger.info(f"{cf.CYAN}[LLM] Received LLM response in: {(time() - LLM_start_time):6.4f}s")
                 
                 # Send the LLMs response
                 system_time = datetime.now(timezone.utc)
                 await self.send(json.dumps({'type': 'llm_response', 'data': response, 'time': system_time.strftime("%H:%M:%S")}))
+                logger.info(f"{cf.CYAN}[LLM] Response sent in:         {(time() - LLM_start_time):6.4f}s")
                 
                 # Generate & send biomarker scores
                 biomarker_start_time = time()
                 biomarker_scores = generate_biomarker_scores(
                     user_utt, self.conversation_start_time, response,
-                    self.prosody_features,       self.prosody_model, 
-                    self.pronunciation_features, self.pronunciation_model)
-                
-                logger.info(f"{cf.BLUE}Biomarkers calculated in: {time() - biomarker_start_time:.2f}s")
+                    self.prosody_features, self.pronunciation_features,)
+
+                # Log & send scores through the websocket
+                logger.info(f"{cf.CYAN}[Bio] Biomarkers Time:        {(time()-biomarker_start_time):5.4f}s")
                 await self.send(json.dumps({'type': 'biomarker_scores', 'data': biomarker_scores})) 
 
                 # Add the most recent utterance to the history
@@ -214,10 +212,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # -----------------------------------------------------------------------
     async def send_periodic_scores(self):
         while True:
-            await asyncio.sleep(5) # (shouldn't that be 10? if we are doing /10 in the function and -0.1)
+            await asyncio.sleep(10) # was 5 -(shouldn't that be 10? if we are doing /10 in the function and -0.1)
             if self.conversation_start_time is not None:
                 # Calculate the periodic scores (currently Anomia and Turntaking)
+                start_time = time()
                 periodic_scores = generate_periodic_scores(self.user_utterances, self.conversation_start_time, self.overlapped_speech_count)
+                logger.info(f"{cf.CYAN}[Bio] Periodic Time:          {(time()-start_time):5.3f}s")
 
                 # Re-calculate overlapped speech count
                 self.overlapped_speech_count = max(0, self.overlapped_speech_count - 0.1)
