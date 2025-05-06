@@ -3,3 +3,7 @@ Phi-3_finetuned.gguf
 node_modules/
 new_LSA.csv
 stanford-parser-4.2.0-models.jar
+Lib/
+Include/
+Scripts/
+share/
