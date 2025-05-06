@@ -51,7 +51,12 @@ export default function useSpeechEngine({
     const ttsTimes    = useRef([]);
     const textSentRef = useRef(0);
 
+    const asrTimes    = useRef([]);
     const asrStartRef = useRef(0);
+    const asrEndRef   = useRef(0);
+
+    const llmTimes = useRef([]);
+    
 
     // --------------------------------------------------------------------
     // WebSocket Setup
@@ -78,9 +83,9 @@ export default function useSpeechEngine({
     // --------------------------------------------------------------------
     useEffect(() => {
         asrRef.current = new ASRClass({
-            onUtterance          : handleUtterance,
-            onUserSpeakingChange : setUserSpeaking,
-            onUserSpeakingStart  : checkOverlap
+            onUserSpeaking      : checkOverlap,
+            onUserSpeakingStart : onUserSpeakingStart,
+            onUserSpeakingEnd   : onUserSpeakingEnd,
         });
         return () => asrRef.current?.stop_stream();
     }, []);
@@ -123,67 +128,73 @@ export default function useSpeechEngine({
     // Start & Stop Recording
     // --------------------------------------------------------------------
     // Set the recording flag to true and start streaming for the ASR object
-    const startRecording = () => {
-        setRecording(true); 
-        asrRef  .current.start_stream();
-        audioRef.current.start();
-    };
+    const startRecording = () => { setRecording(true); 
+        asrRef  .current?.start_stream();
+        audioRef.current?.start();
+    }
+
     // Set the recording flag to false and stop everything
-    const stopRecording = () => {
-        setRecording(false);
+    const stopRecording = () => { setRecording(false);
         asrRef  .current?.stop_stream();
         audioRef.current?.stop ();
         wsRef   .current?.close();
         ttsRef  .current?.stop ();  // (just in case speech is still playing)
-    };
+    }
 
     // --------------------------------------------------------------------
     // Timing Handlers
     // --------------------------------------------------------------------
-    // Set the systemSpeaking flag to true & time the latency from: text sent -> first audio playback.
-    function onAudioStart() {
-        setSystemSpeaking(true);
-        const TTSLatency = performance.now() - textSentRef.current;
-        logLatency("TTS", ttsTimes, TTSLatency);
-    };
-
     // Update the latency history and log to the console 
     function logLatency(service, statsRef, newLatency) {
         statsRef.current.push(newLatency);
         const count = statsRef.current.length;
         const avg   = statsRef.current.reduce((a, b) => a + b, 0) / count;
         console.log(`%c[${service}] ${newLatency|0} ms (avg ${avg|0} ms over ${count} runs)`, "color: #89CFF0");
-    };
+    }
+
+    // [TTS Timing] Set the systemSpeaking flag to true & time the latency from: text sent -> first audio playback.
+    function onAudioStart() { setSystemSpeaking(true);
+        const TTSLatency = performance.now() - textSentRef.current;
+        logLatency("TTS", ttsTimes, TTSLatency);
+    }
+
+    // [ASR Timing] Update userSpeaking & handle completed utterance transcriptions
+    function onUserSpeakingStart(    ) {setUserSpeaking(true ); asrStartRef.current = performance.now();                       }
+    function onUserSpeakingEnd  (text) {setUserSpeaking(false); asrEndRef  .current = performance.now(); handleUtterance(text);}    
 
     // --------------------------------------------------------------------
     // Other Handlers
     // --------------------------------------------------------------------
     // Send data to the backend through the WebSocket connection
-    function sendToServer(payload) {const ws = wsRef.current; if (ws && ws.readyState === WebSocket.OPEN) {ws.send(JSON.stringify(payload));}};
+    function sendToServer(payload) {const ws = wsRef.current; if (ws && ws.readyState === WebSocket.OPEN) {ws.send(JSON.stringify(payload));}}
 
-    // ASR service has recognized a complete utterance and returned a text transcription
-    function handleUtterance(text) {
-        console.log(`%cASR Recognized: ${text}`, "color: #FFD700");
-        onUserUtterance(text);                                // (function passed to this object on construction)
-        sendToServer({type: 'transcription', data: text});
-    };
-    // Use text data given by the backend LLM as input for TTS and respond
-    function speakResponse(text) {
-        textSentRef.current = performance.now(); // (timestamp that the text was received from the backend)
-        ttsRef.current?.speak(text);
-    };
-    // When the user starts speaking (the "speeking" tag changes to true), check if the system was also speaking
+    // When the user starts speaking (the "speaking" tag changes to true), check if the system was also speaking
     function checkOverlap() {
         if (systemSpeakingRef.current && userSpeakingRef.current) {
             console.log('Overlapped speech detected');
             sendToServer({ type: 'overlapped_speech' });
         }
-    };
+    }
+
+    // ASR service has recognized a complete utterance and returned a text transcription
+    function handleUtterance(text) {
+        console.log(`%cASR Recognized: ${text}`, "color: #FFD700");
+        sendToServer({type: 'transcription', data: text}); onUserUtterance(text); 
+    }
+
+    // Use text data given by the backend LLM as input for TTS and respond
+    function speakResponse(text) {
+        // Time from ASR recognizing the utterance to use sending the text
+        // (so this + the TTS response is the round trip)
+        const backendLatency = performance.now() - asrEndRef.current
+        logLatency("LLM", llmTimes, backendLatency);
+
+        textSentRef.current = performance.now(); // (timestamp that the text was received from the backend)
+        ttsRef.current?.speak(text);
+    }
 
     // Expose (maybe in the future expose userSpeaking and systemSpeaking as well)
     return { recording, startRecording, stopRecording }; 
 }
-
-
 
 
