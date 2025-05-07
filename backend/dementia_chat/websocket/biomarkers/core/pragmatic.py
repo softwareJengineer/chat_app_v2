@@ -10,7 +10,7 @@ import pandas as pd
 import math
 import os
 
-from .biomarker_models.coherence_function import coherence
+from ..biomarker_models.coherence_function import coherence
 
 # -----------------------------------------------------------------------
 # Features for the Pragmatic Score

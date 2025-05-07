@@ -1,5 +1,5 @@
 import logging
-from  . import biomarker_config as BioConfig
+from . import biomarker_config as BioConfig
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -8,12 +8,12 @@ RESET  = "\033[0m"
 # =======================================================================
 # Import Biomarker Functions
 # =======================================================================
-from .biomarkers.pragmatic       import generate_pragmatic_score       as prag
-from .biomarkers.altered_grammar import generate_altered_grammar_score as gram
-from .biomarkers.prosody         import generate_prosody_score         as pros
-from .biomarkers.pronunciation   import generate_pronunciation_score   as pron
-from .biomarkers.anomia          import generate_anomia_score          as anom
-from .biomarkers.turntaking      import generate_turntaking_score      as turn
+from .core.pragmatic       import generate_pragmatic_score       as prag
+from .core.altered_grammar import generate_altered_grammar_score as gram
+from .core.prosody         import generate_prosody_score         as pros
+from .core.pronunciation   import generate_pronunciation_score   as pron
+from .core.anomia          import generate_anomia_score          as anom
+from .core.turntaking      import generate_turntaking_score      as turn
 
 # --------------------------------------------------------------------
 # Try/Except Wrapper
@@ -53,7 +53,7 @@ else:
 # Generate Multiple Scores
 # =======================================================================
 # On-utterance biomarkers
-def generate_biomarker_scores(user_utt, conversation_start_time, LLM_response, prosody_features, pronunciation_features):
+def generate_biomarker_scores(user_utt: str, LLM_response: str, conversation_start_time, prosody_features, pronunciation_features):
     biomarker_scores = {
         "pragmatic"     : gen_score(BioConfig.PRAG, prag, {"user_utt": user_utt, "llm_response"           : LLM_response           }),
         "grammar"       : gen_score(BioConfig.GRAM, gram, {"user_utt": user_utt, "conversation_start_time": conversation_start_time}),

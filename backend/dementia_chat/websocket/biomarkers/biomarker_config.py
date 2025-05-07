@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 
-from .. import config as cf
+from ... import config as cf
 
 # Constants
 WINDOW_SIZE = 5      # seconds
