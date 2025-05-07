@@ -1,17 +1,9 @@
-import logging
-from .... import config as cf
-
-# Set up logger
-logger = logging.getLogger(__name__)
-
 # =======================================================================
 # Process Scores
 # =======================================================================
 # Utility functions for biomarkers calculated using pretrained models
 import numpy as np
-import pandas as pd
-
-from ... import biomarker_config as BioConfig
+from .. import biomarker_config as BioConfig
 
 # Default chunk size (calculated from constants defined in biomarker_config.py)
 CHUNK_SIZE = int(BioConfig.WINDOW_SIZE / BioConfig.HOP_LENGTH)

@@ -15,8 +15,6 @@ logger = logging.getLogger(__name__)
 def load_model(model_path):
     # Import joblib inside the function as it is only needed for this, no need to keep it loaded after
     import joblib
-
-    # Load & Return the model at the given path
     return joblib.load(model_path)
 
 # -----------------------------------------------------------------------

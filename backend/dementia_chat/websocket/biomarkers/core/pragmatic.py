@@ -16,10 +16,13 @@ from ..biomarker_models.coherence_function import coherence
 # Features for the Pragmatic Score
 # -----------------------------------------------------------------------
 current_path = os.path.dirname(os.path.abspath(__file__))
+parent_path  = os.path.dirname(current_path) # (one level up)
+bm_path      = f"{parent_path}/biomarker_models"
 
-bm_vectors   = pd.read_csv  (f"{current_path}/biomarker_models/new_LSA.csv", index_col=0 )
-bm_entropy   = pd.read_csv  (f"{current_path}/biomarker_models/Hoffman_entropy_53758.csv")
-bm_stop_list = pd.read_table(f"{current_path}/biomarker_models/stoplist.txt", header=None)
+bm_vectors   = pd.read_csv  (f"{bm_path}/new_LSA.csv", index_col=0 )
+bm_entropy   = pd.read_csv  (f"{bm_path}/Hoffman_entropy_53758.csv")
+bm_stop_list = pd.read_table(f"{bm_path}/stoplist.txt", header=None)
+
 
 # -----------------------------------------------------------------------
 # Pragmatic Score
