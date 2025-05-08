@@ -4,9 +4,9 @@ import { useContext } from 'react'
 import AuthContext from '../context/AuthContext';
 
 const PrivateRoute = ({children}) => {
-    let { user } = useContext(AuthContext)
+    let { profile } = useContext(AuthContext);
 
-    if (user) {
+    if (profile) {
         return children;
     } else {
         return (

@@ -14,8 +14,8 @@ import ChatDetails from "./pages/ChatDetails";
 import ChatHistory from "./pages/ChatHistory";
 import Analysis from "./pages/Analysis";
 import LoadingPage from "./pages/LoadingPage";
-
 import PrivateRoute from './utils/PrivateRoute';
+import Today from "./pages/Today";
 
 
 function App() {    
@@ -25,6 +25,7 @@ function App() {
                 <Route exact path='/' element={<Home/>}></Route>
                 <Route path='/login' element={<Login/>}></Route>
                 <Route path='/signup' element={<SignUp/>}></Route>
+                <Route path='/loading' element={<LoadingPage/>}></Route>
                 <Route path='/chat' element={<PrivateRoute><Chat/></PrivateRoute>}></Route>
                 <Route path='/details' element={<PrivateRoute><Details/></PrivateRoute>}></Route>
                 <Route path='/dashboard' element={<PrivateRoute><Dashboard/></PrivateRoute>}></Route>
@@ -33,7 +34,7 @@ function App() {
                 <Route path='/chatdetails' element={<PrivateRoute><ChatDetails/></PrivateRoute>}></Route>
                 <Route path="/history" element={<PrivateRoute><ChatHistory/></PrivateRoute>}></Route>
                 <Route path="/analysis" element={<PrivateRoute><Analysis/></PrivateRoute>}></Route>
-                <Route path='/loading' element={<PrivateRoute><LoadingPage/></PrivateRoute>}></Route>
+                <Route path='/today' element={<PrivateRoute><Today/></PrivateRoute>}></Route>
             </Routes>
             </AuthProvider>
         );

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -34,12 +35,15 @@ class Reminder(models.Model):
     end = models.DateTimeField(null=True, blank=True)
     startTime = models.TimeField(null=True, blank=True)
     endTime = models.TimeField(null=True, blank=True)
-    repeatDay = models.CharField(null=True, blank=True)
+    daysOfWeek = ArrayField(models.IntegerField(null=True, blank=True), size=7, null=True, blank=True)
     
     def __str__(self):
-        return self.title
+        return "Reminder " + self.title
     
 class UserSettings(models.Model):
     user = models.OneToOneField(Profile, on_delete=models.CASCADE, primary_key=True, related_name="settings_user")
     patientViewOverall = models.BooleanField(default=True)
     patientCanSchedule = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return self.user.username + "'s settings"
