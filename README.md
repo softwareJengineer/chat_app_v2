@@ -7,7 +7,7 @@ Speech Model is not currently being tracked because of its size
 2. Clone the repo using this terminal command: git clone https://github.com/softwareJengineer/chat_app_v2
 3. Open Docker Desktop
 
-In the backend directory (if you want to use the speech synthesis and score generation functionality, unnecessary for only viewing the app):
+In the backend directory:
 
 4. Build the docker container using this command: docker-compose up --build
 5. To start the docker container simply run: docker-compose up
@@ -20,8 +20,7 @@ In the frontend directory:
 8. The web app can be accessed through localhost:5173 in your browser
 
 REQUIREMENTS
-1. Node.js (the requirement for only viewing the frontend, the others are not necessary if you do not need backend functionality)
-2. Docker Desktop
+1. Node.js
 3. Python3
 4. Java 22
 5. new_LSA.csv
