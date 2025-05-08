@@ -7,10 +7,11 @@ import { createReminder, createRepeatReminder, getReminders } from "../functions
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import rrulePlugin from '@fullcalendar/rrule';
+import { Link } from "react-router-dom";
 
 
 function Schedule() {
-    const { authTokens } = useContext(AuthContext);
+    const { authTokens, profile } = useContext(AuthContext);
     const [reminders, setReminders] = useState([]);
     const [showNewReminder, setShowNewReminder] = useState(false);
     const [showNewRepeatReminder, setShowNewRepeatReminder] = useState(false);
@@ -25,7 +26,6 @@ function Schedule() {
     useEffect(() => {
         const fetchReminders = async () => {
             const rem = await getReminders(authTokens);
-            console.log(rem)
             setReminders(rem);
         };
 
@@ -53,11 +53,14 @@ function Schedule() {
             alert("End time must be after start date.");
             return;
         }
-        
-        const response = await createRepeatReminder(title, startTime, endTime, repeatDay, authTokens);
-        if (response) setReminders((prevReminders) => [...prevReminders, { title, startTime, endTime, repeatDay }]);
 
-        handleClose();
+        const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const daysOfWeek = [weekdays.indexOf(repeatDay)];
+        
+        const response = await createRepeatReminder(title, startTime, endTime, daysOfWeek, authTokens);
+        if (response) setReminders((prevReminders) => [...prevReminders, { title, startTime, endTime, daysOfWeek }]);
+
+        handleRepeatClose();
     };
 
     const handleClose = () => {
@@ -100,9 +103,27 @@ function Schedule() {
         }
     ]
 
+    const toToday = () => {
+        navigate('/today', {state: {chatData: chats[0]}})
+    }
+
     return (
         <>
-            <Header title="Your Schedule" page="schedule"/>
+            {profile.role == "Caregiver" ? 
+                <Header title="Your Schedule" page="schedule"/> : 
+                <div className="float flex flex-row gap-4 mx-[2rem] mt-[2rem] mb-[1rem]">
+                    <p className="text-5xl font-semibold">Schedule</p>
+                    <div className="float flex ml-auto gap-4">
+                        <button className="text-gray-700 no-underline" onClick={() => toToday()}>Today's Speech Analysis</button>
+                        <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/history'>
+                            <button className="text-gray-700 no-underline">Chat History</button>
+                        </Link>
+                        <Link className="flex align-middle" style={{textDecoration: 'none'}}>
+                            <button className="text-blue-700 underline">Schedule</button>
+                        </Link>
+                        <button className="flex bg-blue-700 rounded h-fit p-2 text-white self-center" onClick={() => logoutUser()}>Log Out</button>
+                    </div>  
+                </div>}
             <div className="h-[75vh] m-[2rem]">
                 {/* <Calendar
                     localizer={localizer}
@@ -189,7 +210,7 @@ function Schedule() {
                         <Form.Group controlId="formStartTime">
                             <Form.Label>Start Time</Form.Label>
                             <Form.Control
-                                type="time-local"
+                                type="time"
                                 value={startTime}
                                 onChange={(e) => setStartTime(e.target.value)}
                             />
@@ -198,7 +219,7 @@ function Schedule() {
                         <Form.Group controlId="formEndTime">
                             <Form.Label>End Time</Form.Label>
                             <Form.Control
-                                type="time-local"
+                                type="time"
                                 value={endTime}
                                 onChange={(e) => setEndTime(e.target.value)}
                             />

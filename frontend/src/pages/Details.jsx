@@ -12,10 +12,11 @@ import { IoThumbsUp } from "react-icons/io5";
 
 const Details = () => {
     const { logoutUser, authTokens } = useContext(AuthContext);
+    const location = useLocation();
     const [chats, setChats] = useState([]);
     const [chatCount, setChatCount] = useState(0);
-    const location = useLocation();
     const chatData = location.state.chatData;
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchChats = async () => {
@@ -83,13 +84,20 @@ const Details = () => {
     const toLogOut = async () => {
 		logoutUser();
     }
+
+    const toToday = () => {
+        navigate('/today', {state: {chatData: chatData}});
+    }
     
     return (
         <>
             <div className="float flex flex-row ml-auto gap-4 m-[1rem] justify-end">
-                <button className="text-blue-700">Go to Personal Page</button>
+                <button onClick={() => toToday()} className="text-blue-700 no-underline">Today's Speech Analysis</button>
                 <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/history'>
                     <button className="text-blue-700 no-underline">Chat History</button>
+                </Link>
+                <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/schedule'>
+                    <button className="text-blue-700 no-underline">Schedule</button>
                 </Link>
                 <button className="bg-blue-700 rounded p-2 text-white" onClick={() => toLogOut()}>Quit</button>
             </div>

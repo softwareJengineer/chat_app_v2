@@ -5,7 +5,7 @@ import ChatLog from "../components/ChatLog";
 import Avatar from "../components/Avatar";
 import { BsStopCircle, BsPlayCircle } from "react-icons/bs";
 import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import AuthContext from '../context/AuthContext';
 import calcAvgBiomarkerScores from "../functions/calcAvgBiomarkerScores";
 import { createChat } from "../functions/apiRequests";
@@ -417,7 +417,18 @@ function Chat() {
 
     return (
         <>
-            <Header title="Chat With Me!" page="chat"/>
+            <div className="float flex flex-row gap-4 m-[2rem]">
+                <p className="text-5xl font-semibold">Chat With Me</p>
+                <div className="float flex ml-auto gap-4">
+                    <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/history'>
+                        <button className="text-gray-700 no-underline">Chat History</button>
+                    </Link>
+                    <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/schedule'>
+                        <button className="text-gray-700 no-underline">Schedule</button>
+                    </Link>
+                    <button className="flex bg-blue-700 rounded h-fit p-2 text-white self-center" onClick={() => logoutUser()}>Log Out</button>
+                </div>  
+            </div>
             {/* <div className="ml-[1rem] mt-[1rem] flex justify-center">
                 <ToggleButtonGroup 
                     type="radio"

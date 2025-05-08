@@ -80,7 +80,7 @@ const createReminder = async (title, start, end, authTokens) => {
     }
 };
 
-const createRepeatReminder = async (title, startTime, endTime, repeatDay, authTokens) => {
+const createRepeatReminder = async (title, startTime, endTime, daysOfWeek, authTokens) => {
     try {
         const response = await fetch(`http://localhost:8000/api/reminders/`, {
             method: 'POST',
@@ -92,7 +92,7 @@ const createRepeatReminder = async (title, startTime, endTime, repeatDay, authTo
                 title: title,
                 startTime: startTime,
                 endTime: endTime,
-                repeatDay: repeatDay
+                daysOfWeek: daysOfWeek
             })
         });
 
