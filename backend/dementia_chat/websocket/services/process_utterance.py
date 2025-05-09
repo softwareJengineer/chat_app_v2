@@ -10,7 +10,7 @@ speech_key,    service_region = cf.speech_key,    cf.service_region
 speech_config, audio_config   = cf.speech_config, cf.audio_config
 
 # Logging
-logger = cf.logging.getLogger("__asr__")
+logger = cf.logging.getLogger("__asr__") # ---- why does this say ASR again??
 
 # Process an Utterance
 def process_user_utterance(user_utt: str, chat_history):

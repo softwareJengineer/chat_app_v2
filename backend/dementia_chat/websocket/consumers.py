@@ -3,30 +3,23 @@
 # =======================================================================
 # Processes incoming messages, scores them, and responds
 
-import numpy  as np
-import pandas as pd
-
 import json, asyncio, uuid, logging
+logger = logging.getLogger(__name__)
 
 from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.db import database_sync_to_async
+from django.apps import apps
 from collections import deque
 from time        import time
 from datetime    import datetime, timezone
-from django.apps import apps
-from channels.db import database_sync_to_async
 
-# Helper functions
+# From this project
 from ..                            import config as cf
 from .biomarkers.biomarker_scores  import generate_biomarker_scores, generate_periodic_scores
 from .services.process_utterance   import process_user_utterance 
 from .services.handle_audio_data   import handle_audio_data
 
-# Configure logging
-logger = logging.getLogger(__name__)
-
-# --------------------------------------------------------------------
 # Multi-threading for biomarker and audio processing
-# --------------------------------------------------------------------
 import concurrent.futures
 THREAD_POOL = concurrent.futures.ThreadPoolExecutor(max_workers=4)
 
@@ -35,6 +28,7 @@ To do later:
 * clean up process utterance file
 * saving data history
 * stuff like maintaining a speech df
+* pretty sure that some sort of timestamp is sent along with the text from the frontend, use that for conv start time
 """
 class ChatConsumer(AsyncWebsocketConsumer):
     # =======================================================================
@@ -73,7 +67,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
             # Accept the connection & start the periodic scores asynchronous task
             await self.accept()
-            self.periodic_scores_task  = asyncio.create_task(self.send_periodic_scores())
+            self.periodic_scores_task = asyncio.create_task(self.send_periodic_scores())
 
         except Exception as e:
             logger.error(f"Failed to initialize consumer: {e}"); return
@@ -114,7 +108,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 # Calculate the periodic scores (currently Anomia and Turntaking)
                 start_time = time()
                 periodic_scores = generate_periodic_scores(self.user_utterances, self.conversation_start_time, self.overlapped_speech_count)
-                logger.info(f"{cf.CYAN}[Bio] Periodic Time:          {(time()-start_time):6.4f}s")
+                logger.info(f"{cf.CYAN}[Bio] Periodic Time:           {(time()-start_time):6.4f}s")
 
                 # Re-calculate overlapped speech count
                 self.overlapped_speech_count = max(0, self.overlapped_speech_count - 0.1)
@@ -178,11 +172,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def _LLM_response(self, user_utt: str):
         LLM_start_time = time()
         system_utt = process_user_utterance(user_utt, self.chat_history)
-        logger.info(f"{cf.CYAN}[LLM] Received LLM response in: {(time() - LLM_start_time):6.4f}s")
+        logger.info(f"{cf.CYAN}[LLM] Received response in:    {(time() - LLM_start_time):6.4f}s")
         
         # Send the LLMs response through the websocket
         await self.send(json.dumps({'type': 'llm_response', 'data': system_utt, 'time': datetime.now(timezone.utc).strftime("%H:%M:%S")}))
-        logger.info(f"{cf.CYAN}[LLM] Response sent in:         {(time() - LLM_start_time):6.4f}s")
+        logger.info(f"{cf.CYAN}[LLM] Response sent in:        {(time() - LLM_start_time):6.4f}s")
 
         # Update chat history & return the system utterance
         #self.chat_history.append({'Speaker': 'User',   'Utt': user_utt  })
@@ -196,7 +190,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         start_time = time()
 
         # Run heavy function in thread pool
-        #scores = await loop.run_in_executor(THREAD_POOL, generate_biomarker_scores, user_utt, sys_utt, **self.bio_args)
         scores = await loop.run_in_executor(THREAD_POOL, lambda: generate_biomarker_scores(user_utt, sys_utt, **self.bio_args))
         logger.info(f"{cf.CYAN}[Bio] Biomarkers done in:      {(time()-start_time):5.4f}s")
 
