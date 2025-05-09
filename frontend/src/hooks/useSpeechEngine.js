@@ -1,13 +1,22 @@
 // src/hooks/useSpeechEngine.js
 import { useRef, useState, useEffect } from 'react';
 
-import { Providers } from '../speechProviders';
-import AudioStreamer from '../utils/AudioStreamer'; // --- needs to be updated to have 2 simultaneous buffers for Gemini ---
-import toBase64      from '../utils/toBase64';
+import { Providers    } from '../speechProviders';
+import { logTimingASR } from '../utils/timing';
+import AudioStreamer    from '../utils/AudioStreamer'; // --- needs to be updated to have 2 simultaneous buffers for Gemini ---
+import toBase64         from '../utils/toBase64';
 
 // ====================================================================
 // Speech Engine Hook
 // ====================================================================
+/* Can probably remove the ASR timing stuff, just need to print the times to console
+ * Could expose userSpeaking and/or systemSpeaking to the webpage as well if needed
+ * Also might need to be sending timestamps along with the messages to the backend. So for ASR we actually could check the duration...
+ * There is probably a good bit of functionality we could move into another file when I think about it, should do a passover...
+ * 
+ * checkOverlap doesnt work -> that needs a LOT to fix
+ * latency for everything besides ASR should be changed to work the same way that ASR latency does
+ */
 export default function useSpeechEngine({
     onUserUtterance,                // (required) "You" message handler
     onSystemUtterance = () => {},   // Fires before TTS
@@ -52,11 +61,16 @@ export default function useSpeechEngine({
     const textSentRef = useRef(0);
 
     const asrTimes    = useRef([]);
-    const asrStartRef = useRef(0);
-    const asrEndRef   = useRef(0);
+    const asrStartRef = useRef(0.0);
+    const asrEndRef   = useRef(0.0);
 
     const llmTimes = useRef([]);
     
+    // Subtracting the performance.now
+    //const wallClockStartRef = useRef((Date.now() - performance.now()) / 1_000); // in seconds
+    const wallClockStartRef = useRef(Date.now() / 1_000); // in seconds
+    useEffect(() => {console.log(`%cStarting wall-clock time: ${wallClockStartRef.current} | ${performance.now()/1_000}`, "color: #8FBC8F");}, []);
+
 
     // --------------------------------------------------------------------
     // WebSocket Setup
@@ -111,12 +125,7 @@ export default function useSpeechEngine({
             onChunk    : (int16, timestamp) => {
                 if (wsRef.current?.readyState === WebSocket.OPEN) {
                     const base64 = toBase64(int16);
-                    wsRef.current?.send(JSON.stringify({
-                        type      : 'audio_data',
-                        timestamp : timestamp,
-                        data      : base64,
-                        sampleRate: 16_000,
-                    }));
+                    wsRef.current?.send(JSON.stringify({type: 'audio_data', timestamp: timestamp, data: base64, sampleRate: 16_000,}));
                 }
             },
             onError    : err => console.error('Audio error:', err)
@@ -159,8 +168,13 @@ export default function useSpeechEngine({
     }
 
     // [ASR Timing] Update userSpeaking & handle completed utterance transcriptions
-    function onUserSpeakingStart(    ) {setUserSpeaking(true ); asrStartRef.current = performance.now();                       }
-    function onUserSpeakingEnd  (text) {setUserSpeaking(false); asrEndRef  .current = performance.now(); handleUtterance(text);}    
+    function onUserSpeakingStart(    ) {setUserSpeaking(true );                        asrStart();}
+    function onUserSpeakingEnd  (text) {setUserSpeaking(false); handleUtterance(text); asrEnd  ();}    
+    
+    // ASR timestamps printed to console; latency must be calculated manually
+    function asrStart() {const asrTime = logTimingASR(wallClockStartRef.current, true ); asrStartRef.current = asrTime;}
+    function asrEnd  () {const asrTime = logTimingASR(wallClockStartRef.current, false); asrEndRef  .current = asrTime;}
+
 
     // --------------------------------------------------------------------
     // Other Handlers
@@ -184,9 +198,8 @@ export default function useSpeechEngine({
 
     // Use text data given by the backend LLM as input for TTS and respond
     function speakResponse(text) {
-        // Time from ASR recognizing the utterance to use sending the text
-        // (so this + the TTS response is the round trip)
-        const backendLatency = performance.now() - asrEndRef.current
+        // Time from ASR recognizing the utterance to use sending the text (so this + the TTS response is the round trip)
+        const backendLatency = (performance.now() / 1_000) - asrEndRef.current;
         logLatency("LLM", llmTimes, backendLatency);
 
         textSentRef.current = performance.now(); // (timestamp that the text was received from the backend)

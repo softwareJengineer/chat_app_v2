@@ -78,19 +78,38 @@ export class AzureASR {
  *  speak(text : string) : void
  *  stop()               : void   (cancels any ongoing synthesis/playback)
  * ==================================================================== */
-export class AzureTTS {
+export class AzureTTS_v0 {
     constructor({ onStart, onDone }) {
         this.onStart = onStart ?? (() => {});
         this.onDone  = onDone  ?? (() => {});
     
         // Azure Setup 
         const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
-        this.synthesizer   = new SpeechSDK.SpeechSynthesizer(speechConfig);
+        const audioConfig  = SpeechSDK.AudioConfig.fromDefaultSpeakerOutput();
+        this.synthesizer   = new SpeechSDK.SpeechSynthesizer(speechConfig, audioConfig);
 
         // Timing the start and end of audio synthesis
         let firstChunk = true;
         this.synthesizer.synthesizing       = () => {if (firstChunk) {this.onStart(); firstChunk = false;}}
-        this.synthesizer.synthesisCompleted = () => {this.onDone(); firstChunk = true;}
+        //this.synthesizer.synthesisCompleted = () => {this.onDone(); firstChunk = true;}
+
+
+        // ====================================================================
+        // Debugging
+        // ====================================================================
+        const color  = "color: #00CC66";
+        const prefix = "[Debugging]";
+        function alignedNow() {return performance.now().toFixed(3).padStart(10, ' ');}
+        function debugLog(message, ...args) {console.log(`%c${prefix} ${message.padEnd(20)} ${alignedNow()}`, color, ...args);}
+        
+        // Events
+        this.synthesizer.synthesisStarted   = ()     =>  debugLog("synth started"                 );
+        this.synthesizer.synthesisCompleted = ()     => {debugLog("synth completed"               ); this.onDone(); firstChunk = true;}
+        this.synthesizer.synthesisCanceled  = (_, e) =>  debugLog("synth canceled", e.errorDetails);
+        this.synthesizer.audioStart         = ()     =>  debugLog("audioStart"                    );
+        this.synthesizer.audioEnd           = ()     =>  debugLog("audioEnd"                      );
+        // ====================================================================
+
     }
   
     // --------------------------------------------------------------------
@@ -107,4 +126,51 @@ export class AzureTTS {
   
     // Cancels any ongoing synthesis & audio playback 
     stop() { this.onDone(); }
+}
+
+
+
+
+
+export class AzureTTS {
+    constructor({ onStart, onDone }) {
+        this.onStart = onStart ?? (() => {});
+        this.onDone  = onDone  ?? (() => {});
+    
+        // Azure Setup 
+        const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
+        const audioConfig  = SpeechSDK.AudioConfig.fromDefaultSpeakerOutput();
+        this.synthesizer   = new SpeechSDK.SpeechSynthesizer(speechConfig, audioConfig);
+
+        // Timing the start and end of audio synthesis
+        let firstChunk = true;
+        this.synthesizer.synthesizing       = () => {if (firstChunk) {this.onStart(); firstChunk = false;}}
+        this.synthesizer.synthesisCompleted = () => {                 this.onDone (); firstChunk = true; }
+
+        /*
+        // ====================================================================
+        // Debugging
+        // ====================================================================
+        // move this to other file at some point
+        const color  = "color: #00CC66";
+        const prefix = "[Debugging]";
+        function alignedNow() {return performance.now().toFixed(3).padStart(10, ' ');}
+        function debugLog(message, ...args) {console.log(`%c${prefix} ${message.padEnd(20)} ${alignedNow()}`, color, ...args);}
+        
+        // Events
+        this.synthesizer.synthesizing       = ()     => {if (firstChunk) {this.onStart(); firstChunk = false;}}
+        this.synthesizer.synthesisStarted   = ()     =>  debugLog("synth started"                 );
+        this.synthesizer.synthesisCompleted = ()     => {debugLog("synth completed"               ); this.onDone(); firstChunk = true;}
+        this.synthesizer.synthesisCanceled  = (_, e) =>  debugLog("synth canceled", e.errorDetails);
+        this.synthesizer.audioStart         = ()     =>  debugLog("audioStart"                    );
+        this.synthesizer.audioEnd           = ()     =>  debugLog("audioEnd"                      );
+        // ====================================================================
+        */
+    }
+  
+    // --------------------------------------------------------------------
+    // Synthesize audio for the given text
+    // --------------------------------------------------------------------
+    speak(text) {this.synthesizer.speakTextAsync(text);} 
+    stop (    ) {this.onDone();                        }
 }
