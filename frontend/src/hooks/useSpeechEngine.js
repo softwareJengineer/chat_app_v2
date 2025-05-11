@@ -3,7 +3,7 @@ import { useRef, useState, useEffect } from 'react';
 
 import AudioStreamer            from '../utils/AudioStreamer'; // --- needs to be updated to have 2 simultaneous buffers for Gemini ---
 import toBase64                 from '../utils/toBase64';
-import { logText, logOverlap }  from '../utils/textLogger';
+import { logText, logOverlap }  from '../utils/loggingHelpers';
 import { Providers           }  from '../speechProviders';
 import useBackendConnection     from './useBackendConnection';
 import useLatencyLogger         from './useLatencyLogger';
@@ -57,11 +57,11 @@ export default function useSpeechEngine({
     // WebSocket & Audio Streamer
     // ==================================================================== ================================== 
     // Use text data given by the backend LLM as input for TTS and respond
-    const speakResponse = (text) => {llmEnd(); ttsStart(); ttsRef.current?.speak(text);};
-    const onLLMResponse = (data) => {logText(`[LLM] Response:   ${data}`); speakResponse(data); onSystemUtterance(data);};
+    const speakResponse = (text) => {ttsStart(); ttsRef.current?.speak(text);};
+    const onLLMResponse = (data) => {llmEnd  (); logText(`[LLM] Response:   ${data}`); speakResponse(data); onSystemUtterance(data);};
 
     // Create the WebSocket connection
-    const {sendToServer} = useBackendConnection(recording, onLLMResponse, onScores);
+    const {sendToServer} = useBackendConnection({recording, onLLMResponse, onScores});
 
     // --------------------------------------------------------------------
     //  Audio Streaming Wrapper
@@ -81,6 +81,7 @@ export default function useSpeechEngine({
     // ====================================================================
     // When the user starts speaking (the "speaking" tag changes to true), check if the system was also speaking
     const checkOverlap = () => {if (systemSpeaking && userSpeaking) {logOverlap(); sendToServer({type: 'overlapped_speech'}); onOverlap();}};
+    useEffect(() => {if (systemSpeaking && userSpeaking) {logOverlap();}}, [systemSpeaking, userSpeaking]);
 
     // ASR service has recognized a complete utterance and returned a text transcription
     const handleUtterance = (text) => {logText(`[ASR] Recognized: ${text}`); sendToServer({type: 'transcription', data: text}); onUserUtterance(text);};
@@ -91,8 +92,8 @@ export default function useSpeechEngine({
     const onUserSpeakingEnd   = (text) => {setUserSpeaking(false); handleUtterance(text); asrEnd  ();};
 
     // [TTS] Update systemSpeaking, log timestamps --- [also add overlap check here? (if userSpeaking, cancel this?)]
-    const onSystemSpeakingStart = () => {setSystemSpeaking(true );          };
-    const onSystemSpeakingEnd   = () => {setSystemSpeaking(false); ttsEnd();};
+    const onSystemSpeakingStart = () => {setSystemSpeaking(true ); ttsEnd();};
+    const onSystemSpeakingEnd   = () => {setSystemSpeaking(false);          };
 
     // ====================================================================
     // Setup for ASR & TTS
@@ -120,8 +121,8 @@ export default function useSpeechEngine({
     // Start & Stop Recording
     // --------------------------------------------------------------------
     // --- Could probably attach these to the recording flag just like I did with the websocket...
-    const startRecording = () => {setRecording(true ); asrRef.current?.start_stream(); audioRef.current?.start();                         };
-    const stopRecording  = () => {setRecording(false); asrRef.current?.stop_stream (); audioRef.current?.stop (); ttsRef.current?.stop ();};
+    const startRecording = () => {setRecording(true ); asrRef.current?.start_stream(); audioRef.current?.start();};
+    const stopRecording  = () => {setRecording(false); asrRef.current?.stop_stream (); audioRef.current?.stop ();};
 
     // Expose (maybe in the future expose userSpeaking and systemSpeaking as well)
     return { recording, startRecording, stopRecording }; 
