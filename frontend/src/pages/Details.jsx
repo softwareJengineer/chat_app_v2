@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
-import Header from '../components/Header';
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Avatar from "../components/Avatar";
 import AuthContext from '../context/AuthContext';
 import { FcCalendar, FcClock, FcSms } from "react-icons/fc";
@@ -9,20 +8,21 @@ import daysInARow from "../functions/daysInARow";
 import { getChats } from "../functions/apiRequests";
 import GoalProgress from "../components/GoalProgress";
 import { IoThumbsUp } from "react-icons/io5";
+import Header from "../components/Header";
+import BlankChat from "../data/blankChat.json";
 
 const Details = () => {
-    const { logoutUser, authTokens } = useContext(AuthContext);
-    const location = useLocation();
+    const { authTokens } = useContext(AuthContext);
     const [chats, setChats] = useState([]);
     const [chatCount, setChatCount] = useState(0);
-    const chatData = location.state.chatData;
-    const navigate = useNavigate();
+    const [chatData, setChatData] = useState(BlankChat)
 
     useEffect(() => {
         const fetchChats = async () => {
             const userChats = await getChats(authTokens);
             setChats(userChats);
             setChatCount(userChats.length);
+            setChatData(userChats[0]);
         };
 
         fetchChats();
@@ -80,27 +80,10 @@ const Details = () => {
         const goal = chats % 5;
         return 5 - goal;
     }
-
-    const toLogOut = async () => {
-		logoutUser();
-    }
-
-    const toToday = () => {
-        navigate('/today', {state: {chatData: chatData}});
-    }
     
     return (
         <>
-            <div className="float flex flex-row ml-auto gap-4 m-[1rem] justify-end">
-                <button onClick={() => toToday()} className="text-blue-700 no-underline">Today's Speech Analysis</button>
-                <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/history'>
-                    <button className="text-blue-700 no-underline">Chat History</button>
-                </Link>
-                <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/schedule'>
-                    <button className="text-blue-700 no-underline">Schedule</button>
-                </Link>
-                <button className="bg-blue-700 rounded p-2 text-white" onClick={() => toLogOut()}>Quit</button>
-            </div>
+            <Header title="" page=""/>
             <div className="flex md:flex-row flex-col gap-4 mt-[1rem] mb-[3rem] md:min-h-[45vh]">
                 <div className="md:w-1/3">
                     <Avatar />

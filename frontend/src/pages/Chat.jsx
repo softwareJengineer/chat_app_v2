@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { Button, ToggleButton, ToggleButtonGroup, Modal } from "react-bootstrap";
-import Header from '../components/Header';
-import ChatLog from "../components/ChatLog";
+import { Button, Modal } from "react-bootstrap";
 import Avatar from "../components/Avatar";
 import { BsStopCircle, BsPlayCircle } from "react-icons/bs";
 import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
@@ -346,7 +344,7 @@ function Chat() {
 
         const response = await createChat(chatData, authTokens);
         if (response) {
-            navigate('/details', {state: {chatData: chatData}});
+            navigate('/details');
         }
     }
 

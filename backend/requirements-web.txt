@@ -74,3 +74,4 @@ django-cors-headers==3.14.0
 djangorestframework
 rest_framework_simplejwt
 djangorestframework-simplejwt
+vaderSentiment

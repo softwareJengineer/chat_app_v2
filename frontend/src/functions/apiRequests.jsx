@@ -189,10 +189,9 @@ const getChats = async (authTokens) => {
     }
 };
 
-
-const getChat = async (chatID, authTokens) => {
+const getRecentChat = async (authTokens) => {
     try {
-        const response = await fetch(`http://localhost:8000/api/chat/chatid/${chatID}`, {
+        const response = await fetch(`http://localhost:8000/api/chat/recent`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -203,7 +202,7 @@ const getChat = async (chatID, authTokens) => {
         const data = await response.json();
 
         if (data.success) {
-            let chat = chat;
+            let chat = data.chat;
             chat.date = new Date(chat.date);
             return chat;
         } else {
@@ -214,7 +213,6 @@ const getChat = async (chatID, authTokens) => {
         alert(error);
         return false;
     }
-};
+}
 
-
-export {signup, getReminders, createReminder, createRepeatReminder, editSettings, createChat, getChats, getChat};
+export {signup, getReminders, createReminder, createRepeatReminder, editSettings, createChat, getChats, getRecentChat};

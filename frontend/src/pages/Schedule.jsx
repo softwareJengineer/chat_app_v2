@@ -7,7 +7,7 @@ import { createReminder, createRepeatReminder, getReminders } from "../functions
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import rrulePlugin from '@fullcalendar/rrule';
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 
 function Schedule() {
@@ -22,6 +22,7 @@ function Schedule() {
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');
     const [repeatDay, setRepeatDay] = useState('Sunday');
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchReminders = async () => {
@@ -103,35 +104,10 @@ function Schedule() {
         }
     ]
 
-    const toToday = () => {
-        navigate('/today', {state: {chatData: chats[0]}})
-    }
-
     return (
         <>
-            {profile.role == "Caregiver" ? 
-                <Header title="Your Schedule" page="schedule"/> : 
-                <div className="float flex flex-row gap-4 mx-[2rem] mt-[2rem] mb-[1rem]">
-                    <p className="text-5xl font-semibold">Schedule</p>
-                    <div className="float flex ml-auto gap-4">
-                        <button className="text-gray-700 no-underline" onClick={() => toToday()}>Today's Speech Analysis</button>
-                        <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/history'>
-                            <button className="text-gray-700 no-underline">Chat History</button>
-                        </Link>
-                        <Link className="flex align-middle" style={{textDecoration: 'none'}}>
-                            <button className="text-blue-700 underline">Schedule</button>
-                        </Link>
-                        <button className="flex bg-blue-700 rounded h-fit p-2 text-white self-center" onClick={() => logoutUser()}>Log Out</button>
-                    </div>  
-                </div>}
+            <Header title="Your Schedule" page="schedule"/> : 
             <div className="h-[75vh] m-[2rem]">
-                {/* <Calendar
-                    localizer={localizer}
-                    events={reminders}
-                    startAccessor="start"
-                    endAccessor="end"
-                    defaultView={Views.WEEK}
-                /> */}
                 <FullCalendar
                     plugins={[ timeGridPlugin, rrulePlugin ]}
                     initialView="timeGridWeek"

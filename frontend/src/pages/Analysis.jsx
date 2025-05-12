@@ -3,9 +3,10 @@ import AuthContext from '../context/AuthContext';
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import ChatLog from "../components/ChatLog";
 import Descriptions from "../data/descriptions.json";
+import Header from "../components/Header";
 
 function Analysis() {
-    const {profile, authTokens} = useContext(AuthContext);
+    const {profile} = useContext(AuthContext);
     const location = useLocation();
     const navigate = useNavigate();
     const chatData = location.state.chatData;
@@ -28,25 +29,7 @@ function Analysis() {
 
     return (
         <>
-            <div className="float flex flex-row gap-4 m-[2rem]">
-                <button 
-                    onClick={() => toHistory()} 
-                    className="float flex mr-auto justify-middle text-black-500 border-1 align-middle rounded p-2 self-center"
-                >
-                        &#8592;
-                </button>
-                <p className="text-5xl font-semibold">Transcript Analysis</p>
-                <div className="float flex ml-auto gap-4">
-                    <button className="text-gray-700 no-underline" onClick={() => toToday()}>Today's Speech Analysis</button>
-                    <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/history'>
-                        <button className="text-gray-700 no-underline">Chat History</button>
-                    </Link>
-                    <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/schedule'>
-                        <button className="text-gray-700 no-underline">Schedule</button>
-                    </Link>
-                    <button className="flex bg-blue-700 rounded h-fit p-2 text-white self-center" onClick={() => logoutUser()}>Log Out</button>
-                </div>  
-            </div>
+            <Header title="Speech Analysis" page="analysis" />
             <div className="m-[2rem]">
                 <p className="text-4xl text-purple-500 font-semibold">{style.format(date)}</p>
                 <label className="text-xl">

@@ -29,7 +29,6 @@ function Dashboard() {
             const profileChats = await getChats(authTokens);
             setChats(profileChats);
             setChatData(chats.length > 0 ? profileChats[0] : blankChat);
-            console.log(profileChats);
         };
 
         fetchChats();
@@ -78,10 +77,10 @@ function Dashboard() {
                         </button>
                     </span>
                     <br/>
-                    <p>{profile.plwdFirstName}'s performance has remained steady the past few weeks.</p>
-                    <p>There are 2 big drops on April 1 and April 2nd. You may want to follow up to see what's going on.</p>
-                    <p>Good days:</p>
-                    <p>Bad days:</p>
+                    <p>This will give an overview of {profile.plwdFirstName}'s performance over the past few weeks.</p>
+                    <p>Here will be a summary of the days with big drops in performance.</p>
+                    <p>Good days: A list of days with higher biomarker scores.</p>
+                    <p>Bad days: A list of days with lower biomarker scores.</p>
                 </div>
                 <div className="md:h-full h-[40vh]">
                     {activeChart === "Overall" ? 

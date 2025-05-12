@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Button } from "react-bootstrap";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import AuthContext from '../context/AuthContext';
 import { GoGear, GoGraph } from "react-icons/go";
 import { GrSchedules } from "react-icons/gr";
@@ -17,10 +17,6 @@ const Header = ({title, page}) => {
         navigate('/dashboard');
     }
 
-	const toChat = () => {
-		navigate('/chat');
-	}
-
     const toSchedule = () => {
         navigate('/schedule');
     }
@@ -32,6 +28,14 @@ const Header = ({title, page}) => {
     const toSettings = () => {
         navigate('/settings');
     }
+
+	const getStyle = (page, targetPage) => {
+		if (page === targetPage) {
+			return "text-blue-700 underline";
+		} else {
+			return "text-gray-700 no-underline"
+		}
+ 	}	
 
 	if (isCaregiver) {
 		return (
@@ -82,56 +86,24 @@ const Header = ({title, page}) => {
 	} else {
 		return (
 		<>
-			<div className="mx-[2rem] mt-[2rem] flex flex-col gap-2">
-				<div className="flex items-center">                
-					<h1>{title}</h1>
-					<div className="float flex flex-row gap-2 float-right ml-auto">
-						<Button 
-							variant={page==="chat" ? "outline-secondary" : "outline-primary"}
-							style={{ display: 'flex', alignItems: 'center' }} 
-							onClick={toChat} 
-							disabled={page==='chat'}
-						>
-							<FaRobot size={25} style={{ marginRight: '2px' }}/> Chat
-						</Button>
-
-						<Button 
-							variant={page==="today" ? "outline-secondary" : "outline-primary"}
-							style={{ display: 'flex', alignItems: 'center' }} 
-							onClick={toChat} 
-							disabled={page==='today'}
-						>
-							<GoGraph size={25} style={{ marginRight: '2px' }}/> Recent Speech Analysis
-						</Button>
-
-						<Button 
-							variant={page==="history" ? "outline-secondary" : "outline-primary"}
-							style={{ display: 'flex', alignItems: 'center' }} 
-							onClick={toHistory} 
-							disabled={page==='history'}
-						>
-							<FaRobot size={25} style={{ marginRight: '2px' }}/> History
-						</Button>
-
-						<Button 
-							variant={page==="schedule" ? "outline-secondary" : "outline-primary"}
-							style={{ display: 'flex', alignItems: 'center' }} 
-							onClick={toSchedule} 
-							disabled={page==='schedule'}
-						>
-							<GrSchedules size={25} style={{ marginRight: '2px' }}/> Schedule
-						</Button>
-							
-						<Button 
-							variant="outline-danger" 
-							style={{ display: 'flex', alignItems: 'center' }} 
-							onClick={logoutUser}
-						>
-							<IoExitOutline size={25} style={{ marginRight: '2px' }}/> Log Out
-						</Button>
-					</div>
-				</div>
-			</div>
+			<div className="float flex flex-row m-[2rem]">
+                <p className="text-5xl font-semibold">{title}</p>
+                <div className="float-right flex ml-auto gap-4">
+					<Link className="flex align-middle" style={{textDecoration: 'none'}} to="/chat">
+						<button className={getStyle(page, 'chat')}>Chat</button>
+					</Link>
+					<Link className="flex align-middle" style={page==="today" ? {} : {textDecoration: 'none'}} to="/today">
+						<button className={getStyle(page, 'today')}>Today's Speech Analysis</button>
+					</Link>
+                    <Link className="flex align-middle" style={page==="history" ? {} : {textDecoration: 'none'}} to='/history'>
+                        <button className={getStyle(page, 'history')}>Chat History</button>
+                    </Link>
+                    <Link className="flex align-middle" style={page==="schedule" ? {} : {textDecoration: 'none'}} to='/schedule'>
+                        <button className={getStyle(page, 'schedule')}>Schedule</button>
+                    </Link>
+                    <button className="flex bg-blue-700 rounded h-fit p-2 text-white self-center" onClick={() => logoutUser()}>Log Out</button>
+                </div>  
+            </div>
 		</>
 		)
 	}

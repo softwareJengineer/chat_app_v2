@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import Header from "../components/Header";
 import { FaUser } from "react-icons/fa";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import MyWordCloud from "../components/WordCloud";
 import Avatar from "../components/Avatar";
 import GoalProgress from "../components/GoalProgress";
@@ -9,10 +9,12 @@ import { Button } from "react-bootstrap";
 import { FcCalendar, FcClock, FcSms } from "react-icons/fc";
 import { IoThumbsUp } from "react-icons/io5";
 import daysInARow from "../functions/daysInARow";
+import AuthContext from '../context/AuthContext';
 
 function ChatDetails() {
     const { profile } = useContext(AuthContext);
     const location = useLocation();
+    const navigate = useNavigate();
     const chatData = location.state?.chatData;
     const prevChatData = location.state?.prevChatData ? 
         location.state.prevChatData : 
@@ -27,17 +29,7 @@ function ChatDetails() {
     const chats = location.state?.chats;
     const date = new Date(chatData.date);
 
-    const cardStyle = "border-1 border-gray-300 rounded p-[2rem] hover:shadow-xl h-full w-full justify-self-start hover:cursor-pointer";
-    const cardHeader = (title) => {
-        return (
-            <div className="flex">
-                <h4>{title}</h4>
-                <p className="float flex flex-row gap-2 float-right ml-auto text-blue-500 underline">
-                    View Details
-                </p>
-            </div>
-        )
-    }
+    const cardStyle = "border-1 border-gray-300 rounded p-[2rem] hover:shadow-xl h-full w-full justify-self-start";
 
     const calcGoal = (chats) => {
         const goal = chats % 5;
@@ -74,6 +66,10 @@ function ChatDetails() {
                 </div>
             )
         }
+    }
+
+    const toAnalysis = (biomarker) => {
+        navigate('/analysis', {state: {chatData: chatData, biomarker: biomarker}})
     }
 
     return (
@@ -160,37 +156,55 @@ function ChatDetails() {
             <h3 className="mx-[2rem]">Detailed Analysis</h3>
             <div className="grid md:grid-cols-2 grid-cols-1 h-full justify-stretch m-[2rem] gap-4">
                 <div className={cardStyle}>
-                    {cardHeader("Daily Topics")}
+                    <h4>Daily Topics</h4>
                     <MyWordCloud messages={chatData.messages} />
                 </div>
                 <div className={cardStyle}>
-                    {cardHeader("Mood Track")}
+                    <h4>Mood Track</h4>
                     <p>You felt {chatData.sentiment}</p>
-                    <p>Because </p>
+                    <p>Because... </p>
                 </div>
                 <div className={cardStyle}>
-                    {cardHeader("Pragmatic Review")}
-                    {getImprovement(chatData.avgScores.Pragmatic, prevChatData.avgScores.Pragmatic)} 
+                    <h4>Pragmatic Review</h4>
+                    {getImprovement(chatData.avgScores.Pragmatic, prevChatData.avgScores.Pragmatic)}
+                    <button className="bg-violet-600 rounded p-2 text-white" onClick={() => toAnalysis("Pragmatic")}>
+                        View in Transcript
+                    </button>
                 </div>
                 <div className={cardStyle}>
-                    {cardHeader("Grammar Review")}
+                    <h4>Grammar Review</h4>
                     {getImprovement(chatData.avgScores.Grammar, prevChatData.avgScores.Grammar)} 
+                    <button className="bg-violet-600 rounded p-2 text-white" onClick={() => toAnalysis("Grammar")}>
+                        View in Transcript
+                    </button>
                 </div>
                 <div className={cardStyle}>
-                    {cardHeader("Prosody Review")}
+                    <h4>Prosody Review</h4>
                     {getImprovement(chatData.avgScores.Prosody, prevChatData.avgScores.Prosody)} 
+                    <button className="bg-violet-600 rounded p-2 text-white" onClick={() => toAnalysis("Prosody")}>
+                        View in Transcript
+                    </button>
                 </div>
                 <div className={cardStyle}>
-                    {cardHeader("Pronunciation Review")}
+                    <h4>Pronunciation Review</h4>
                     {getImprovement(chatData.avgScores.Pronunciation, prevChatData.avgScores.Pronunciation)} 
+                    <button className="bg-violet-600 rounded p-2 text-white" onClick={() => toAnalysis("Pronunciation")}>
+                        View in Transcript
+                    </button>
                 </div>
                 <div className={cardStyle}>
-                    {cardHeader("Grammar Review")}
-                    {getImprovement(chatData.avgScores.Grammar, prevChatData.avgScores.Grammar)} 
+                    <h4>Anomia Review</h4>
+                    {getImprovement(chatData.avgScores.Anomia, prevChatData.avgScores.Anomia)} 
+                    <button className="bg-violet-600 rounded p-2 text-white" onClick={() => toAnalysis("Anomia")}>
+                        View in Transcript
+                    </button>
                 </div>
                 <div className={cardStyle}>
-                    {cardHeader("Turn Taking Review")}
+                    <h4>Turn Taking Review</h4>
                     {getImprovement(chatData.avgScores["Turn Taking"], prevChatData.avgScores["Turn Taking"])} 
+                    <button className="bg-violet-600 rounded p-2 text-white" onClick={() => toAnalysis("Turn Taking")}>
+                        View in Transcript
+                    </button>
                 </div>
             </div>
         </>

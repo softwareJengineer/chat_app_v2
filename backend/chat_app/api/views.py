@@ -267,6 +267,7 @@ class ChatsView(APIView):
             sentiment = sentiment_scores(message_text)
             topics = get_topics(message_text)
         except Exception as e:
+            print(e)
             pass  # If there is an error in extracting sentiment or topics, we will return "N/A"
 
         # Create the chat entry
@@ -313,20 +314,37 @@ class ChatsView(APIView):
 class ChatView(APIView):
     permission_classes = [IsAuthenticated]  # Ensure the user is authenticated
 
-    def get(self, request, chatID):
+    def get(self, request):
         """Handles GET request to fetch a specific chat"""
+        user = request.user
         
-        # Fetch the chat using `get_object_or_404` for better error handling
-        chat = get_object_or_404(Chat, pk=chatID)
+        profile = None
+        try:
+            profile = Profile.objects.get(plwd=user)
+        except Profile.DoesNotExist:
+            try:
+                profile = Profile.objects.get(caregiver=user)
+            except Profile.DoesNotExist:
+                return Response({
+                    'success': False,
+                    'error': 'Could not find the profile.'
+                }, status=status.HTTP_404_NOT_FOUND)
         
-        # Serialize the chat object to JSON
-        serializer = ChatSerializer(chat)
-        
-        # Return the serialized data
-        return Response({
-            'success': True,
-            'chat': serializer.data
-        })
+        try:
+            chat = Chat.objects.filter(user=profile).latest('date')
+            # Serialize the chat object to JSON
+            serializer = ChatSerializer(chat)
+            
+            # Return the serialized data
+            return Response({
+                'success': True,
+                'chat': serializer.data
+            }, status=status.HTTP_200_OK)
+        except:
+            return Response({
+                'success': False,
+                'error': 'No chats found for this user.',
+            }, status=status.HTTP_404_NOT_FOUND)
         
          
 class ReminderView(APIView):
