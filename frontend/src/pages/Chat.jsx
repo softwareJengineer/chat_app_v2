@@ -111,15 +111,15 @@ function Chat() {
         const chatHistoryWrapper2 = "overflow-y-auto w-full md:w-1/2 h-1/2 md:h-full md:border-r-1 md:border-b-0 border-b-1 border-blue-200";
 
         // Chat history or Avatar views separately
-        if      (viewMode == 1) {return (<div className={chatHistoryWrapper1}> <ChatHistory messages      ={ messages       }/> </div>);}
-        else if (viewMode == 3) {return (<div className="h-[65vh] mb-[2rem]">  <AvatarView  chatbotMessage={ chatbotMessage }/> </div>);}
+        if      (viewMode == 1) {return (<div className={chatHistoryWrapper1}> <ChatHistory messages       = { messages       }/> </div>);}
+        else if (viewMode == 3) {return (<div className="h-[65vh] mb-[2rem]">  <AvatarView  chatbotMessage = { chatbotMessage }/> </div>);}
         
         // Combined split view
         else if (viewMode == 2) {
             return (
                 <div className="flex md:flex-row flex-col h-[65vh] mt-[1em] w-full mb-[2rem]">
-                    <div className={chatHistoryWrapper2}> <ChatHistory messages={messages}/> </div>
-                    <div className="md:w-1/2 w-[100vw] md:h-full h-1/2"> <AvatarView chatbotMessage={ chatbotMessage }/> </div>
+                    <div className={chatHistoryWrapper2}               > <ChatHistory messages       = { messages       }/> </div>
+                    <div className="md:w-1/2 w-[100vw] md:h-full h-1/2"> <AvatarView  chatbotMessage = { chatbotMessage }/> </div>
                 </div> 
                 );
         }
