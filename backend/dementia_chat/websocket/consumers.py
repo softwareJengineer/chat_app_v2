@@ -179,8 +179,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         logger.info(f"{cf.CYAN}[LLM] Response sent in:        {(time() - LLM_start_time):6.4f}s")
 
         # Update chat history & return the system utterance
-        #self.chat_history.append({'Speaker': 'User',   'Utt': user_utt  })
-        #self.chat_history.append({'Speaker': 'System', 'Utt': system_utt})
+        self.chat_history.append({'Speaker': 'User',   'Utt': user_utt  })
+        self.chat_history.append({'Speaker': 'System', 'Utt': system_utt})
         return system_utt
 
 
