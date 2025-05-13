@@ -53,9 +53,9 @@ export default function useSpeechEngine({
     // --------------------------------------------------------------------
     const {asrStart, asrEnd, llmEnd, ttsStart, ttsEnd} = useLatencyLogger();
 
-    // ==================================================================== ==================================
+    // ====================================================================
     // WebSocket & Audio Streamer
-    // ==================================================================== ================================== 
+    // ==================================================================== 
     // Use text data given by the backend LLM as input for TTS and respond
     const speakResponse = (text) => {ttsStart(); ttsRef.current?.speak(text);};
     const onLLMResponse = (data) => {llmEnd  (); logText(`[LLM] Response:   ${data}`); speakResponse(data); onSystemUtterance(data);};
@@ -81,7 +81,7 @@ export default function useSpeechEngine({
     // ====================================================================
     // When the user starts speaking (the "speaking" tag changes to true), check if the system was also speaking
     const checkOverlap = () => {if (systemSpeaking && userSpeaking) {logOverlap(); sendToServer({type: 'overlapped_speech'}); onOverlap();}};
-    useEffect(() => {if (systemSpeaking && userSpeaking) {logOverlap();}}, [systemSpeaking, userSpeaking]);
+    useEffect(() => {if (systemSpeaking && userSpeaking) {logOverlap();}}, [systemSpeaking, userSpeaking]); // (Just a test...)
 
     // ASR service has recognized a complete utterance and returned a text transcription
     const handleUtterance = (text) => {logText(`[ASR] Recognized: ${text}`); sendToServer({type: 'transcription', data: text}); onUserUtterance(text);};
