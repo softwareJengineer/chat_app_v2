@@ -48,12 +48,6 @@ function Chat() {
 
     // on message -> addMessageToChat('AI', response.data, response.time); setChatbotMessage(response.data);
     // scores     -> else if (response.type.includes("scores")) {updateScores(response);}
-    /*
-        
-        console.log(`Recognized: ${transcription}`);
-     
-     
-    */
 
     if (!start) { setStart(new Date()); }
     
