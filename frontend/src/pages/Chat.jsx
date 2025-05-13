@@ -20,9 +20,12 @@ function Chat() {
     const {user} = useContext(UserContext);
 
     const [messages,       setMessages      ] = useState(location.state ? location.state.messages : []);
-    const [viewMode,       setViewMode      ] = useState(3);
+    const [viewMode,       setViewMode      ] = useState(2);
     const [chatbotMessage, setChatbotMessage] = useState("Hello! I am here to assist you.");
     const [start,          setStart         ] = useState(null);
+
+    // Passed to RecordButton
+    const [recording, setRecording] = useState(false);
 
     const date = new Date();
     const navigate = useNavigate();
@@ -108,15 +111,15 @@ function Chat() {
         const chatHistoryWrapper2 = "overflow-y-auto w-full md:w-1/2 h-1/2 md:h-full md:border-r-1 md:border-b-0 border-b-1 border-blue-200";
 
         // Chat history or Avatar views separately
-        if      (viewMode == 1) {return (<div className={chatHistoryWrapper1}> <ChatHistory messages      ={ messages       }/> </div>);}
-        else if (viewMode == 3) {return (<div className="h-[65vh] mb-[2rem]">  <AvatarView  chatbotMessage={ chatbotMessage }/> </div>);}
+        if      (viewMode == 1) {return (<div className={chatHistoryWrapper1}> <ChatHistory messages       = { messages       }/> </div>);}
+        else if (viewMode == 3) {return (<div className="h-[65vh] mb-[2rem]">  <AvatarView  chatbotMessage = { chatbotMessage }/> </div>);}
         
         // Combined split view
         else if (viewMode == 2) {
             return (
                 <div className="flex md:flex-row flex-col h-[65vh] mt-[1em] w-full mb-[2rem]">
-                    <div className={chatHistoryWrapper2}> <ChatHistory messages={messages}/> </div>
-                    <div className="md:w-1/2 w-[100vw] md:h-full h-1/2"> <AvatarView chatbotMessage={ chatbotMessage }/> </div>
+                    <div className={chatHistoryWrapper2}               > <ChatHistory messages       = { messages       }/> </div>
+                    <div className="md:w-1/2 w-[100vw] md:h-full h-1/2"> <AvatarView  chatbotMessage = { chatbotMessage }/> </div>
                 </div> 
                 );
         }
@@ -161,12 +164,14 @@ function Chat() {
             
             {/* Buttons for starting/stopping the chat & saving the chat history */}
             <div className="flex flex-row justify-center mb-[2em] pt-[3em] gap-[4em] items-center">
-                <RecordButton
-                    onUserUtterance   = {(txt   ) => addMessageToChat ('You', txt, getMessageTime())}
-                    onSystemUtterance = {(txt   ) => {setChatbotMessage(txt); addMessageToChat ('System', txt, getMessageTime()) }                        } 
-                    onScores          = {(scores) => updateScores     (scores)                      }
+                <RecordButton onRecordingChange = {setRecording}
+                    onUserUtterance   = {(txt   ) => {addMessageToChat('You',    txt, getMessageTime());                        }}
+                    onSystemUtterance = {(txt   ) => {addMessageToChat('System', txt, getMessageTime()); setChatbotMessage(txt);}} 
+                    onScores          = {(scores) => {updateScores(scores);}}
                 />
                 <Button className="border-1 p-[1em] rounded-med" variant="outline-primary" size="lg" onClick={handleShow}> Finish </Button>
+
+                {recording && <div> <span className="dot"/> <p>test</p> </div> }   {/* red dot indicator */}
             </div>
             <CloseModal/>
         </>

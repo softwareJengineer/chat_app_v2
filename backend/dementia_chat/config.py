@@ -32,7 +32,9 @@ RED    = "\033[0;31m"
 GREEN  = "\033[0;32m"
 YELLOW = "\033[0;33m"
 BLUE   = "\033[0;34m"
+CYAN   = "\033[0;96m"
 RESET  = "\033[0m"
+
 
 
 # =======================================================================
@@ -79,14 +81,6 @@ logger = logging.getLogger(__name__)
 # =======================================================================
 # Testing Utilities
 # =======================================================================
-class DummyLLM:
-    def __init__(self, *args, **kwargs):
-        logger.info("Dummy LLM initialized (no real model loaded)")
-
-    def __call__(self, prompt, max_tokens=None, stop=None, echo=False):
-        # logger.info(f"Dummy LLM called with prompt: {prompt}")
-        return {"choices": [{"text": "This is a dummy response from the LLM."}] }
-
 # Check for model files individually
 def check_for_model_files(LLM_model_path, pronunciation_model_path, prosody_model_path):
     missing_files = []
@@ -124,6 +118,7 @@ try:
         llm = Llama(model_path=LLM_model_path, n_ctx=max_length, n_threads=16, n_gpu_layers=0)
         logger.info("LLM initialized successfully")
     else:
+        from .services.llm.dummy_LLM import DummyLLM
         llm = DummyLLM()
 
 except Exception as e:

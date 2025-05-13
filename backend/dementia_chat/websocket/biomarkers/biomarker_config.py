@@ -1,6 +1,8 @@
 import pandas as pd
 import os
 
+from ... import config as cf
+
 # Constants
 WINDOW_SIZE = 5      # seconds
 HOP_LENGTH  = 0.01   # 10ms for feature extraction
@@ -24,13 +26,20 @@ PRONUNCIATION_FEATURES = [
 # For the LLM
 LAST_X_CHAT_ENTRIES = 5
 
+# =======================================================================
+# Configure Logging
+# =======================================================================
+# Time how long each biomarker takes to calculate and log it
+TIME_BIOMARKERS = True
 
 # -----------------------------------------------------------------------
-# Features for the pragmatic score
+# Biomarker Logging Helpers
 # -----------------------------------------------------------------------
-current_path = os.path.dirname(os.path.abspath(__file__))
-
-bm_vectors   = pd.read_csv  (f"{current_path}/biomarker_models/new_LSA.csv", index_col=0 )
-bm_entropy   = pd.read_csv  (f"{current_path}/biomarker_models/Hoffman_entropy_53758.csv")
-bm_stop_list = pd.read_table(f"{current_path}/biomarker_models/stoplist.txt", header=None)
+BIO_LOG = f"{cf.GREEN}[Bio] "
+PRAG = f"{BIO_LOG}Pragmatic:      "
+GRAM = f"{BIO_LOG}Altered Grammar:"
+PROS = f"{BIO_LOG}Prosody:        "
+PRON = f"{BIO_LOG}Pronunciation:  "
+ANOM = f"{BIO_LOG}Anomia:         "
+TURN = f"{BIO_LOG}Turntaking:     "
 

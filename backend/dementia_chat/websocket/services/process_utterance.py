@@ -1,8 +1,6 @@
 # Imports
-from .. import config as cf
-import dementia_chat.services.tts as tts
-
-from .biomarker_config import LAST_X_CHAT_ENTRIES
+from ...                           import config as cf
+from ..biomarkers.biomarker_config import LAST_X_CHAT_ENTRIES
 
 # =======================================================================
 # Set API Keys & Logger
@@ -12,7 +10,19 @@ speech_key,    service_region = cf.speech_key,    cf.service_region
 speech_config, audio_config   = cf.speech_config, cf.audio_config
 
 # Logging
-logger = cf.logging.getLogger("__asr__")
+logger = cf.logging.getLogger("__asr__") # ---- why does this say ASR again??
+
+# Process an Utterance
+def process_user_utterance(user_utt: str, chat_history):
+    try:
+        # Generate response using the LLM
+        system_utt = respond_to_user_utt(user_utt, chat_history)
+
+    except Exception as e:
+        logger.error(f"Error in process_user_utterance: {e}")
+        system_utt = "I'm sorry, I encountered an error while processing your request."
+
+    return system_utt
 
 
 # =======================================================================

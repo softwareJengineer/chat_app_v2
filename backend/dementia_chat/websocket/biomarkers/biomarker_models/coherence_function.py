@@ -4,7 +4,8 @@ import openpyxl
 from datetime import datetime
 from sklearn.metrics.pairwise import cosine_similarity
 
-"""Coherene function to calculate Global coherence, Local Coherence, Robot Coherence
+"""
+    Coherence function to calculate Global coherence, Local Coherence, Robot Coherence
 
     Global coherence: is calculated as the cosine similarity between the current window and the mean of the rest of the windows of user's speech.
     Local coherence: is calculated as the cosine similarity between the current window and the previous window of the user.
@@ -18,36 +19,21 @@ from sklearn.metrics.pairwise import cosine_similarity
         norm (bool): A boolean value to indicate whether to normalize the vectors
         f_weight (str): A string value to indicate the frequency weight to use
         winsize (int): An integer value to indicate the window size
-        output_wins (bool): A boolean value to indicate whether to output the windows
+        output_wins (bool): A boolean value to indicate whether to output the windows   
 
     Returns:
         pd.DataFrame: A DataFrame containing the conversation data with the coherence values appended
-
-
-
 """
-
-def coherence(data, vectors, stop_list=None, entropy=None, norm=True,
-              f_weight='logfreq', winsize=20, output_wins=True):
-
-    
-    #checking the input data format
-    
-    if not isinstance(data, pd.DataFrame):
-        raise ValueError('Input data must be a DataFrame')
-    if data.shape[1] < 2:
-        raise ValueError('Not enough columns in input')
-    if data.shape[1] > 2:
-        raise ValueError('Too many columns in input')
-    
-    if not isinstance(vectors, (pd.DataFrame, np.ndarray)):
-        raise ValueError('Word vectors in incorrect format')
-    if vectors.shape[0] != len(vectors):
-        raise ValueError('Word vectors are not labelled')
+def coherence(data, vectors, stop_list=None, entropy=None, norm=True, f_weight='logfreq', winsize=20, output_wins=True):
+    # Checking the input data format
+    if not isinstance(data, pd.DataFrame):                  raise ValueError('Input data must be a DataFrame')
+    if data.shape[1] < 2:                                   raise ValueError('Not enough columns in input')
+    if data.shape[1] > 2:                                   raise ValueError('Too many columns in input')
+    if not isinstance(vectors, (pd.DataFrame, np.ndarray)): raise ValueError('Word vectors in incorrect format')
+    if vectors.shape[0] != len(vectors):                    raise ValueError('Word vectors are not labelled')
     
 
-    if stop_list is not None:
-        stop_list = stop_list.iloc[:, 0].tolist()
+    if stop_list is not None: stop_list = stop_list.iloc[:, 0].tolist()
     
     if entropy is not None:
         entropy = entropy['x'].to_numpy()
@@ -55,96 +41,63 @@ def coherence(data, vectors, stop_list=None, entropy=None, norm=True,
         if len(entropy) != vectors.shape[0]:
             raise ValueError('Number of entropy values does not match number of words in vectors')
     
-    if f_weight not in ['logfreq', 'freq', 'none']:
-        raise ValueError('Invalid frequency option')
-    if winsize < 1:
-        raise ValueError('Invalid window size')
+    if f_weight not in ['logfreq', 'freq', 'none']: raise ValueError('Invalid frequency option')
+    if winsize < 1:                                 raise ValueError('Invalid window size')
     
     vlength = vectors.shape[1]
     
-    d2 = data.copy()
-
+    
+    # Set column names
     try:
-        if d2.shape[1] == 2:
-            d2.columns = ['participants', 'response']
-            data.columns = ['participants', 'response']
-        else:
-            raise Exception(f"Number of columns are {d2.shape[1]}, just 2 are needed pt and response")
-    except Exception as e:
-        print(f"An error occurred: {e}")
+        if data.shape[1] == 2: data.columns = ['participants', 'response']
+        else:                  raise Exception(f"Number of columns are {data.shape[1]}, just 2 are needed pt and response")
+    except Exception as e:     print(f"An error occurred: {e}")
 
-    d2['gc'] = np.nan
-    d2['lc'] = np.nan
-    d2['rc'] = np.nan
-    if output_wins:
-        d2['window'] = np.nan
+    # Make a copy of the data & add some additional columns
+    d2 = data.copy()
+    d2[["gc", "lc", "rc"]] = [np.nan, np.nan, np.nan]
+    if output_wins: d2['window'] = np.nan
 
+    # Clean and lowercase the "response" text
     speech = data['response'].str.lower().str.replace('[^\w\s]', '').str.strip()
 
-    new = [0]
+    # Get change points where the speaker changes (check if a rows 'participants' value differs from the previous row)
+    new  = data.index[data["participants"] != data["participants"].shift(1)].tolist()
+    nnew = len(new)
 
-    try:
-    # Iterate through rows, starting from the second row 
-        for j in range(1, len(data)):
-            # Check if the current row's  'participants' values differ from the previous row
-            if data['participants'][j] != data['participants'][j-1]:
-                new.append(j)
-    except Exception as e:
-        # Custom error handling
-        raise Exception("More than one response is needed!") from e
-
-
-    nnew= len(new)
 
     allresp = np.zeros((nnew, vlength))
     
     startdata = d2.iloc[new, :]
 
+    # --------------------------------------------------------------------
     # Creating the average robot response
+    # --------------------------------------------------------------------
     for j in range(nnew):
-        #collect response
-        if j < nnew - 1:
-            currresp = speech[new[j]:new[j+1]]
-        else:
-            currresp = speech[new[j]:]
-
-        words = [word for word in currresp if word in vectors.index]
-
-        if not isinstance(words, pd.Series):
-             words = pd.Series(words)
-
-        word_counts = words.value_counts()
-    
-        if f_weight == 'logfreq':
-            words_matrix = np.log10(word_counts + 1).to_frame()
-        elif f_weight == 'none':
-            words_matrix = pd.DataFrame(1, index=word_counts.index, columns=['count'])
-        else:
-            words_matrix = word_counts.to_frame()
+        # Collect response
+        current_response = speech[new[j]:new[j+1]] if (j < nnew-1) else speech[new[j]:]
         
+        # Get words as a series & create a matrix using the value counts
+        words = pd.Series([word for word in current_response if word in vectors.index])
+        word_counts = words.value_counts()
+
+        if   f_weight == 'logfreq' : words_matrix = np.log10(word_counts + 1).to_frame()
+        elif f_weight == 'none'    : words_matrix = pd.DataFrame(1, index=word_counts.index, columns=['count'])
+        else:                        words_matrix = word_counts.to_frame()
         words_matrix = words_matrix.sort_index()
 
-        if stop_list is None:
-            w2 = words_matrix
-        else:
-            w2 = words_matrix.loc[~words_matrix.index.isin(stop_list)]
-
-        if norm:
-            vnorm = np.sqrt((vectors.loc[w2.index] ** 2).sum(axis=1))
-        else:
-            vnorm = 1
-
+        # ...
+        w2 = words_matrix if (stop_list is None) else words_matrix.loc[~words_matrix.index.isin(stop_list)]
         mask = vectors.index.isin(w2.index)
 
-        if entropy is None:
-            entro = 1
-        else:
-            entro = entropy[mask]
+        # ...
+        vnorm = np.sqrt((vectors.loc[w2.index] ** 2).sum(axis=1)) if (norm               ) else 1
+        entro = entropy[mask]                                     if (entropy is not None) else 1
 
         # Reshape w2.values and entro to align with the dimensions of vectors
-        w2_reshaped = w2.values.reshape(-1, 1)
-        entro_reshaped = entro.reshape(-1, 1)
+        w2_reshaped    = w2   .values.reshape(-1, 1)
         vnorm_reshaped = vnorm.values.reshape(-1, 1)
+        entro_reshaped = entro       .reshape(-1, 1)
         
         # Now perform the element-wise multiplication and division
         cvec_values = vectors.loc[w2.index].values * w2_reshaped * entro_reshaped / vnorm_reshaped
@@ -152,13 +105,10 @@ def coherence(data, vectors, stop_list=None, entropy=None, norm=True,
         # Convert cvec_values back to a DataFrame with the same index and columns as the original vectors DataFrame
         cvec = pd.DataFrame(cvec_values, index=w2.index, columns=vectors.columns)
 
-
-        if cvec.shape[0] == 1:
-            # Assign cvec directly to the corresponding row of allresp
-            allresp[j, :] = cvec.values.flatten()  # Use flatten to ensure it's a 1D array
-        else:
-            # Calculate the column means and assign to the corresponding row of allresp
-            allresp[j, :] = cvec.mean(axis=0).values
+        # Assign cvec directly to the corresponding row of allresp
+        # If cvec is a single row, just flatten it; otherwise, take the average of all rows
+        if cvec.shape[0] == 1: allresp[j, :] = cvec.values.flatten()  
+        else:                  allresp[j, :] = cvec.mean(axis=0).values
 
     # avgrobot= np.nanmean(allresp[startdata['participants'] == 'robot'], axis=0)
 
@@ -167,10 +117,8 @@ def coherence(data, vectors, stop_list=None, entropy=None, norm=True,
         start = new[i]
         # if startdata['participants'][new[i]] == "user" or startdata['participants'][new[i]] == "robot":
         if startdata['participants'][new[i]] == "user":
-            if i < nnew - 1:
-                currresp = speech[new[i]:new[i+1]]
-            else:
-                currresp = speech[new[i]:]
+            if i < nnew - 1: currresp = speech[new[i]:new[i+1]]
+            else:            currresp = speech[new[i]:]
             
             nwords = len(currresp)
 

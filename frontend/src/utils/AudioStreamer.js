@@ -60,66 +60,66 @@ export default class AudioStreamer {
     // Stop Stream
     // --------------------------------------------------------------------
     stop() {
-      if (!this.running) return;
-      this.running = false;
-  
-      this.worklet?.port.postMessage('stop');
-      this.worklet?.disconnect();
-      this.source?.disconnect();
-      this.ctx?.close();
-      this.stream?.getTracks().forEach(t => t.stop());
-  
-      this.buffer  = new Float32Array(this.chunkSize);
-      this.bufIndex = 0;
-      console.log('AudioStreamer stopped');
+        if (!this.running) return;
+        this.running = false;
+    
+        this.worklet?.port.postMessage('stop');
+        this.worklet?.disconnect();
+        this.source ?.disconnect();
+        this.ctx    ?.close();
+        this.stream ?.getTracks().forEach(t => t.stop());
+    
+        this.buffer   = new Float32Array(this.chunkSize);
+        this.bufIndex = 0;
+        console.log('AudioStreamer stopped');
     }
     
     // --------------------------------------------------------------------
     // Internal Helpers
     // --------------------------------------------------------------------
-    _handleFrame(float32) {
-      if (!this.running) return;
-  
-      // Down-sample if needed (linear interpolation)
-      const data = this.actualRate === this.sampleRate
-        ? float32
-        : this._resample(float32, this.actualRate, this.sampleRate);
-  
-      // Copy into rolling buffer
-      const remaining = this.chunkSize - this.bufIndex;
-      const slice     = data.subarray(0, remaining);
-      this.buffer.set(slice, this.bufIndex);
-      this.bufIndex += slice.length;
-  
-      // When buffer is filled -> emit chunk
-      if (this.bufIndex >= this.chunkSize) {
-        const int16 = this._floatToInt16(this.buffer);
-        this.onChunk(int16, Date.now());
-        this.bufIndex = 0; // reset
-      }
-  
-      // If any leftover samples -> start next buffer
-      const leftovers = data.subarray(slice.length);
-      if (leftovers.length) {this._handleFrame(leftovers);} // recursive
+    _handleFrame(float32) {if (!this.running) return;
+        // Down-sample if needed (linear interpolation)
+        const data = this.actualRate === this.sampleRate
+            ? float32
+            : this._resample(float32, this.actualRate, this.sampleRate);
+    
+        // Copy into rolling buffer
+        const remaining = this.chunkSize - this.bufIndex;
+        const slice     = data.subarray(0, remaining);
+        this.buffer.set(slice, this.bufIndex);
+        this.bufIndex += slice.length;
+    
+        // When buffer is filled -> emit chunk
+        if (this.bufIndex >= this.chunkSize) {
+            const int16 = this._floatToInt16(this.buffer);
+            this.onChunk(int16, Date.now());
+            this.bufIndex = 0; // reset
+        }
+    
+        // If any leftover samples -> start next buffer
+        const leftovers = data.subarray(slice.length);
+        if (leftovers.length) {this._handleFrame(leftovers);} // recursive
     }
   
+
     _floatToInt16(float32) {
-      const out = new Int16Array(float32.length);
-      for (let i = 0; i < float32.length; i++) {out[i] = Math.max(-32768, Math.min(32767, Math.round(float32[i] * 32767)));}
-      return out;
+        const out = new Int16Array(float32.length);
+        for (let i = 0; i < float32.length; i++) {out[i] = Math.max(-32768, Math.min(32767, Math.round(float32[i] * 32767)));}
+        return out;
     }
   
     _resample(input, inRate, outRate) {
-      const ratio = inRate / outRate;
-      const newLen = Math.round(input.length / ratio);
-      const out = new Float32Array(newLen);
-      for (let i = 0; i < newLen; i++) {
-        const idx = i * ratio;
-        const j   = Math.floor(idx);
-        const frac = idx - j;
-        out[i] = (1 - frac) * input[j] + frac * (input[j + 1] || 0);
-      }
-      return out;
+        const ratio  = inRate / outRate;
+        const newLen = Math.round(input.length / ratio);
+
+        const out = new Float32Array(newLen);
+        for (let i = 0; i < newLen; i++) {
+            const idx  = i * ratio;
+            const j    = Math.floor(idx);
+            const frac = idx - j;
+            out[i] = (1 - frac) * input[j] + frac * (input[j + 1] || 0);
+        }
+        return out;
     }
-  }
+}
   

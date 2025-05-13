@@ -1,12 +1,9 @@
 // Configuration from .env variables
-//const subscriptionKey = process.env.REACT_APP_SPEECH_KEY     || '';
-//const serviceRegion   = process.env.REACT_APP_SERVICE_REGION || 'eastus';
-
 const subscriptionKey = import.meta.env.VITE_SPEECH_KEY || '';
 const serviceRegion   = import.meta.env.VITE_SERVICE_REGION || 'eastus';
 
-
 import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
+
 
 /*  ====================================================================
  *  AzureASR
@@ -24,12 +21,10 @@ import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
  *  stop_stream()   : stop recognition
  * ==================================================================== */
 export class AzureASR {
-    constructor({ onUtterance, onUserSpeakingChange, onUserSpeakingStart }) {
-        //if (!window.SpeechSDK) {throw new Error('SpeechSDK global not found - make sure the Azure SDK script tag is loaded.');}
-
-        this.onUtterance          = onUtterance;
-        this.onUserSpeakingChange = onUserSpeakingChange ?? (() => {});
-        this.onUserSpeakingStart  = onUserSpeakingStart  ?? (() => {});
+    constructor({ onUserSpeaking, onUserSpeakingStart, onUserSpeakingEnd }) {
+        this.onUserSpeaking      = onUserSpeaking      ?? (() => {});
+        this.onUserSpeakingStart = onUserSpeakingStart ?? (() => {});
+        this.onUserSpeakingEnd   = onUserSpeakingEnd   ?? (() => {});
 
         // --------------------------------------------------------------------
         // Azure Setup
@@ -43,16 +38,21 @@ export class AzureASR {
         // --------------------------------------------------------------------
         // Events
         // --------------------------------------------------------------------
-        this.recognizer.recognizing = (_s, e) => {
-            if (e.result.reason === SpeechSDK.ResultReason.RecognizingSpeech) {this.onUserSpeakingChange(true); this.onUserSpeakingStart();}
-        };
+        let firstResult = true;
+
+        // Mark the beginning of the utterance (first speech recognized)...
+        // & check for overlapped speech each chunk (not sure about keeping this, might slow things slightly)
+        this.recognizer.recognizing = () => {
+            if (firstResult) {this.onUserSpeakingStart(); firstResult = false;} 
+            this.onUserSpeaking();
+        }
 
         this.recognizer.recognized = (_s, e) => {
             if (e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
-                this.onUserSpeakingChange(false);
-                if (e.result.text) {this.onUtterance(e.result.text);}
-            }
-        };
+                if (e.result.text) {this.onUserSpeakingEnd(e.result.text);}
+                firstResult = true;
+            };
+        }
     }
 
     // --------------------------------------------------------------------
@@ -61,6 +61,7 @@ export class AzureASR {
     start_stream() {this.recognizer.startContinuousRecognitionAsync();}
     stop_stream () {this.recognizer.stopContinuousRecognitionAsync ();}
 }
+
 
 
 /*  ====================================================================
@@ -77,34 +78,99 @@ export class AzureASR {
  *  speak(text : string) : void
  *  stop()               : void   (cancels any ongoing synthesis/playback)
  * ==================================================================== */
-export class AzureTTS {
+export class AzureTTS_v0 {
     constructor({ onStart, onDone }) {
-      //if (!window.SpeechSDK) {throw new Error("SpeechSDK global not found - load Azure Speech script first");}
-  
-      this.onStart = onStart ?? (() => {});
-      this.onDone  = onDone  ?? (() => {});
-  
-      // Azure setup 
-      const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
-      this.synthesizer   = new SpeechSDK.SpeechSynthesizer(speechConfig);
+        this.onStart = onStart ?? (() => {});
+        this.onDone  = onDone  ?? (() => {});
+    
+        // Azure Setup 
+        const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
+        const audioConfig  = SpeechSDK.AudioConfig.fromDefaultSpeakerOutput();
+        this.synthesizer   = new SpeechSDK.SpeechSynthesizer(speechConfig, audioConfig);
+
+        // Timing the start and end of audio synthesis
+        let firstChunk = true;
+        this.synthesizer.synthesizing       = () => {if (firstChunk) {this.onStart(); firstChunk = false;}}
+        //this.synthesizer.synthesisCompleted = () => {this.onDone(); firstChunk = true;}
+
+
+        // ====================================================================
+        // Debugging
+        // ====================================================================
+        const color  = "color: #00CC66";
+        const prefix = "[Debugging]";
+        function alignedNow() {return performance.now().toFixed(3).padStart(10, ' ');}
+        function debugLog(message, ...args) {console.log(`%c${prefix} ${message.padEnd(20)} ${alignedNow()}`, color, ...args);}
+        
+        // Events
+        this.synthesizer.synthesisStarted   = ()     =>  debugLog("synth started"                 );
+        this.synthesizer.synthesisCompleted = ()     => {debugLog("synth completed"               ); this.onDone(); firstChunk = true;}
+        this.synthesizer.synthesisCanceled  = (_, e) =>  debugLog("synth canceled", e.errorDetails);
+        this.synthesizer.audioStart         = ()     =>  debugLog("audioStart"                    );
+        this.synthesizer.audioEnd           = ()     =>  debugLog("audioEnd"                      );
+        // ====================================================================
+
     }
   
     // --------------------------------------------------------------------
     // Synthesize audio for the given text
     // --------------------------------------------------------------------
+    // might not need the result.reason thing if we can just do stuff like above...
     speak(text) {if (!text) return;
-      this.onStart();
-      this.synthesizer.speakTextAsync(
-        text,
-        (result) => {if (result.reason === SpeechSDK.ResultReason.SynthesizingAudioCompleted) {console.log("Speech synthesized"); this.onDone()}},
-        (error ) => {console.error("AzureTTS error:", error); this.onDone();}
-      );
+        this.synthesizer.speakTextAsync(
+            text,
+            (result) => {if (result.reason === SpeechSDK.ResultReason.SynthesizingAudioCompleted) {console.log("Speech synthesized"); this.onDone();}},
+            (error ) => {console.error("AzureTTS error:", error); this.onDone();}
+        );
     }
   
-    // Cancels any ongoing synthesis & audio playback
-    stop() {
-        this.synthesizer.close(); // stopSpeakingAsync(); 
-        this.onDone();
+    // Cancels any ongoing synthesis & audio playback 
+    stop() { this.onDone(); }
+}
+
+
+
+
+
+export class AzureTTS {
+    constructor({ onStart, onDone }) {
+        this.onStart = onStart ?? (() => {});
+        this.onDone  = onDone  ?? (() => {});
+    
+        // Azure Setup 
+        const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
+        const audioConfig  = SpeechSDK.AudioConfig.fromDefaultSpeakerOutput();
+        this.synthesizer   = new SpeechSDK.SpeechSynthesizer(speechConfig, audioConfig);
+
+        // Timing the start and end of audio synthesis
+        let firstChunk = true;
+        this.synthesizer.synthesizing       = () => {if (firstChunk) {this.onStart(); firstChunk = false;}}
+        this.synthesizer.synthesisCompleted = () => {                 this.onDone (); firstChunk = true; }
+
+        /*
+        // ====================================================================
+        // Debugging
+        // ====================================================================
+        // move this to other file at some point
+        const color  = "color: #00CC66";
+        const prefix = "[Debugging]";
+        function alignedNow() {return performance.now().toFixed(3).padStart(10, ' ');}
+        function debugLog(message, ...args) {console.log(`%c${prefix} ${message.padEnd(20)} ${alignedNow()}`, color, ...args);}
+        
+        // Events
+        this.synthesizer.synthesizing       = ()     => {if (firstChunk) {this.onStart(); firstChunk = false;}}
+        this.synthesizer.synthesisStarted   = ()     =>  debugLog("synth started"                 );
+        this.synthesizer.synthesisCompleted = ()     => {debugLog("synth completed"               ); this.onDone(); firstChunk = true;}
+        this.synthesizer.synthesisCanceled  = (_, e) =>  debugLog("synth canceled", e.errorDetails);
+        this.synthesizer.audioStart         = ()     =>  debugLog("audioStart"                    );
+        this.synthesizer.audioEnd           = ()     =>  debugLog("audioEnd"                      );
+        // ====================================================================
+        */
     }
-  }
   
+    // --------------------------------------------------------------------
+    // Synthesize audio for the given text
+    // --------------------------------------------------------------------
+    speak(text) {this.synthesizer.speakTextAsync(text);} 
+    stop (    ) {this.onDone();                        }
+}
