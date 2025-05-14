@@ -33,10 +33,84 @@ REQUIREMENTS
 To Do:
 
 1. Getting a bunch of warnings about vulnerabilities from react-wordcloud
-2. Add a .env.example for frontend
-3. If the first utterance is shorter than our audio buffer chunk size (5 seconds), the audio based scores (prosody, pronunciation) are generated with an error.
+2. If the first utterance is shorter than our audio buffer chunk size (5 seconds), the audio based scores (prosody, pronunciation) are generated with an error.
     - Should these be done in another separate async task on reception of audio data? If no audio has been recieved between utterances, the scores will be the same anyways, so there is no reason to re-calculate them.
-4. Seems like altered grammar thinks the speech time is longer than it was
-    - need to fix conversation start time in useSpeechEngine
-    - know how to do this now, just havent gotten to it
+3. Rename deployment branch to just "depoyment"
+
+
+<hr>
+
+
+# Docker Containers
+Three services are run in docker-compose:
+1) Database (postgres)
+2) Backend  (websocket server, LLM calls, biomarker logic)
+3) Frontend (vite, react) 
+
+Everything is wrapped in docker-compose.yml, and the backend/database are only accessible inside the Docker network.
+
+## To start it up:
+1. SSH into the instance
+
+2. Manual directory creations + file uploads
+    1. Create a project directory + the deployment-files directory
+    2. Deployment files needs manually uploaded model files and a log output folder
+    3. Upload deploy.sh
+
+3. Run deploy.sh
+    * Installs docker & updates other dependencies
+    * Clones the repo
+    * Copies the .env file into its proper location 
+    * Copies model files from deployment-files/models/ to their respective locations in the project
+
+
+# File Architecture
+
+SSH:/home/user/project-directory/
+├── V2-Benchmarking/
+│   ├── backend/
+│   │   ├── Dockerfile-backend   # 
+│   │   ├── interface_app/       # Django app
+│   │   ├── dementia_chat/       # Python backend logic
+│   │   │   ├── services/
+│   │   │   │   ├── <span style="color: CornflowerBlue;"> Phi-3_finetuned.gguf </span>
+│   │   │   │   ├── pronunciation_rf(v4).pkl
+│   │   │   │   └── prosody_rf(v1).pkl
+│   │   │   │
+│   │   │   ├── websocket/biomarkers/biomarker_models/
+│   │   │   │   ├── stanford-parser-full-2020-11-17/<span style="color: CornflowerBlue;"> stanford-parser-4.2.0-models.jar </span>
+│   │   │   │   ├── <span style="color: CornflowerBlue;"> new_LSA.csv </span>
+│   │   │   │   └── ...
+│   │   │   │
+│   │   │   └── ...
+│   │   │
+│   │   ├── requirements.txt
+│   │   └── ...
+│   │
+│   ├── frontend/
+│   │   ├── Dockerfile-frontend  # Builds and serves Vite app
+│   │   ├── src/
+│   │   ├── public/
+│   │   └── ...
+│   │
+│   ├── nginx/
+│   │   └── default.conf         # Reverse proxy + static serving
+│   │
+│   ├── <span style="color: CornflowerBlue;"> .env </span>                     # Shared .env (will not be here until moved in deploy.sh)
+│   ├── docker-compose.yml
+│   └── ...
+│
+├── deployment-files/            # All non-tracked, manually uploaded files
+│   ├── <span style="color: CornflowerBlue;"> .env </span>                     # Environment variables shared throughout the project (for frontend and backend)
+│   ├── models/      
+│   │   ├── <span style="color: CornflowerBlue;"> new_LSA.csv </span>
+│   │   ├── <span style="color: CornflowerBlue;"> stanford-parser-4.2.0-models.jar </span>
+│   │   └── <span style="color: CornflowerBlue;"> Phi-3_finetuned.gguf </span>
+│   │
+│   ├── logs/        # For backend log output
+│   └── ...          # Other non-tracked files (.env)
+│
+└── deploy.sh        # Script to set everything up
+
+
 

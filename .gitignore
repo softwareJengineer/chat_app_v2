@@ -9,3 +9,6 @@ stanford-parser-4.2.0-models.jar
 
 # Not sure tbh
 0001_initial.py
+
+init.sh
+deploy.sh
