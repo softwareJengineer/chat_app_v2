@@ -61,6 +61,7 @@ Everything is wrapped in docker-compose.yml, and the backend/database are only a
     * Clones the repo
     * Copies the .env file into its proper location 
     * Copies model files from deployment-files/models/ to their respective locations in the project
+    * runs docker compose
 
 
 
@@ -96,12 +97,12 @@ SSH:/home/user/project-directory/
  │   ├── nginx/
  │   │   └── default.conf         # Reverse proxy + static serving #
  │   │
-+│   ├── .env                     # Shared .env (will not be here until moved in deploy.sh)
++│   ├── .env                     # Shared .env
  │   ├── docker-compose.yml
  │   └── ...
  │
  ├── deployment-files/            # All non-tracked, manually uploaded files
-+│   ├── .env                     # Environment variables shared throughout the project (for frontend and backend)
++│   ├── .env
  │   ├── models/      
 +│   │   ├── new_LSA.csv
 +│   │   ├── stanford-parser-4.2.0-models.jar
