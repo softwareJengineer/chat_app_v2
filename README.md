@@ -28,18 +28,17 @@ REQUIREMENTS
 6. stanford-parser models file
 7. Phi-3_finetuned.gguf
 
-<hr>
+<br> <hr> <br>
 
-To Do:
+# To Do:
 
 1. Getting a bunch of warnings about vulnerabilities from react-wordcloud
 2. If the first utterance is shorter than our audio buffer chunk size (5 seconds), the audio based scores (prosody, pronunciation) are generated with an error.
     - Should these be done in another separate async task on reception of audio data? If no audio has been recieved between utterances, the scores will be the same anyways, so there is no reason to re-calculate them.
-3. Rename deployment branch to just "depoyment"
+3. Rename deployment branch to just "deployment"
 
 
-<hr>
-
+<br> <hr> <br>
 
 # Docker Containers
 Three services are run in docker-compose:
@@ -64,53 +63,62 @@ Everything is wrapped in docker-compose.yml, and the backend/database are only a
     * Copies model files from deployment-files/models/ to their respective locations in the project
 
 
-# File Architecture
 
+# File Architecture
+```diff
 SSH:/home/user/project-directory/
-├── V2-Benchmarking/
-│   ├── backend/
-│   │   ├── Dockerfile-backend   # 
-│   │   ├── interface_app/       # Django app
-│   │   ├── dementia_chat/       # Python backend logic
-│   │   │   ├── services/
-│   │   │   │   ├── <span style="color: CornflowerBlue;"> Phi-3_finetuned.gguf </span>
-│   │   │   │   ├── pronunciation_rf(v4).pkl
-│   │   │   │   └── prosody_rf(v1).pkl
-│   │   │   │
-│   │   │   ├── websocket/biomarkers/biomarker_models/
-│   │   │   │   ├── stanford-parser-full-2020-11-17/<span style="color: CornflowerBlue;"> stanford-parser-4.2.0-models.jar </span>
-│   │   │   │   ├── <span style="color: CornflowerBlue;"> new_LSA.csv </span>
-│   │   │   │   └── ...
-│   │   │   │
-│   │   │   └── ...
-│   │   │
-│   │   ├── requirements.txt
-│   │   └── ...
-│   │
-│   ├── frontend/
-│   │   ├── Dockerfile-frontend  # Builds and serves Vite app
-│   │   ├── src/
-│   │   ├── public/
-│   │   └── ...
-│   │
-│   ├── nginx/
-│   │   └── default.conf         # Reverse proxy + static serving
-│   │
-│   ├── <span style="color: CornflowerBlue;"> .env </span>                     # Shared .env (will not be here until moved in deploy.sh)
-│   ├── docker-compose.yml
-│   └── ...
-│
-├── deployment-files/            # All non-tracked, manually uploaded files
-│   ├── <span style="color: CornflowerBlue;"> .env </span>                     # Environment variables shared throughout the project (for frontend and backend)
-│   ├── models/      
-│   │   ├── <span style="color: CornflowerBlue;"> new_LSA.csv </span>
-│   │   ├── <span style="color: CornflowerBlue;"> stanford-parser-4.2.0-models.jar </span>
-│   │   └── <span style="color: CornflowerBlue;"> Phi-3_finetuned.gguf </span>
-│   │
-│   ├── logs/        # For backend log output
-│   └── ...          # Other non-tracked files (.env)
-│
-└── deploy.sh        # Script to set everything up
+ ├── V2-Benchmarking/
+ │   ├── backend/
+ │   │   ├── Dockerfile-backend
+ │   │   ├── interface_app/       # Django app
+ │   │   ├── dementia_chat/       # Python backend logic
+ │   │   │   ├── services/
++│   │   │   │   ├── Phi-3_finetuned.gguf
+ │   │   │   │   ├── pronunciation_rf(v4).pkl
+ │   │   │   │   └── prosody_rf(v1).pkl
+ │   │   │   │
+ │   │   │   ├── websocket/biomarkers/biomarker_models/
++│   │   │   │   ├── stanford-parser-full-2020-11-17/stanford-parser-4.2.0-models.jar
++│   │   │   │   ├── new_LSA.csv
+ │   │   │   │   └── ...
+ │   │   │   │
+ │   │   │   └── ...
+ │   │   │
+ │   │   ├── requirements.txt
+ │   │   └── ...
+ │   │
+ │   ├── frontend/
+ │   │   ├── Dockerfile-frontend  # Builds and serves Vite app
+ │   │   ├── src/
+ │   │   ├── public/
+ │   │   └── ...
+ │   │
+ │   ├── nginx/
+ │   │   └── default.conf         # Reverse proxy + static serving #
+ │   │
++│   ├── .env                     # Shared .env (will not be here until moved in deploy.sh)
+ │   ├── docker-compose.yml
+ │   └── ...
+ │
+ ├── deployment-files/            # All non-tracked, manually uploaded files
++│   ├── .env                     # Environment variables shared throughout the project (for frontend and backend)
+ │   ├── models/      
++│   │   ├── new_LSA.csv
++│   │   ├── stanford-parser-4.2.0-models.jar
++│   │   └── Phi-3_finetuned.gguf
+ │   │
+ │   ├── logs/        # For backend log output
+ │   └── ...          # Other non-tracked files
+ │
+ └── deploy.sh        # Script to set everything up
+```
+
+
+
+
+
+
+
 
 
 
