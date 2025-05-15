@@ -36,6 +36,7 @@ REQUIREMENTS
 [] If the first utterance is shorter than our audio buffer chunk size (5 seconds), the audio based scores (prosody, pronunciation) are generated with an error. (Should these be done in another separate async task on reception of audio data? If no audio has been recieved between utterances, the scores will be the same anyways, so there is no reason to re-calculate them.)
 [] Rename deployment branch to just "deployment"
 [] Add the old docker and .env stuff back... (for local development)
+[] Pin the python package versions to ones with wheels already built (just more convenient)
 
 
 <br> <hr> <br>
