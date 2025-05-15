@@ -11,5 +11,5 @@ stanford-parser-4.2.0-models.jar
 0001_initial.py
 staticfiles/
 
-init.sh
 deploy.sh
+start_ngrok.sh
