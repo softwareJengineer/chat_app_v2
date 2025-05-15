@@ -33,9 +33,12 @@ services:
       dockerfile: Dockerfile-backend
     container_name: backend
     command: >
-      sh -c "python manage.py makemigrations &&
-             python manage.py migrate &&
-             daphne -b 0.0.0.0 -p 8000 interface_app.asgi:application"
+      sh -c "
+        python manage.py collectstatic --noinput &&
+        python manage.py makemigrations &&
+        python manage.py migrate &&
+        daphne -b 0.0.0.0 -p 8000 interface_app.asgi:application
+      "
     volumes:
       - ./backend:/app                      # general project mount
       - ../deployment-files/logs:/app/logs  # log folder mounted separately
@@ -57,6 +60,7 @@ services:
     container_name: frontend
     depends_on:
       - web
+    env_file: .env
     ports:
       #- "80:80"    # Ports when using nginx for the frontend
       - "5173:5173" # Vite ports
