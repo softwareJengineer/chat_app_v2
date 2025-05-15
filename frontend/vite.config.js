@@ -10,10 +10,11 @@ export default defineConfig({
         strictPort: true,     // make sure it uses 5173
         cors: true,           // allow cross-origin access if needed
         proxy: {
-        '/ws': {
-            target: 'http://backend:8000',
-            ws: true,
+            '/ws': {
+                target: 'http://backend:8000',
+                ws: true,
+            },
         },
-        },
+        allowedHosts: ['localhost', '127.0.0.1', '.ngrok-free.app']
     },
 })
