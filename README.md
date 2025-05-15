@@ -32,10 +32,11 @@ REQUIREMENTS
 
 # To Do:
 
-1. Getting a bunch of warnings about vulnerabilities from react-wordcloud
-2. If the first utterance is shorter than our audio buffer chunk size (5 seconds), the audio based scores (prosody, pronunciation) are generated with an error.
+- [] Getting a bunch of warnings about vulnerabilities from react-wordcloud
+- [] If the first utterance is shorter than our audio buffer chunk size (5 seconds), the audio based scores (prosody, pronunciation) are generated with an error.
     - Should these be done in another separate async task on reception of audio data? If no audio has been recieved between utterances, the scores will be the same anyways, so there is no reason to re-calculate them.
-3. Rename deployment branch to just "deployment"
+- [] Rename deployment branch to just "deployment"
+
 
 
 <br> <hr> <br>
@@ -95,7 +96,7 @@ SSH:/home/user/project-directory/
  │   │   └── ...
  │   │
  │   ├── nginx/
- │   │   └── default.conf         # Reverse proxy + static serving #
+ │   │   └── default.conf         # Reverse proxy + static serving
  │   │
 +│   ├── .env                     # Shared .env
  │   ├── docker-compose.yml
