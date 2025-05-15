@@ -34,6 +34,3 @@ RUN pip install --no-cache-dir -r requirements-web.txt
 
 # Copy project files
 COPY . .
-
-# Collect static files
-#RUN python3 manage.py collectstatic --noinput
