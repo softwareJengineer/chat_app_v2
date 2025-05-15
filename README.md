@@ -53,19 +53,12 @@ Everything is wrapped in docker-compose.yml, and the backend/database are only a
 
 ## To start it up:
 1. SSH into the instance
-
-2. Manual directory creations + file uploads
-    1. Create a project directory + the deployment-files directory
-    2. Deployment files needs manually uploaded model files and a log output folder
-    3. Upload deploy.sh
-
+2. Upload deploy.sh
 3. Run deploy.sh
     * Installs docker & updates other dependencies
-    * Clones the repo
-    * Copies the .env file into its proper location 
-    * Copies model files from deployment-files/models/ to their respective locations in the project
-    * runs docker compose
-
+    * Downloads required, non-tracked files from cloud storage
+    * Clones the repo & copies the non-tracked files (.env, model files) into their proper locations 
+    * Builds the Docker containers
 
 
 # File Architecture
