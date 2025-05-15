@@ -1,4 +1,3 @@
-version: "3.8"
 # ====================================================================
 # Three Services
 # ====================================================================
@@ -38,8 +37,8 @@ services:
              python manage.py migrate &&
              daphne -b 0.0.0.0 -p 8000 interface_app.asgi:application"
     volumes:
-      - ./backend:/app               # general project mount
-      # - ./backend/logs:/app/logs   # log folder mounted separately
+      - ./backend:/app                      # general project mount
+      - ../deployment-files/logs:/app/logs  # log folder mounted separately
     depends_on:
       - db
     env_file: .env
