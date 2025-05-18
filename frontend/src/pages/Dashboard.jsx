@@ -95,6 +95,7 @@ function Dashboard() {
                     const prevChatData = index < chats.length-1 ? chats[index + 1] : null; // Get the previous chat if it exists
                     return (
                     <ChatSummary
+                        key={index}
                         chatData={chat}
                         prevChatData={prevChatData}
                         chats={chats.length}

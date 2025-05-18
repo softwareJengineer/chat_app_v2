@@ -13,8 +13,8 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 # Local imports
-from ..models import Profile, Chat, Reminder, UserSettings
-from ..serializers import ChatSerializer, ReminderSerializer, UserSettingsSerializer
+from ..models import Profile, Chat, Reminder, UserSettings, Goal
+from ..serializers import ChatSerializer, ReminderSerializer, UserSettingsSerializer, GoalSerializer
 from ..analysis import sentiment_scores, get_message_text, get_topics
 
 import json
@@ -68,6 +68,11 @@ class ProfileView(APIView):
 
         # Serialize the user settings
         settings_serializer = UserSettingsSerializer(settings)
+        
+        # Get the associated user goal
+        goal = Goal.objects.get(user=profile)
+        # Serialize the user goal
+        goal_serializer = GoalSerializer(goal)
 
         # Return the profile information as a response
         return Response({
@@ -80,6 +85,7 @@ class ProfileView(APIView):
             'caregiverLastName': caregiver.last_name,
             'role': role,
             'settings': settings_serializer.data,
+            'goal': goal_serializer.data,
         })
     
 class SignupView(APIView):
@@ -138,6 +144,9 @@ class SignupView(APIView):
 
                     # Now create UserSettings, passing the Profile object instead of User
                     UserSettings.objects.create(user=profile)
+                    
+                    # Create Goal for the profile
+                    Goal.objects.create(user=profile)
 
                 except IntegrityError as e:
                     return Response({
@@ -269,6 +278,12 @@ class ChatsView(APIView):
         except Exception as e:
             print(e)
             pass  # If there is an error in extracting sentiment or topics, we will return "N/A"
+        
+        # Update the goal
+        goal = Goal.objects.get(user=profile)
+        goal.reset()
+        goal.current += 1
+        goal.save()
 
         # Create the chat entry
         chat = Chat.objects.create(
@@ -410,4 +425,68 @@ class ReminderView(APIView):
         return Response({
             'success': True,
             'reminders': serializer.data
+        })
+        
+class GoalsView(APIView):
+    permission_classes = [IsAuthenticated]  # Ensure the user is authenticated
+
+    def put(self, request):
+        """Handles POST request to create a new reminder"""
+        data = request.data  # DRF automatically parses JSON data
+        startDay = data.get('startDay')
+        target = data.get('target')
+        user = request.user
+        
+        profile = None
+        # Try to get the profile for either PLwD or Caregiver
+        try:
+            profile = Profile.objects.get(plwd=user)  # Try to get the profile for the patient
+        except Profile.DoesNotExist:
+            try:
+                profile = Profile.objects.get(caregiver=user)  # If not found, try to get the caregiver profile
+            except Profile.DoesNotExist:
+                return Response({
+                    "success": False,
+                    "error": "Could not find the profile."
+                }, status=status.HTTP_404_NOT_FOUND)
+                
+        # Update the goal
+        goal, created = Goal.objects.get_or_create(user=profile)
+        goal.target = target
+        goal.startDay = startDay
+        goal.save()
+        
+        # Serialize the goal and return the response
+        serializer = GoalSerializer(goal)
+        return Response({
+            'success': True,
+            'goal': serializer.data
+        }, status=status.HTTP_201_CREATED)
+
+    def get(self, request):
+        """Handles GET request to fetch the goal for the authenticated user"""
+        user = request.user
+        
+        profile = None
+        # Try to get the profile for either PLwD or Caregiver
+        try:
+            profile = Profile.objects.get(plwd=user)  # Try to get the profile for the patient
+        except Profile.DoesNotExist:
+            try:
+                profile = Profile.objects.get(caregiver=user)  # If not found, try to get the caregiver profile
+            except Profile.DoesNotExist:
+                return Response({
+                    "success": False,
+                    "error": "Could not find the profile."
+                }, status=status.HTTP_404_NOT_FOUND)
+                
+        # Fetch goal for the user
+        goal = Goal.objects.get(user=profile)
+        
+        # Serialize the goal
+        serializer = GoalSerializer(goal)
+        
+        return Response({
+            'success': True,
+            'goal': serializer.data
         })

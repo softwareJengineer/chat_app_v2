@@ -15,6 +15,7 @@ const BiomarkerChart = ({biomarkerData}) => {
         return newData;
     }
 
+
     const options = {
         chart: {
             height: 350,
@@ -43,9 +44,7 @@ const BiomarkerChart = ({biomarkerData}) => {
     }
 
     return (
-        <div className="flex flex-col space-y-4">
-            <ReactApexChart options={options} series={newBiomarkerData(biomarkerData)} type="line" height={"100%"}/>
-        </div>
+        <ReactApexChart options={options} series={newBiomarkerData(biomarkerData)} type="line" height={"100%"}/>
     );
 
 }

@@ -5,14 +5,14 @@ import Avatar from "../components/Avatar";
 import AuthContext from '../context/AuthContext';
 import { FcCalendar, FcClock, FcSms } from "react-icons/fc";
 import daysInARow from "../functions/daysInARow";
-import { getChats } from "../functions/apiRequests";
+import { getChats, getGoal } from "../functions/apiRequests";
 import GoalProgress from "../components/GoalProgress";
 import { IoThumbsUp } from "react-icons/io5";
 import Header from "../components/Header";
 import BlankChat from "../data/blankChat.json";
 
-const Details = () => {
-    const { authTokens } = useContext(AuthContext);
+const ProgressSummary = () => {
+    const { authTokens, goal } = useContext(AuthContext);
     const [chats, setChats] = useState([]);
     const [chatCount, setChatCount] = useState(0);
     const [chatData, setChatData] = useState(BlankChat)
@@ -20,9 +20,11 @@ const Details = () => {
     useEffect(() => {
         const fetchChats = async () => {
             const userChats = await getChats(authTokens);
-            setChats(userChats);
-            setChatCount(userChats.length);
-            setChatData(userChats[0]);
+            if (userChats) {
+                setChats(userChats);
+                setChatCount(userChats.length);
+                setChatData(userChats[0]);
+            }    
         };
 
         fetchChats();
@@ -76,14 +78,17 @@ const Details = () => {
     // }
     //END FOR TESTING
 
-    const calcGoal = (chats) => {
-        const goal = chats % 5;
-        return 5 - goal;
+    const calcGoal = () => {
+        if (goal.current > goal.target) {
+            return 0;
+        } else {
+            return goal.target - goal.current;
+        }
     }
     
     return (
         <>
-            <Header title="" page=""/>
+            <Header title="Progress Summary" page="progress"/>
             <div className="flex md:flex-row flex-col gap-4 mt-[1rem] mb-[3rem] md:min-h-[45vh]">
                 <div className="md:w-1/3">
                     <Avatar />
@@ -92,7 +97,7 @@ const Details = () => {
                     <p className="font-bold text-2xl">
                        You're doing fantastic!
                     </p>
-                    <GoalProgress current={chatCount}/>
+                    <GoalProgress current={goal.current} target={goal.target} />
                     <p className="flex flex-row items-center gap-4 text-xl">
                         <span>
                             <b className="text-blue-700 text-2xl"> {chatCount} </b> 
@@ -101,7 +106,7 @@ const Details = () => {
                     </p>
                     <p className="text-xl">
                         <span>
-                            <b className="text-blue-700 text-2xl"> {calcGoal(chatCount)} </b> 
+                            <b className="text-blue-700 text-2xl"> {calcGoal()} </b> 
                             more to reach a new goal!
                         </span>
                     </p>
@@ -162,4 +167,4 @@ const Details = () => {
  
 }
 
-export default Details;
+export default ProgressSummary;

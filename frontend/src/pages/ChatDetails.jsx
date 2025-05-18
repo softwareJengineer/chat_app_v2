@@ -12,7 +12,7 @@ import daysInARow from "../functions/daysInARow";
 import AuthContext from '../context/AuthContext';
 
 function ChatDetails() {
-    const { profile } = useContext(AuthContext);
+    const { profile, goal } = useContext(AuthContext);
     const location = useLocation();
     const navigate = useNavigate();
     const chatData = location.state?.chatData;
@@ -31,9 +31,12 @@ function ChatDetails() {
 
     const cardStyle = "border-1 border-gray-300 rounded p-[2rem] hover:shadow-xl h-full w-full justify-self-start";
 
-    const calcGoal = (chats) => {
-        const goal = chats % 5;
-        return 5 - goal;
+    const calcGoal = () => {
+        if (goal.current > goal.target) {
+            return 0;
+        } else {
+            return goal.target - goal.current;
+        }
     }
 
     const getImprovement = (current, prev) => {
@@ -99,7 +102,7 @@ function ChatDetails() {
                     <p className="font-bold text-2xl">
                        {profile.plwdFirstName} is doing fantastic!
                     </p>
-                    <GoalProgress current={chats}/>
+                    <GoalProgress current={goal.current} target={goal.target} />
                     <p className="flex flex-row items-center gap-4 text-xl">
                         <span>
                             <b className="text-blue-700 text-2xl"> {chats} </b> 
@@ -108,7 +111,7 @@ function ChatDetails() {
                     </p>
                     <p className="text-xl">
                         <span className="">
-                            <b className="text-blue-700 text-2xl"> {calcGoal(chats)} </b> 
+                            <b className="text-blue-700 text-2xl"> {calcGoal()} </b> 
                             more to reach a new goal!
                         </span>
                     </p>

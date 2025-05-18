@@ -23,7 +23,7 @@ const ws = new WebSocket(wsUrl);
 
 function Chat() {
     const location = useLocation();
-    const {user, authTokens} = useContext(AuthContext);
+    const {user, authTokens, logoutUser} = useContext(AuthContext);
     const [recording, setRecording] = useState(false);
     const [systemSpeaking, setSystemSpeaking] = useState(false);
     const [userSpeaking, setUserSpeaking] = useState(false);
@@ -344,7 +344,7 @@ function Chat() {
 
         const response = await createChat(chatData, authTokens);
         if (response) {
-            navigate('/details');
+            navigate('/progress');
         }
     }
 
@@ -418,6 +418,9 @@ function Chat() {
             <div className="float flex flex-row gap-4 m-[2rem]">
                 <p className="text-5xl font-semibold">Chat With Me</p>
                 <div className="float flex ml-auto gap-4">
+                    <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/today'>
+                        <button className="text-gray-700 no-underline">Review Today</button>
+                    </Link>
                     <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/history'>
                         <button className="text-gray-700 no-underline">Chat History</button>
                     </Link>

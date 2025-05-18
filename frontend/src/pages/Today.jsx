@@ -8,15 +8,20 @@ import { getRecentChat } from "../functions/apiRequests";
 function Today() {
     const {profile, authTokens} = useContext(AuthContext);
     const [chatData, setChatData] = useState(null);
-    const [date, setDate] = useState(new Date());
     const navigate = useNavigate();
+
+    const today = new Date();
 
     useEffect(() => {
         const fetchChat = async () => {
-            const userChats = await getRecentChat(authTokens);
-            if (userChats) {
-                setChatData(userChats);
-                setDate(new Date(userChats.date));
+            const recentChat = await getRecentChat(authTokens);
+            if (recentChat) {
+                const recentDate = new Date(recentChat.date);
+                if (recentDate.getDate() === today.getDate() 
+                    && recentDate.getMonth() === today.getMonth() 
+                    && recentDate.getFullYear() === today.getFullYear()) {
+                    setChatData(recentChat)
+                }
             } else {
 
             }
@@ -31,8 +36,8 @@ function Today() {
         day: '2-digit',
     })
 
-    const toDetails = () => {
-        navigate("/details", {state: {chatData: chatData}});
+    const toProgress = () => {
+        navigate("/progress", {state: {chatData: chatData}});
     }
 
     if (chatData) {
@@ -47,8 +52,8 @@ function Today() {
             </div>
             <div className="m-[2rem] flex flex-col gap-4">
                 <span className="flex flex-row gap-5">
-                    <p className="text-3xl font-semibold">Conclusion of the Speech</p>
-                    <p className="flex align-middle justify-center font-black text-3xl">{style.format(date)}</p>
+                    <p className="text-3xl font-semibold">Chat Summary</p>
+                    <p className="flex align-middle justify-center font-black text-3xl">{style.format(today)}</p>
                 </span>
                 <p>Here would be a summary of today's conversation. It would include topics talked about, sentiment of the conversation, and more.</p>
                 <p className="text-3xl font-semibold">Conversation Analysis</p>
@@ -72,7 +77,7 @@ function Today() {
                     </div>
                 </div>
                 <div className="flex m-[2rem]">
-                    No data to display.
+                    No data to display for today.
                 </div>
         </>
         )

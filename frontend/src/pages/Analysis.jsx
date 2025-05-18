@@ -11,15 +11,7 @@ function Analysis() {
     const navigate = useNavigate();
     const chatData = location.state.chatData;
     const [biomarker, setBiomarker] = useState(location.state.biomarker ? location.state.biomarker : "Pragmatic");
-
-    const toHistory = () => {
-        navigate('/history');
-    }
-
-    const toToday = () => {
-        navigate('/today', {state: {chatData: chatData}})
-    }
-
+    
     const date = new Date(chatData.date);
     const style = new Intl.DateTimeFormat("en-US", {
         year: 'numeric',

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Profile, UserSettings, Reminder, Chat
+from .models import Profile, UserSettings, Reminder, Chat, Goal
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,3 +26,8 @@ class ChatSerializer(serializers.ModelSerializer):
         model = Chat
         fields = ['chatID', 'date', 'scores', 'avgScores', 'notes', 'messages', 'duration', 'sentiment', 'topics']
         read_only_fields = ['chatID', 'date']
+        
+class GoalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Goal
+        fields = ['target', 'startDay', 'current']

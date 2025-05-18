@@ -3,12 +3,12 @@ import AuthContext from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const LoadingPage = () => {
-    const { authTokens, logoutUser, profile, setProfile, setSettings } = useContext(AuthContext);
+    const { authTokens, logoutUser, profile, setProfile, setSettings, setGoal } = useContext(AuthContext);
     const navigate = useNavigate();
 
     useEffect(() => {
         getProfile()
-    },[])
+    }, [])
 
     const getProfile = async () => {
         let response = await fetch('http://localhost:8000/api/profile', {
@@ -30,6 +30,7 @@ const LoadingPage = () => {
                 role: data.role
             });
             setSettings(data.settings);
+            setGoal(data.goal);
             if (data.role === 'Patient') {
                 navigate('/chat');
             } else {

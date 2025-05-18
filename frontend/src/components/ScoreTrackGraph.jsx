@@ -11,7 +11,7 @@ function ScoreTrackGraph({chats}) {
             var score = avgScores.reduce((a, b) => a + b, 0) / avgScores.length;
             scores.push(score);
         }
-        return [{data: scores}];
+        return [{name: 'scores', data: scores}];
     }
 
     function getDates(chatData) {

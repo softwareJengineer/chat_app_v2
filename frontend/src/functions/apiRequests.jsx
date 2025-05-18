@@ -215,4 +215,55 @@ const getRecentChat = async (authTokens) => {
     }
 }
 
-export {signup, getReminders, createReminder, createRepeatReminder, editSettings, createChat, getChats, getRecentChat};
+const getGoal = async (authTokens) => {
+    try {
+        const response = await fetch(`http://localhost:8000/api/goal/`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization':'Bearer ' + String(authTokens.access)
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            let goal = data.goal
+            return goal;
+        } else {
+            console.error("Could not fetch goal: " + data.error);
+            return false;
+        }
+    } catch (error) {
+        alert(error);
+        return false;
+    }
+}
+
+const updateGoal = async (startDay, target, authTokens) => {
+    try {
+        const response = await fetch(`http://localhost:8000/api/goal/`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization':'Bearer ' + String(authTokens.access)
+            },
+            body: JSON.stringify({ startDay: startDay, target: target })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert("Goal successfully set.");
+            return true;
+        } else {
+            alert(data.error);
+            return false;
+        }
+    } catch (error) {
+        console.error('Error setting goal:', error);
+        return false;
+    }
+}
+
+export {signup, getReminders, createReminder, createRepeatReminder, editSettings, createChat, getChats, getRecentChat, getGoal, updateGoal};

@@ -13,6 +13,7 @@ export const AuthProvider = ({children}) => {
     let [loading, setLoading] = useState(true);
     let [settings, setSettings] = useState();
     let [profile, setProfile] = useState();
+    let [goal, setGoal] = useState();
 
     const navigate = useNavigate()
 
@@ -76,6 +77,8 @@ export const AuthProvider = ({children}) => {
         setProfile: setProfile,
         settings: settings,
         setSettings: setSettings,
+        goal: goal,
+        setGoal: setGoal,
     }
 
     // useEffect(()=>{
