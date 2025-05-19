@@ -17,7 +17,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 # Global Variables
 # =======================================================================
 USE_CLOUD     = False  # (return default values instead of using the cloud APIs while testing)
-USE_LLM       = False  # (--- this might cause problems, but just have a setting where we don't actually need to load the LLM to test) 
+USE_LLM       = True  # (--- this might cause problems, but just have a setting where we don't actually need to load the LLM to test) 
 THIS_LANGUAGE = "en-US"
 
 script_check    = 1
