@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 
 const ChatHistory = ({messages}) => {
     // --------------------------------------------------------------------
@@ -24,15 +24,16 @@ const ChatHistory = ({messages}) => {
     // --------------------------------------------------------------------
     function renderMessage(sender, message, time, key) {
         // Style differentiation between the user and the system
-        const messageStyle = {You:     { marginFar: "l", marginClose: "r", bubbleColor: "purple" },
-                              default: { marginFar: "r", marginClose: "l", bubbleColor: "green"  },};
+        const messageStyle = {You:     { marginFar: "ml-auto", marginClose: "mr-[1em]", bubbleColor: "bg-purple-200" },
+                              default: { marginFar: "mr-auto", marginClose: "ml-[1em]", bubbleColor: "bg-green-200"  },};
+
         const { marginFar, marginClose, bubbleColor } = messageStyle[sender] || messageStyle.default;
 
         // UI elment for a text bubble & timestamp
         return (
-            <div key={key} className={`flex flex-col m${marginFar}-auto m${marginClose}-[1em]`}>
-                <p className={`bg-${bubbleColor}-200 p-[1em] w-fit rounded-sm`}> <b>{sender}:</b> {message} </p>
-                <p className={`m${marginFar}-auto text-gray-400 text-xs`}>{time}</p>
+            <div key={key} className={`flex flex-col ${marginFar} ${marginClose}`}>
+                <p className={`${bubbleColor} p-[1em] w-fit rounded-sm`}> <b>{sender}:</b> {message} </p>
+                <p className={`${marginFar} text-gray-400 text-xs`}>{time}</p>
             </div>
         );
     }

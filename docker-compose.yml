@@ -1,0 +1,77 @@
+# ====================================================================
+# Three Services
+# ====================================================================
+#  1) Database (postgres)
+#  2) Backend  (websocket server, LLM calls, biomarker logic)
+#  3) Frontend (vite, react) 
+services:
+  # -------------------------------------------------------------------- 
+  # 1) Database
+  # --------------------------------------------------------------------
+  # Backend/Database are only accessable inside the Docker network.
+  db:
+    image: postgres #:13 # pinned version
+    container_name: db
+    env_file: .env
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      #- POSTGRES_USER=${POSTGRES_USER}
+      #- POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - TZ=UTC
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - appnet
+  
+  # --------------------------------------------------------------------
+  # 2) Backend (private, no ports exposed)
+  # --------------------------------------------------------------------
+  # Nginx/Vite proxies traffic here using the container name over the Docker network
+  web:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile-backend
+    container_name: backend
+    command: >
+      sh -c "
+        python manage.py collectstatic --noinput &&
+        python manage.py makemigrations &&
+        python manage.py migrate &&
+        daphne -b 0.0.0.0 -p 8000 interface_app.asgi:application
+      "
+    volumes:
+      - ./backend:/app                      # general project mount
+      - ../deployment-files/logs:/app/logs  # log folder mounted separately
+    depends_on:
+      - db
+    env_file: .env
+    environment:
+      - TZ=UTC
+    networks:
+      - appnet
+
+  # --------------------------------------------------------------------
+  # 3) Frontend
+  # --------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile-frontend
+    container_name: frontend
+    depends_on:
+      - web
+    env_file: .env
+    ports:
+      #- "80:80"    # Ports when using nginx for the frontend
+      - "5173:5173" # Vite ports
+    networks:
+      - appnet
+
+# ====================================================================
+# Volumes & Networks
+# ====================================================================
+volumes:
+  postgres_data:
+
+networks:
+  appnet:

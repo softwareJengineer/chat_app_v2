@@ -6,8 +6,8 @@ from ..biomarkers.biomarker_config import LAST_X_CHAT_ENTRIES
 # Set API Keys & Logger
 # =======================================================================
 # Speech configuration
-speech_key,    service_region = cf.speech_key,    cf.service_region
-speech_config, audio_config   = cf.speech_config, cf.audio_config
+#speech_key,    service_region = cf.speech_key,    cf.service_region
+#speech_config, audio_config   = cf.speech_config, cf.audio_config
 
 # Logging
 logger = cf.logging.getLogger("__asr__") # ---- why does this say ASR again??

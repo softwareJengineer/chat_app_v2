@@ -14,10 +14,14 @@ export default function useBackendConnection({
     // Initial Setup 
     // --------------------------------------------------------------------
     // Backend WebSocket URL 
-    // const wsUrl = "wss://dementia.ngrok.app";
+    /* const wsUrl = "wss://dementia.ngrok.app";
     const wsUrl = window.location.hostname === 'localhost'
         ? `ws://${window.location.hostname}:8000/ws/chat/`
         : `ws://${window.location.hostname}/ws/chat/`;
+    */
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl    = `${protocol}//${window.location.host}/ws/chat/`;
+
 
     // Message reception helper
     const onMessage = (event) => {

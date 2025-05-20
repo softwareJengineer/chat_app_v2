@@ -4,7 +4,7 @@ channels[daphne]>=4.0.0
 python-decouple
 psycopg2-binary
 websockets
-llama-cpp-python==0.3.1
+llama-cpp-python==0.3.8
 azure-cognitiveservices-speech==1.40.0
 whitenoise
 librosa

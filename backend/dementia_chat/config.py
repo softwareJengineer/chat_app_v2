@@ -10,14 +10,14 @@ from llama_cpp import Llama
 import warnings, logging
 
 # For text-to-speech (tts)
-import azure.cognitiveservices.speech as speechsdk
+#import azure.cognitiveservices.speech as speechsdk
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 # =======================================================================
 # Global Variables
 # =======================================================================
 USE_CLOUD     = False  # (return default values instead of using the cloud APIs while testing)
-USE_LLM       = False  # (--- this might cause problems, but just have a setting where we don't actually need to load the LLM to test) 
+USE_LLM       = True  # (--- this might cause problems, but just have a setting where we don't actually need to load the LLM to test) 
 THIS_LANGUAGE = "en-US"
 
 script_check    = 1
@@ -41,18 +41,18 @@ RESET  = "\033[0m"
 # API Keys & Audio Device Configuration 
 # =======================================================================
 # MS Auzre / used at 'tts.py' and 'asr.py' files
-speech_key, service_region = "3249fb4e6d8248569b42d5dbf693c259", "eastus"
-speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
+#speech_key, service_region = "3249fb4e6d8248569b42d5dbf693c259", "eastus"
+#speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
 # audio_config = speechsdk.audio.AudioConfig(device_name="{0.0.1.00000000}.{9485502f-1e25-43a1-b32e-f2064ed250be}")
 # audio_config = speechsdk.audio.AudioConfig(device_name="{0.0.1.00000000}.{c600777f-5cb7-44a2-9457-68fe97eb7632}")
 
-audio_device_name = os.getenv("AUDIO_DEVICE_NAME", None)
-if audio_device_name: audio_config = speechsdk.audio.AudioConfig(device_name=audio_device_name)
-else:                 audio_config = speechsdk.audio.AudioConfig(use_default_microphone=True)
+#audio_device_name = os.getenv("AUDIO_DEVICE_NAME", None)
+#if audio_device_name: audio_config = speechsdk.audio.AudioConfig(device_name=audio_device_name)
+#else:                 audio_config = speechsdk.audio.AudioConfig(use_default_microphone=True)
 
 # Final ASR steup
-voice = f"Microsoft Server Speech Text to Speech Voice ({THIS_LANGUAGE}, JennyNeural)"
-speech_config.speech_synthesis_voice_name = voice
+#voice = f"Microsoft Server Speech Text to Speech Voice ({THIS_LANGUAGE}, JennyNeural)"
+#speech_config.speech_synthesis_voice_name = voice
 
 # =======================================================================
 # Logging Setup
@@ -84,9 +84,9 @@ logger = logging.getLogger(__name__)
 # Check for model files individually
 def check_for_model_files(LLM_model_path, pronunciation_model_path, prosody_model_path):
     missing_files = []
-    if not os.path.exists( LLM_model_path) and USE_LLM: missing_files.append(f"LLM_model_path: {                    LLM_model_path}")
-    if not os.path.exists(pronunciation_model_path)   : missing_files.append(f"pronunciation_model_path: {pronunciation_model_path}")
-    if not os.path.exists(      prosody_model_path)   : missing_files.append(f"prosody_model_path: {            prosody_model_path}")
+    if not os.path.exists( LLM_model_path) and USE_LLM : missing_files.append(f"LLM_model_path: {                    LLM_model_path}")
+    if not os.path.exists(pronunciation_model_path)    : missing_files.append(f"pronunciation_model_path: {pronunciation_model_path}")
+    if not os.path.exists(      prosody_model_path)    : missing_files.append(f"prosody_model_path: {            prosody_model_path}")
 
     if len(missing_files) > 0:
         missing_str = f"Missing required file(s): {'; '.join(missing_files)}"
