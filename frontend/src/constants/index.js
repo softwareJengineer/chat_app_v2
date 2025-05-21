@@ -1,1 +1,1 @@
-export const API_URL = "http://localhost:8000/api/dementia_chat/";
+export const API_URL = "http://localhost:8000/api/chat_app/";

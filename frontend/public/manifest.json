@@ -1,0 +1,20 @@
+{
+    "short_name": "AI Chat",
+    "name": "AI Assistant Chat with Biomarkers",
+    "icons": [
+        {
+            "src": "images/3d-icon-robot-1.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "images/3d-icon-robot-2.png", 
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#ffffff",
+    "background_color": "#ffde59"
+}

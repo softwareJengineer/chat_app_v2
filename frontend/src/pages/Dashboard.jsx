@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react"
 import ChatSummary from "../components/ChatSummary"
 import Header from "../components/Header";
-import { UserContext } from "../App";
+import AuthContext from '../context/AuthContext';
 import { FaUser } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import BiomarkerChart from "../components/BiomarkerChart";
@@ -9,53 +9,54 @@ import { Button } from "react-bootstrap";
 import { getChats } from "../functions/apiRequests";
 import ScoreTrackGraph from "../components/ScoreTrackGraph";
 import dummyChats from "../data/dummyChats.json";
-import daysInARow from "../functions/daysInARow";
-import ScoreRadarChart from "../components/ScoreRadarChart";
-import Avatar from "../components/Avatar";
-import GoalProgress from "../components/GoalProgress";
-import { GiAlarmClock, GiPartyPopper, GiRobotAntennas } from "react-icons/gi";
-import { getExercises } from "../functions/getExercises";
+import blankChat from "../data/blankChat.json";
 
 function Dashboard() {
-    const {user} = useContext(UserContext);
-    const [chats, setChats] = useState(dummyChats);
-    const [chatData, setChatData] = useState(dummyChats[0]);
-    const [prevChatData, setPrevChatData] = useState(dummyChats[1]);
-    const date = new Date();
-    const isPatient = user.role === "Patient";
+    const {profile, authTokens} = useContext(AuthContext);
+    const [activeChart, setActiveChart] = useState("Overall");
 
-    // useEffect(() => {
-    //     const fetchChats = async () => {
-    //         const userChats = await getChats(user);
-    //         setChats(userChats);
-    //         setChatData(userChats[0]);
-    //         setPrevChatData((chats.length > 1 ? userChats[1] : null));
-    //     };
+    //FOR TESTING
+    // const chats = dummyChats;
+    // const chatData = dummyChats[0];
+    //END FOR TESTING
 
-    //     fetchChats();
-    // }, []);
+    //FOR DEPLOYMENT
+    const [chats, setChats] = useState([]);
+    const [chatData, setChatData] = useState(blankChat);
 
-    const calcGoal = (chats) => {
-        const goal = chats % 5;
-        return 5 - goal;
+    useEffect(() => {
+        const fetchChats = async () => {
+            const profileChats = await getChats(authTokens);
+            setChats(profileChats);
+            setChatData(chats.length > 0 ? profileChats[0] : blankChat);
+        };
+
+        fetchChats();
+    }, []);
+    //END FOR DEPLOYMENT
+
+    const getStyle = (chart) => {
+        if (activeChart === chart) {
+            return "text-blue-600 underline hover:text-purple-900";
+        } else {
+            return "text-gray-400 hover:text-gray-600 hover:underline";
+        }
+    }
+
+    const changeActive = (chart) => {
+        setActiveChart(chart);
     }
 
     return (
         <>
-            <Header title="Dementia Speech Analysis" page="analysis" />
+            <Header title="Dementia Speech Analysis" page="dashboard" />
             <div className="mx-[2rem] mb-[2rem] flex flex-col gap-2">
                 <div className="flex items-center gap-4 align-middle">
                     <FaUser size={50}/>
-                    {isPatient ?  
-                        <p className="align-middle">{user?.plwdFirstName} {user?.plwdLastName}</p> :
-                        <p className="align-middle">{user?.caregiverFirstName} {user?.caregiverLastName}</p>
-                    }
+                    <p className="align-middle">{profile.caregiverFirstName} {profile.caregiverLastName}</p>
                     Care Partner
                     <FaUser size={50}/>
-                    {isPatient ? 
-                        <p className="align-middle">{user?.caregiverFirstName} {user?.caregiverFirstName}</p> :
-                        <p className="align-middle">{user?.plwdFirstName} {user?.plwdLastName}</p>
-                    }
+                    <p className="align-middle">{profile.plwdFirstName} {profile.plwdLastName}</p>
                     <div className="flex float-right ml-auto">
                         <Button variant="outline-primary">Download Report</Button>
                     </div>
@@ -64,97 +65,45 @@ function Dashboard() {
                     Update profile
                 </Link>
             </div>
-            <div className="flex mx-[2rem]">
-                <h2>Daily Overview:</h2>
-                <p className="flex float-right ml-auto text-xl">{date.toDateString()}</p>
+            <div className="m-[2rem] rounded-lg border-1 border-gray-300 p-[1rem] grid md:grid-cols-2 grid-cols-1 gap-4 md:min-h-[40vh]">
+                <div className="">
+                    <span className="flex flex-row gap-4">
+                        <b>Performance Track:</b>
+                        <button className={getStyle("Overall")} onClick={() => changeActive("Overall")}>
+                            Overall
+                        </button>
+                        <button className={getStyle("Biomarkers")} onClick={() => changeActive("Biomarkers")}>
+                            Biomarkers
+                        </button>
+                    </span>
+                    <br/>
+                    <p>This will give an overview of {profile.plwdFirstName}'s performance over the past few weeks.</p>
+                    <p>Here will be a summary of the days with big drops in performance.</p>
+                    <p>Good days: A list of days with higher biomarker scores.</p>
+                    <p>Bad days: A list of days with lower biomarker scores.</p>
+                </div>
+                <div className="md:h-full h-[40vh]">
+                    {activeChart === "Overall" ? 
+                    <ScoreTrackGraph chats={chats} /> : 
+                    <BiomarkerChart biomarkerData={chatData.scores} />}
+                </div>
             </div>
-                <div className="grid md:grid-cols-2 grid-cols-1 h-full justify-stretch mx-[2rem] items-center gap-4 mb-[2rem]">
-                    <div className="w-full h-full border-1 rounded-lg border-gray-200 p-[1rem] self-stretch">
-                        <h3>Conclusions and Suggestions</h3>
-                        <div className="flex flex-row gap-4 my-[1rem]">
-                            <div className="w-1/3">
-                                <Avatar />
-                            </div>
-                            <div className="w-2/3">
-                                <p className="font-bold text-2xl">
-                                    {isPatient ? "You're " : user.plwdFirstName + " is " }
-                                    doing fantastic!
-                                </p>
-                                <GoalProgress current={chats.length}/>
-                                <p className="flex flex-row items-center gap-4 text-xl">
-                                    <GiPartyPopper size={40} color="orange" /> 
-                                    <span>
-                                        {isPatient ? "You've " : user.plwdFirstName + " has "} talked to me for 
-                                        <b className="text-amber-500 text-2xl"> {daysInARow(chats)} </b> 
-                                        in a row.
-                                    </span>
-                                </p>
-                                <p className="flex flex-row items-center gap-4 text-xl">
-                                    <GiAlarmClock size={40} color="green" /> 
-                                    <span>
-                                        {isPatient ? "You've " : user.plwdFirstName + " has "} completed 
-                                        <b className="text-green-700 text-2xl"> {chats.length} {chats.length === 1 ? "chat" : "chats"} </b> 
-                                        with me.
-                                    </span>
-                                </p>
-                                <p className="flex flex-row items-center gap-4 text-xl">
-                                    <GiRobotAntennas size={40} color="purple" />
-                                    <span className="">
-                                        {isPatient ? "You " : user.plwdFirstName} can complete another 
-                                        <b className="text-fuchsia-900 text-2xl"> {calcGoal(chats.length)} </b> 
-                                        to reach a new goal!
-                                    </span>
-                                </p>
-                                <Link to='/schedule'>
-                                    <Button variant="outline-primary" size="lg">Schedule a chat</Button>
-                                </Link>
-                            </div>
-                        </div>
-                        <p className="font-bold text-2xl">Daily suggestions:</p>
-                        {getExercises().map((exercise, index) => {
-                            return (
-                                <p className="text-xl">{exercise}</p>
-                            )
-                        })}
-                    </div>
-                    <div className="w-full h-full border-1 rounded-lg border-gray-200 p-[1rem] self-stretch">
-                        <h3>Radar Track</h3>
-                        <ScoreRadarChart biomarkerData={chatData.scores} prevBiomarkerData={prevChatData.scores}/>
-                        <br/>
-                        <p className="text-lg">Based on these scores, I suggest the following activities:</p>
-                        <div className="flex md:flex-row flex-col gap-4">
-                            <div className="md:w-1/2 w-full border-1 rounded-md border-gray-200 p-[1rem]">
-                                <h4>Mad Libs</h4>
-                            </div>
-                            <div className="md:w-1/2 w-full border-1 rounded-md border-gray-200 p-[1rem]">
-                                <h4>Word Matching</h4>
-                            </div>  
-                        </div>
-                    </div>
+            <div className="m-[2rem]">
+                <h2>Chat History</h2>
+                <div className="grid md:grid-cols-3 grid-cols-1 gap-2">
+                {chats.length > 0 ? chats.map((chat, index) => {
+                    const prevChatData = index < chats.length-1 ? chats[index + 1] : null; // Get the previous chat if it exists
+                    return (
+                    <ChatSummary
+                        key={index}
+                        chatData={chat}
+                        prevChatData={prevChatData}
+                        chats={chats.length}
+                    />
+                    );
+                }) : "No chats available."}
                 </div>
-                {isPatient ? null : 
-                <div className="m-[2rem]">
-                    <h2>Trends:</h2>
-                    <h4>Overall Score Track:</h4>
-                    <ScoreTrackGraph chats={chats} />
-                    <h4>Biomarker Track:</h4>
-                    <BiomarkerChart biomarkerData={chatData.scores}/>
-                    (You can click on a biomarker score to disable it on the graph, or hover over it to see individual scores.)
-                    <h2>Chat History</h2>
-                    <div className="grid md:grid-cols-3 grid-cols-1 gap-2">
-                    {chats.length > 0 ? chats.map((chat, index) => {
-                        const prevChatData = index < chats.length-1 ? chats[index + 1] : null; // Get the previous chat if it exists
-                        return (
-                        <ChatSummary
-                            chatData={chat}
-                            prevChatData={prevChatData}
-                        />
-                        );
-                    }) : "No chats available."}
-                    </div>
-                
-                </div>
-                }
+            </div> 
         </>
     );
 }

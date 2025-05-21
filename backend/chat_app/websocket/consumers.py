@@ -62,7 +62,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             # --------------------------------------------------------------------
             # Connection Handling
             # --------------------------------------------------------------------
-            self.Chat = apps.get_model('dementia_chat', 'Chat')
+            self.Chat = apps.get_model('chat_app', 'Chat')
             self.chatID = str(uuid.uuid4())
 
             # Accept the connection & start the periodic scores asynchronous task

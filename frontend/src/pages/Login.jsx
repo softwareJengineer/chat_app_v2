@@ -1,12 +1,11 @@
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
-import { UserContext } from "../App";
-import { login } from "../functions/apiRequests";
-
+import AuthContext from '../context/AuthContext';
 
 function Login() {
-    const { setUser, setSettings, setReminders, setChats } = useContext(UserContext);
+    let {loginUser} = useContext(AuthContext)
+
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: '',
@@ -22,16 +21,7 @@ function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const response = await login(formData);
-        const { user, settings } = response;
-        setUser(user);
-        setSettings(settings);
-
-        if (user.role === 'Patient') {
-            navigate('/chat');
-        } else {
-            navigate('/analysis');
-        }
+        loginUser(formData);
     };
 
     return (

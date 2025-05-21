@@ -1,10 +1,18 @@
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+import nltk
+nltk.download('vader_lexicon')
+nltk.download('stopwords')
+nltk.download('punkt_tab')
+
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from nltk.tokenize        import word_tokenize
+from nltk.corpus          import stopwords
+
 from collections import Counter
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
+
 
 def get_message_text(messages):
-    return " ".join([message.message for message in messages if (message.speaker == "You")])
+    return " ".join([message["message"] for message in messages if (message["sender"] == "You")])
+
 
 def sentiment_scores(sentence): # From Geeks for Geeks
     # Create a SentimentIntensityAnalyzer object.

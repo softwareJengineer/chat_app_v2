@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { Button, ToggleButton, ToggleButtonGroup, Modal } from "react-bootstrap";
+import { useNavigate, useLocation, Link                 } from "react-router-dom";
 
-import { useNavigate, useLocation } from "react-router-dom";
-import { UserContext              } from "../App";
-
+import AuthContext  from '../context/AuthContext';
 import Header       from '../components/Header';
 import RecordButton from '../components/RecordButton';
 import ChatHistory  from "../components/chat/ChatHistory";
@@ -17,7 +16,7 @@ import dummyChats from "../data/dummyChats.json";
 
 function Chat() {
     const location = useLocation();
-    const {user} = useContext(UserContext);
+    const {user, authTokens, logoutUser} = useContext(AuthContext);
 
     const [messages,       setMessages      ] = useState(location.state ? location.state.messages : []);
     const [viewMode,       setViewMode      ] = useState(2);
@@ -39,11 +38,7 @@ function Chat() {
         {name: "Turn Taking",   data: []},
     ]);
 
-    // useEffect(() => {console.log(messages);}, [messages]);
-
-    const [showModal, setShowModal] = useState(false);
-    const handleShow  = () => setShowModal(true );
-    const handleClose = () => setShowModal(false);
+  
 
 
     // on message -> addMessageToChat('AI', response.data, response.time); setChatbotMessage(response.data);
@@ -76,24 +71,25 @@ function Chat() {
         setBiomarkerData(prevData);
     };
 
+    // --------------------------------------------------------------------
+    // Save this chat to the database & navigate to the progress page
+    // --------------------------------------------------------------------
     const saveChat = async () => {
-        const end = new Date();
-        const duration = Math.floor(((end - start) / 1000) / 60);
+        // Get the final duration of the chat
+        const end      = new Date();
+        const duration = Math.floor(((end - start) / 1_000) / 60);
 
         //FOR TESTING
-        if (messages.length === 0) {messages.state.message = dummyChats[0].messages;}
+        let useScores   = (biomarkerData[0].data.length === 0) ? dummyChats[0].scores   : biomarkerData;
+        let useMessages = (messages             .length === 0) ? dummyChats[0].messages : messages;
+        if (messages.length === 0 || biomarkerData[0].data.length === 0) {setMessages(dummyChats[0].messages);}
 
-        const chatData = {
-            user: user,
-            date: end,
-            scores: biomarkerData,
-            avgScores: calcAvgBiomarkerScores(biomarkerData),
-            notes: "",
-            messages: messages,
-            duration: duration
-        }
-        const response = await createChat(user, chatData);
-        if (response) { navigate('/details', {state: {chatData: chatData}}); }
+        // Create data for a new chat entry in the database 
+        let chatData = {user: user, date: end, scores: useScores, avgScores: calcAvgBiomarkerScores(useScores), notes: "", messages: useMessages, duration: duration}
+
+        // Send the data for this chat to the database & navigate to the progress page when complete
+        const response = await createChat(chatData, authTokens);
+        if (response) { navigate('/progress'); }
     }
 
 
@@ -120,10 +116,15 @@ function Chat() {
     }
 
     
-    // --------------------------------------------------------------------
-    // 
-    // --------------------------------------------------------------------
-    function CloseModal() {
+    // ====================================================================
+    // Modal (should move this to another file)
+    // ====================================================================
+    // Handlers
+    const [showModal, setShowModal] = useState(false);
+    const handleShow  = () => setShowModal(true );
+    const handleClose = () => setShowModal(false);
+
+    function SaveChatModal() {
         return (
             <Modal show={showModal} onHide={handleClose} backdrop="static" keyboard={false} centered >
 
@@ -144,7 +145,18 @@ function Chat() {
     // ====================================================================
     return (
         <>
-            <Header title="Chat With Me!" page="chat"/>
+            {/* <Header title="Chat With Me!" page="chat"/> */}
+            <div className="float flex flex-row gap-4 m-[2rem]">
+                <p className="text-5xl font-semibold">Chat With Me</p>
+                <div className="float flex ml-auto gap-4">
+                    <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/today'   ><button className="text-gray-700 no-underline">Review Today</button></Link>
+                    <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/history' ><button className="text-gray-700 no-underline">Chat History</button></Link>
+                    <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/schedule'><button className="text-gray-700 no-underline">Schedule    </button></Link>
+                    <button className="flex bg-blue-700 rounded h-fit p-2 text-white self-center" onClick={() => logoutUser()}>Log Out</button>
+                </div>  
+            </div>
+
+            {/* Buttons to change the view mode for the page. (old) */}
             <div className="ml-[1rem] mt-[1rem] flex justify-center">
                 <ToggleButtonGroup type="radio" name="viewMode" defaultValue={3}>
                     <ToggleButton id="messages" variant="outline-primary" value={1} onChange={(e) => setViewMode(e.currentTarget.value)}> Messages           </ToggleButton>
@@ -167,7 +179,7 @@ function Chat() {
 
                 {recording && <div> <span className="dot"/> <p>test</p> </div> }   {/* red dot indicator */}
             </div>
-            <CloseModal/>
+            <SaveChatModal/>
         </>
     );
 }

@@ -1,15 +1,12 @@
 import React from "react";
-import ReactWordcloud from 'react-wordcloud';
-import dummyChats from "../data/dummyChats.json";
+import { WordCloud, defaultFontSize } from "@isoterik/react-word-cloud";
 
-function WordCloud({messages1}) {
-    const chats = dummyChats;
-    const chatData = chats[0];
-    const messages = chatData.messages;
+function MyWordCloud({messages}) {
 
     const tokenize = () => {
         // Initialize an empty object to store word frequencies
         const wordFrequency = {};
+        var numWords = 0;
 
         // Iterate over each message in the data array
         messages.forEach(item => {
@@ -19,6 +16,7 @@ function WordCloud({messages1}) {
 
                 // Count the frequency of each word
                 words.forEach(word => {
+                    numWords++;
                     if (word.length > 3) {
                         if (wordFrequency[word]) {
                             wordFrequency[word]++;
@@ -36,23 +34,37 @@ function WordCloud({messages1}) {
             value: wordFrequency[word]
         }));
 
-        return result;
+        return {words: result, numWords: numWords};
     }
 
-    const words = tokenize();
-    const options = {
-        enableTooltip: false,
-        fontSizes: [20, 60],
-        transitionDuration: 500,
-        rotationAngles: [-30, 30],
-        rotations: 5
-    };
+    const {words, numWords} = tokenize();
 
-    return (
-        <div className="w-full md:h-[30vh] h-[40vh]">
-            <ReactWordcloud words={words} maxWords={30} options={options}/>
-        </div>
-    )
+    const resolveFontSize = (word) => {
+        const minFontSize = 4;
+        const maxFontSize = 24;
+        const size = (word.value ** 3 / numWords) * (maxFontSize - minFontSize) + minFontSize;
+        return size;
+    }
+
+    if (messages.length > 0) {
+        return (
+            <div style={{width: "100%", height: "100%"}}>
+                 <WordCloud 
+                    words={words} 
+                    width={100} 
+                    height={50} 
+                    fontSize={resolveFontSize}
+                    transition="all .3s ease"
+                    padding={2}
+                    timeInterval={1}
+                />
+            </div>
+        );
+    } else {
+        return (
+            <p className="text-5xl">Not available</p>
+        )
+    }
 }
 
-export default WordCloud;
+export default MyWordCloud;

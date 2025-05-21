@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres
+    env_file: .env
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - TZ=UTC
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - my_network
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile-django
+    command: >
+      sh -c "python manage.py makemigrations &&
+             python manage.py migrate &&
+             daphne -b 0.0.0.0 -p 8000 backend.asgi:application"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    env_file: .env
+    networks:
+      - my_network
+    environment:
+      - TZ=UTC
+
+networks:
+  my_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
