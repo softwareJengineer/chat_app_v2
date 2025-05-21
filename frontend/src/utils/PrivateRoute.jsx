@@ -5,14 +5,8 @@ import AuthContext from '../context/AuthContext';
 
 const PrivateRoute = ({children}) => {
     let { profile } = useContext(AuthContext);
-
-    if (profile) {
-        return children;
-    } else {
-        return (
-            <Navigate to='/' replace={true} />
-        );
-    }
+    if (profile) {return children;                            } 
+    else         {return (<Navigate to='/' replace={true} />);}
 }
 
 export default PrivateRoute;

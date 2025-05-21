@@ -11,7 +11,7 @@ const LoadingPage = () => {
     }, [])
 
     const getProfile = async () => {
-        let response = await fetch('http://localhost:8000/api/profile', {
+        let response = await fetch('/api/profile', {
         method: 'GET',
         headers:{
             'Content-Type': 'application/json',
@@ -31,17 +31,10 @@ const LoadingPage = () => {
             });
             setSettings(data.settings);
             setGoal(data.goal);
-            if (data.role === 'Patient') {
-                navigate('/chat');
-            } else {
-                navigate('/dashboard')
-            }
-        } else if(response.statusText === 'Unauthorized') {
-            logoutUser();
-        } else {
-            alert(data.error);
-            logoutUser();
-        }
+            if (data.role === 'Patient') {navigate('/chat');} else {navigate('/dashboard')}
+        } 
+        else if (response.statusText === 'Unauthorized') {                   logoutUser();} 
+        else                                             {alert(data.error); logoutUser();}
     }
 
     if (profile) {
