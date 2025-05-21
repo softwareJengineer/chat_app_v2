@@ -4,7 +4,7 @@
 # General behavior
 import os
 import time
-from llama_cpp import Llama
+
 
 # For logging
 import warnings, logging
@@ -17,7 +17,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 # Global Variables
 # =======================================================================
 USE_CLOUD     = False  # (return default values instead of using the cloud APIs while testing)
-USE_LLM       = True  # (--- this might cause problems, but just have a setting where we don't actually need to load the LLM to test) 
+USE_LLM       = False  # (--- this might cause problems, but just have a setting where we don't actually need to load the LLM to test) 
 THIS_LANGUAGE = "en-US"
 
 script_check    = 1
@@ -83,7 +83,7 @@ logger = logging.getLogger(__name__)
 # Check for model files individually
 def check_for_model_files(LLM_model_path, pronunciation_model_path, prosody_model_path):
     missing_files = []
-    if not os.path.exists( LLM_model_path) and USE_LLM : missing_files.append(f"LLM_model_path: {                    LLM_model_path}")
+    if not os.path.exists(LLM_model_path) and USE_LLM  : missing_files.append(f"LLM_model_path: {                    LLM_model_path}")
     if not os.path.exists(pronunciation_model_path)    : missing_files.append(f"pronunciation_model_path: {pronunciation_model_path}")
     if not os.path.exists(      prosody_model_path)    : missing_files.append(f"prosody_model_path: {            prosody_model_path}")
 
@@ -114,6 +114,7 @@ try:
 
     # Load the saved LLM model OR use a testing object that just returns sample data
     if USE_LLM:
+        from llama_cpp import Llama
         llm = Llama(model_path=LLM_model_path, n_ctx=max_length, n_threads=16, n_gpu_layers=0)
         logger.info("LLM initialized successfully")
     else:
