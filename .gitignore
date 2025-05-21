@@ -33,3 +33,6 @@ Include/
 Scripts/
 share/
 node_modules/
+
+# VS Code
+.vscode/*
