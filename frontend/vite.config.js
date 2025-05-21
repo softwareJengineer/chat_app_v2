@@ -24,7 +24,10 @@ export default defineConfig({
         port         : 5173,
         strictPort   : true,           // make sure it uses 5173
         cors         : true,           // allow cross-origin access if needed
-        proxy        : {'/ws': {target: 'http://backend:8000', ws: true}},
+        proxy        : {
+            '/ws'  : {target: 'http://backend:8000', ws: true},
+            '/api' : {target: 'http://backend:8000', }, // changeOrigin: true,
+        },
         allowedHosts : ['localhost', '127.0.0.1', '.ngrok-free.app'],  // allows any .ngrok host
     },
 })
