@@ -1,6 +1,16 @@
 # Mac
 **/.DS_Store
 
+# Python
+__pycache__/
+*.py[cod]
+
+Pipfile
+Pipfile.lock
+pyvenv.cfg
+.venv/
+venv/
+
 # Deployment Files
 .env
 Phi-3_finetuned.gguf
@@ -11,22 +21,15 @@ stanford-parser-4.2.0-models.jar
 deploy.sh
 start_ngrok.sh
 
-# Generated Files
-staticfiles/
-node_modules/
+# Backend Generated Files
+backend/staticfiles/
+backend/logs/
+backend/script/
+# backend/websocket.log
 
 # Frontend
 Lib/
 Include/
 Scripts/
 share/
-
-# Python
-__pycache__/
-*.py[cod]
-
-Pipfile
-Pipfile.lock
-pyvenv.cfg
-.venv/
-venv/
+node_modules/
