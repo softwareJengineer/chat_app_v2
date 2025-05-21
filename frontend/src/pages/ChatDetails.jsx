@@ -11,73 +11,25 @@ import { IoThumbsUp } from "react-icons/io5";
 import daysInARow from "../functions/daysInARow";
 import AuthContext from '../context/AuthContext';
 
+import { cardStyle } from "../styles/sharedStyles";
+import Biomarker     from "../components/Biomarker";
+
 function ChatDetails() {
     const { profile, goal } = useContext(AuthContext);
     const location = useLocation();
     const navigate = useNavigate();
     const chatData = location.state?.chatData;
     const prevChatData = location.state?.prevChatData ? 
-        location.state.prevChatData : 
-        {avgScores: {
-            Pragmatic: 0,
-            Grammar: 0,
-            Prosody: 0,
-            Pronunciation: 0,
-            Anomia: 0,
-            "Turn Taking": 0,
-        }};
+        location.state.prevChatData : {avgScores: {Pragmatic: 0, Grammar: 0, Prosody: 0, Pronunciation: 0, Anomia: 0, "Turn Taking": 0,}};
     const chats = location.state?.chats;
     const date = new Date(chatData.date);
 
-    const cardStyle = "border-1 border-gray-300 rounded p-[2rem] hover:shadow-xl h-full w-full justify-self-start";
-
-    const calcGoal = () => {
-        if (goal.current > goal.target) {
-            return 0;
-        } else {
-            return goal.target - goal.current;
-        }
-    }
-
-    const getImprovement = (current, prev) => {
-        const score = Math.abs(Math.round((current - prev) * 1000) / 10);
-        if (current > prev) {
-            return (
-                <div className="flex flex-row gap-3 items-center">
-                    <p className="rounded-full bg-green-500 p-2 size-[3rem] aspect-square items-center justify-center flex font-bold">
-                        +{score}
-                    </p>
-                    <p className="font-bold">Improved</p>
-                </div>
-            )
-        } else if (current < prev) {
-            return (
-                <div className="flex flex-row gap-3 items-center">
-                    <p className="rounded-full bg-red-500 p-2 size-[3rem] aspect-square items-center justify-center flex font-bold">
-                        -{score}
-                    </p>
-                    <p className="font-bold">Declined</p>
-                </div>
-            )
-        } else {
-            return (
-                <div className="flex flex-row gap-3 items-center">
-                    <p className="rounded-full bg-gray-300 p-2 size-[3rem] aspect-square items-center justify-center flex font-bold">
-                        +0
-                    </p>
-                    <p className="font-bold">Steady</p>
-                </div>
-            )
-        }
-    }
-
-    const toAnalysis = (biomarker) => {
-        navigate('/analysis', {state: {chatData: chatData, biomarker: biomarker}})
-    }
+    const calcGoal = () => {if (goal.current > goal.target) {return 0;} else {return goal.target - goal.current;}}
 
     return (
         <>
             <Header title="Single Chat Analysis" page="chatdetails" />
+
             <div className="mx-[2rem] flex flex-col gap-2">
                 <div className="flex items-center gap-4 align-middle">
                     <FaUser size={50}/>
@@ -86,18 +38,16 @@ function ChatDetails() {
                     <FaUser size={50}/>
                     <p className="align-middle">{profile.plwdFirstName} {profile.plwdLastName}</p>
                 </div>
-                <Link to="/settings">
-                    Update profile
-                </Link>
+                <Link to="/settings"> Update profile </Link>
             </div>
+
             <div className="flex flex-row m-[2rem] gap-4">
                 <b className="text-4xl">Overview:</b>
                 <b className="text-purple-500 text-4xl">{date.toDateString()}</b>
             </div>
+
             <div className="flex md:flex-row flex-col gap-4 mt-[1rem] mb-[3rem] md:min-h-[45vh]">
-                <div className="md:w-1/3">
-                    <Avatar />
-                </div>
+                <div className="md:w-1/3"><Avatar /></div>
                 <div className="md:w-2/3 mx-[2rem] align-self-center">
                     <p className="font-bold text-2xl">
                        {profile.plwdFirstName} is doing fantastic!
@@ -120,6 +70,7 @@ function ChatDetails() {
                     </Link>
                 </div>
             </div>
+
             <div className="grid md:grid-cols-2 grid-cols-1 h-full mx-[2rem] items-center justify-stretch gap-4 mb-[2rem]">
                 <div className="md:border-r-1 md:border-y-0 md:border-l-0 border-y-1 border-gray-300 pr-[2rem]">
                     <b className="text-2xl">Today's Conversation</b>
@@ -156,6 +107,8 @@ function ChatDetails() {
                     </div>
                 </div>
             </div>
+
+            {/* Detailed Analysis */}
             <h3 className="mx-[2rem]">Detailed Analysis</h3>
             <div className="grid md:grid-cols-2 grid-cols-1 h-full justify-stretch m-[2rem] gap-4">
                 <div className={cardStyle}>
@@ -167,48 +120,15 @@ function ChatDetails() {
                     <p>You felt {chatData.sentiment}</p>
                     <p>Because... </p>
                 </div>
-                <div className={cardStyle}>
-                    <h4>Pragmatic Review</h4>
-                    {getImprovement(chatData.avgScores.Pragmatic, prevChatData.avgScores.Pragmatic)}
-                    <button className="bg-violet-600 rounded p-2 text-white" onClick={() => toAnalysis("Pragmatic")}>
-                        View in Transcript
-                    </button>
-                </div>
-                <div className={cardStyle}>
-                    <h4>Grammar Review</h4>
-                    {getImprovement(chatData.avgScores.Grammar, prevChatData.avgScores.Grammar)} 
-                    <button className="bg-violet-600 rounded p-2 text-white" onClick={() => toAnalysis("Grammar")}>
-                        View in Transcript
-                    </button>
-                </div>
-                <div className={cardStyle}>
-                    <h4>Prosody Review</h4>
-                    {getImprovement(chatData.avgScores.Prosody, prevChatData.avgScores.Prosody)} 
-                    <button className="bg-violet-600 rounded p-2 text-white" onClick={() => toAnalysis("Prosody")}>
-                        View in Transcript
-                    </button>
-                </div>
-                <div className={cardStyle}>
-                    <h4>Pronunciation Review</h4>
-                    {getImprovement(chatData.avgScores.Pronunciation, prevChatData.avgScores.Pronunciation)} 
-                    <button className="bg-violet-600 rounded p-2 text-white" onClick={() => toAnalysis("Pronunciation")}>
-                        View in Transcript
-                    </button>
-                </div>
-                <div className={cardStyle}>
-                    <h4>Anomia Review</h4>
-                    {getImprovement(chatData.avgScores.Anomia, prevChatData.avgScores.Anomia)} 
-                    <button className="bg-violet-600 rounded p-2 text-white" onClick={() => toAnalysis("Anomia")}>
-                        View in Transcript
-                    </button>
-                </div>
-                <div className={cardStyle}>
-                    <h4>Turn Taking Review</h4>
-                    {getImprovement(chatData.avgScores["Turn Taking"], prevChatData.avgScores["Turn Taking"])} 
-                    <button className="bg-violet-600 rounded p-2 text-white" onClick={() => toAnalysis("Turn Taking")}>
-                        View in Transcript
-                    </button>
-                </div>
+
+                {/* Biomarker Improvement/Analysis Cards */}
+                <Biomarker name={ "Pragmatic"     } chatData={chatData} prevChatData={prevChatData} />
+                <Biomarker name={ "Grammar"       } chatData={chatData} prevChatData={prevChatData} />
+                <Biomarker name={ "Prosody"       } chatData={chatData} prevChatData={prevChatData} />
+                <Biomarker name={ "Pronunciation" } chatData={chatData} prevChatData={prevChatData} />
+                <Biomarker name={ "Anomia"        } chatData={chatData} prevChatData={prevChatData} />
+                <Biomarker name={ "Turn Taking"   } chatData={chatData} prevChatData={prevChatData} />
+
             </div>
         </>
     )
