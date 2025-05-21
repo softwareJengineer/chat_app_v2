@@ -106,7 +106,7 @@ function Schedule() {
 
     return (
         <>
-            <Header title="Your Schedule" page="schedule"/> : 
+            <Header title="Calendar" page="schedule"/> : 
             <div className="h-[75vh] m-[2rem]">
                 <FullCalendar
                     plugins={[ timeGridPlugin, rrulePlugin ]}

@@ -49,7 +49,7 @@ const LoadingPage = () => {
     } else {
         return (
             <div className="flex items-center justify-center h-screen w-screen text-xl">
-                Logging user in...
+                Loading...
             </div>
         )
     }
