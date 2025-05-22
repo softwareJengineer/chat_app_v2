@@ -28,6 +28,6 @@ export default defineConfig({
             '/ws'  : {target: 'http://backend:8000', ws: true},
             '/api' : {target: 'http://backend:8000', }, // changeOrigin: true,
         },
-        allowedHosts : ['localhost', '127.0.0.1', '.ngrok-free.app'],  // allows any .ngrok host
+        allowedHosts : ['localhost', '127.0.0.1', 'cognibot.org'], 
     },
 })
