@@ -1,0 +1,7 @@
+# Ignore dependencies installed on host machine (running inside docker container vs locally)
+node_modules
+dist
+.cache
+.vite
+
+package-lock.json

@@ -4,7 +4,7 @@ channels[daphne]>=4.0.0
 python-decouple
 psycopg2-binary
 websockets
-llama-cpp-python==0.3.8
+#llama-cpp-python==0.3.8
 azure-cognitiveservices-speech==1.40.0
 whitenoise
 librosa
@@ -72,5 +72,7 @@ zope.event==5.0
 zope.interface==7.0.3
 django-cors-headers==3.14.0
 djangorestframework
+djangorestframework-simplejwt
+rest_framework_simplejwt
 vaderSentiment
 keyboard

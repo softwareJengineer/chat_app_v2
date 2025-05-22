@@ -1,68 +1,11 @@
-const login = async (loginData) => {
-    try {
-        const response = await fetch('http://localhost:8000/api/login/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(loginData)
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            const user = {
-                role: data.role,
-                plwdUsername: data.plwdUsername,
-                plwdFirstName: data.plwdFirstName,
-                plwdLastName: data.plwdLastName,
-                caregiverUsername: data.caregiverUsername,
-                caregiverFirstName: data.caregiverFirstName,
-                caregiverLastName: data.caregiverLastName,
-            };
-            const settingsJson = JSON.parse(data.settings);
-            const settings = {
-                patientViewOverall: settingsJson.patientViewOverall,
-                patientCanSchedule: settingsJson.patientCanSchedule
-            };
-            return { user, settings }; 
-        } else {
-            alert(data.error);
-            return false;
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        return false;
-    }
-}
-
-const logout = async () => {
-    try {
-        const response = await fetch('http://localhost:8000/api/logout/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            alert("Log out successful.");
-        } else {
-            console.error("Log out failed: " + data.error);
-        }
-    } catch (error) {
-        alert(error);
-    }
-}
+import { API_URL } from "../constants";
 
 const signup = async (signupData) => {
     try {
-        const response = await fetch('http://localhost:8000/api/signup/', {
+        const response = await fetch("api/signup/", {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(signupData)
         });
@@ -81,13 +24,13 @@ const signup = async (signupData) => {
     }
 }
 
-const getReminders = async (user) => {
+const getReminders = async (authTokens) => {
     try {
-        const username = user.role == 'Caregiver' ? user.caregiverUsername : user.plwdUsername;
-        const response = await fetch(`http://localhost:8000/api/reminders/${username}/`, {
+        const response = await fetch(`/api/reminders/`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization':'Bearer ' + String(authTokens.access)
             }
         });
 
@@ -96,9 +39,9 @@ const getReminders = async (user) => {
         if (data.success) {
             const reminders = data.reminders;
             return reminders.map(reminder => {
-                let obj = JSON.parse(reminder);
-                obj.start = new Date(obj.start);
-                obj.end = new Date(obj.end);
+                let obj = reminder;
+                if (obj.start) obj.start = new Date(obj.start);
+                if (obj.end) obj.end = new Date(obj.end);
                 return obj;
             });
         } else {
@@ -111,18 +54,18 @@ const getReminders = async (user) => {
     }
 }
 
-const createReminder = async (user, title, start, end) => {
+const createReminder = async (title, start, end, authTokens) => {
     try {
-        const username = user.role == 'Caregiver' ? user.caregiverUsername : user.plwdUsername;
-        const response = await fetch(`http://localhost:8000/api/reminders/${username}/`, {
+        const response = await fetch(`/api/reminders/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization':'Bearer ' + String(authTokens.access)
             },
             body: JSON.stringify({
                 title: title,
                 start: start,
-                end: end
+                end: end,
             })
         });
 
@@ -139,15 +82,44 @@ const createReminder = async (user, title, start, end) => {
     }
 };
 
-const editSettings = async (user, settings) => {
+const createRepeatReminder = async (title, startTime, endTime, daysOfWeek, authTokens) => {
     try {
-        const username = user.role == 'Caregiver' ? user.caregiverUsername : user.plwdUsername;
-        const response = await fetch(`http://localhost:8000/api/settings/${username}/`, {
+        const response = await fetch(`/api/reminders/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization':'Bearer ' + String(authTokens.access)
+            },
+            body: JSON.stringify({
+                title: title,
+                startTime: startTime,
+                endTime: endTime,
+                daysOfWeek: daysOfWeek
+            })
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            alert(data.error);
+            return false;
+        }
+        return true;
+    } catch (error) {
+        console.error('Error with creating reminder:', error);
+        return false;
+    }
+};
+
+const editSettings = async (settings, authTokens) => {
+    try {
+        const response = await fetch(`/api/settings/`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization':'Bearer ' + String(authTokens.access)
             },
-            body: JSON.stringify({ ...settings, user: user })
+            body: JSON.stringify({ ...settings })
         });
 
         const data = await response.json();
@@ -165,13 +137,13 @@ const editSettings = async (user, settings) => {
     }
 };
 
-const createChat = async (user, chatData) => {
+const createChat = async (chatData, authTokens) => {
     try {
-        const username = user.role == 'Caregiver' ? user.caregiverUsername : user.plwdUsername;
-        const response = await fetch(`http://localhost:8000/api/chats/${username}/`, {
+        const response = await fetch(`/api/chats/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization':'Bearer ' + String(authTokens.access)
             },
             body: JSON.stringify(chatData)
         });
@@ -190,13 +162,13 @@ const createChat = async (user, chatData) => {
     }
 };
 
-const getChats = async (user) => {
+const getChats = async (authTokens) => {
     try {
-        const username = user.role == 'Caregiver' ? user.caregiverUsername : user.plwdUsername;
-        const response = await fetch(`http://localhost:8000/api/chats/${username}/`, {
+        const response = await fetch(`/api/chats/`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization':'Bearer ' + String(authTokens.access)
             }
         });
 
@@ -205,7 +177,7 @@ const getChats = async (user) => {
         if (data.success) {
             const chats = data.chats;
             return chats.map(chat => {
-                let obj = JSON.parse(chat);
+                let obj = chat;
                 obj.date = new Date(obj.date);
                 return obj;
             });
@@ -219,21 +191,20 @@ const getChats = async (user) => {
     }
 };
 
-
-const getChat = async (user, chatID) => {
+const getRecentChat = async (authTokens) => {
     try {
-        const username = user.role == 'Caregiver' ? user.caregiverUsername : user.plwdUsername;
-        const response = await fetch(`http://localhost:8000/api/chat/${username}/chatid/${chatID}`, {
+        const response = await fetch(`/api/chat/recent`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization':'Bearer ' + String(authTokens.access)
             }
         });
 
         const data = await response.json();
 
         if (data.success) {
-            let chat = JSON.parse(data.chat);
+            let chat = data.chat;
             chat.date = new Date(chat.date);
             return chat;
         } else {
@@ -244,7 +215,57 @@ const getChat = async (user, chatID) => {
         alert(error);
         return false;
     }
-};
+}
 
+const getGoal = async (authTokens) => {
+    try {
+        const response = await fetch(`/api/goal/`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization':'Bearer ' + String(authTokens.access)
+            }
+        });
 
-export {login, logout, signup, getReminders, createReminder, editSettings, createChat, getChats, getChat};
+        const data = await response.json();
+
+        if (data.success) {
+            let goal = data.goal
+            return goal;
+        } else {
+            console.error("Could not fetch goal: " + data.error);
+            return false;
+        }
+    } catch (error) {
+        alert(error);
+        return false;
+    }
+}
+
+const updateGoal = async (startDay, target, authTokens) => {
+    try {
+        const response = await fetch(`/api/goal/`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization':'Bearer ' + String(authTokens.access)
+            },
+            body: JSON.stringify({ startDay: startDay, target: target })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert("Goal successfully set.");
+            return true;
+        } else {
+            alert(data.error);
+            return false;
+        }
+    } catch (error) {
+        console.error('Error setting goal:', error);
+        return false;
+    }
+}
+
+export {signup, getReminders, createReminder, createRepeatReminder, editSettings, createChat, getChats, getRecentChat, getGoal, updateGoal};

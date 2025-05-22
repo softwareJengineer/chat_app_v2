@@ -2,26 +2,6 @@ import React, { useState, useEffect } from "react";
 import ReactApexChart from "react-apexcharts";
 
 function ScoreTrackGraph({chats}) {
-    const [windowSize, setWindowSize] = useState({
-		width: window.innerWidth,
-		height: window.innerHeight
-	});
-
-    useEffect(() => {
-		const handleResize = () => {
-			setWindowSize({
-				width: window.innerWidth,
-				height: window.innerHeight
-			});
-		};
-
-		window.addEventListener('resize', handleResize);
-
-		return () => {
-			window.removeEventListener('resize', handleResize);
-		};
-	}, []);
-
     const chatsReversed = chats.slice().reverse();
 
     function getScores(chatData) {
@@ -31,7 +11,7 @@ function ScoreTrackGraph({chats}) {
             var score = avgScores.reduce((a, b) => a + b, 0) / avgScores.length;
             scores.push(score);
         }
-        return [{data: scores}];
+        return [{name: 'scores', data: scores}];
     }
 
     function getDates(chatData) {
@@ -94,8 +74,7 @@ function ScoreTrackGraph({chats}) {
             options={getOptions(chatsReversed)} 
             series={getScores(chatsReversed)} 
             type="bar" 
-            height={windowSize.height / 3}
-            width={windowSize.width * .95}
+            height={"100%"}
         />
     );
 }

@@ -27,7 +27,7 @@ services:
   # 2) Backend (private, no ports exposed)
   # --------------------------------------------------------------------
   # Nginx/Vite proxies traffic here using the container name over the Docker network
-  web:
+  backend:
     build:
       context: ./backend
       dockerfile: Dockerfile-backend
@@ -37,7 +37,7 @@ services:
         python manage.py collectstatic --noinput &&
         python manage.py makemigrations &&
         python manage.py migrate &&
-        daphne -b 0.0.0.0 -p 8000 interface_app.asgi:application
+        daphne -b 0.0.0.0 -p 8000 backend.asgi:application
       "
     volumes:
       - ./backend:/app                      # general project mount
@@ -59,7 +59,7 @@ services:
       dockerfile: Dockerfile-frontend
     container_name: frontend
     depends_on:
-      - web
+      - backend
     env_file: .env
     ports:
       #- "80:80"    # Ports when using nginx for the frontend
