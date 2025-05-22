@@ -17,7 +17,6 @@ import Biomarker     from "../components/Biomarker";
 function ChatDetails() {
     const { profile, goal } = useContext(AuthContext);
     const location = useLocation();
-    const navigate = useNavigate();
     const chatData = location.state?.chatData;
     const prevChatData = location.state?.prevChatData ? 
         location.state.prevChatData : {avgScores: {Pragmatic: 0, Grammar: 0, Prosody: 0, Pronunciation: 0, Anomia: 0, "Turn Taking": 0,}};

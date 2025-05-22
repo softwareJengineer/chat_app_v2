@@ -36,7 +36,7 @@ export default function Biomarker({ name, chatData, prevChatData }) {
     return (
         <> 
             <div className={cardStyle}>
-                <h4>{name} Review</h4>
+                <h4> {name} Review </h4>
                 {getImprovement(chatData.avgScores[name], prevChatData.avgScores[name])}
                 <button className={buttStyle} onClick={onClick}> View in Transcript </button>
             </div>
