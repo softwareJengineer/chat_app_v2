@@ -2,31 +2,46 @@ import React, { useState, useEffect } from "react";
 import ReactApexChart from "react-apexcharts";
 
 function ScoreTrackGraph({chats}) {
+    const [scores, setScores] = useState([]);
+    const [dates, setDates] = useState([]);
 
-    function getScores(chatData) {
-        if (chatData) {
-            var scores = [];
-            for (var i = 0; i < chatData.length; i++) {
-                var avgScores = Object.values(chatData[i].avgScores);
-                var score = avgScores.reduce((a, b) => a + b, 0) / avgScores.length;
-                scores.push(score);
+    const style = new Intl.DateTimeFormat("en-US", {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+    })
+
+    useEffect(() => {
+        const getScores = () => {
+            if (chats) {
+                var scores = [];
+                for (var key in chats) {
+                    var avgScores = Object.values(chats[key].avgScores);
+                    var score = avgScores.reduce((a, b) => a + b, 0) / avgScores.length;
+                    scores.push(score);
+                }
+                return [{name: 'scores', data: scores}];
             }
-            return [{name: 'scores', data: scores}];
-        }
-    }
+        };
 
-    function getDates(chatData) {
-        if (chatData) {
-            var dates = [];
-            for (var i = 0; i < chatData.length; i++) {
-                dates.push(chatData[i].date);
+        const getDates = () => {
+            if (chats) {
+                var dates = [];
+                for (var key in chats) {
+                    dates.push(style.format(chats[key].date));
+                }
+                return dates;
             }
-            return dates;
         }
-    }
 
-    function getOptions(chatData) {
-        const dates = getDates(chatData);
+        const newScores = getScores();
+        const newDates = getDates();
+        setScores(newScores);
+        setDates(newDates);
+    }, [])
+
+
+    function getOptions() {
         return {
             xaxis: {
                 categories: dates,
@@ -74,8 +89,8 @@ function ScoreTrackGraph({chats}) {
 
     return (
         <ReactApexChart 
-            options={getOptions(chats)} 
-            series={getScores(chats)} 
+            options={getOptions()} 
+            series={scores} 
             type="bar" 
             height={"100%"}
         />

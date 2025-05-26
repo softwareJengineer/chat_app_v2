@@ -66,7 +66,7 @@ const Header = ({title, page}) => {
 	if (isCaregiver) {
 		return (
 		<>
-			<div className="mx-[2rem] mt-[2rem] flex flex-col gap-2">
+			<div className="m-[2rem] flex flex-col gap-2">
 				<div className="flex items-center">                
 					<h1>{title}</h1>
 					<div className="float flex flex-row gap-2 float-right ml-auto">

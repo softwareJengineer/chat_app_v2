@@ -427,6 +427,22 @@ class ReminderView(APIView):
             'reminders': serializer.data
         })
         
+    def delete(self, request):
+        data = request.data
+        id = data.get('id')
+        user = request.user
+        try:
+            Reminder.objects.filter(id=id).delete()
+            return Response({
+                'success': True
+            })
+        except:
+            return Response({
+                'success': False,
+                'error': 'Could not delete the reminder.'
+            })
+            
+        
 class GoalsView(APIView):
     permission_classes = [IsAuthenticated]  # Ensure the user is authenticated
 
