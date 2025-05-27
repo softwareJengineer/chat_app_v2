@@ -31,7 +31,9 @@ ENV JAVA_HOME = /usr/lib/jvm/java-17-openjdk-amd64 \
 # Install Python dependencies
 COPY requirements-web.txt .
 RUN pip install --upgrade pip setuptools wheel && \
-    pip install --prefer-binary --no-cache-dir -r requirements-web.txt
+    pip install --prefer-binary --no-cache-dir \
+    --timeout=120 --retries=10 \
+    -r requirements-web.txt
 
 # Copy project files
 COPY . .
