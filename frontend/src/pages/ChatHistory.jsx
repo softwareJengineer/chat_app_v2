@@ -39,10 +39,10 @@ function ChatHistory() {
             <Header title="Chat History" page="history"/>
             <div className="mx-[2rem] mb-[2rem] flex flex-col gap-2">
                 <div className="flex items-center gap-4 align-middle">
-                    <FaUser size={50}/>
+                    <FaUser size={50} color="purple" />
                     <p className="align-middle">{profile.plwdFirstName} {profile.plwdLastName}</p>
                     Care Partner
-                    <FaUser size={50}/>
+                    <FaUser size={50} color="green" />
                     <p className="align-middle">{profile.caregiverFirstName} {profile.caregiverLastName}</p>
                 </div>
                 {profile.role == "Caregiver" ? 

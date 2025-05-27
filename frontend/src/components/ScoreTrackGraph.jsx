@@ -65,7 +65,7 @@ function ScoreTrackGraph({chats}) {
             plotOptions: {
                 bar: {
                     borderRadius: 10,
-                    columnWidth: '50%',
+                    columnWidth: '20%',
                 }
             },
             dataLabels: {

@@ -54,10 +54,10 @@ function Dashboard() {
             <Header title="Speech Analysis" page="dashboard" />
             <div className="mx-[2rem] mb-[2rem] flex flex-col gap-2">
                 <div className="flex items-center gap-4 align-middle">
-                    <FaUser size={50}/>
+                    <FaUser size={50} color="purple" />
                     <p className="align-middle">{profile.caregiverFirstName} {profile.caregiverLastName}</p>
                     Care Partner
-                    <FaUser size={50}/>
+                    <FaUser size={50} color="green" />
                     <p className="align-middle">{profile.plwdFirstName} {profile.plwdLastName}</p>
                     <div className="flex float-right ml-auto">
                         <button
