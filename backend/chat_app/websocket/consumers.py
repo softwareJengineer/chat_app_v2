@@ -108,7 +108,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 # Calculate the periodic scores (currently Anomia and Turntaking)
                 start_time = time()
                 periodic_scores = generate_periodic_scores(self.user_utterances, self.conversation_start_time, self.overlapped_speech_count)
-                logger.info(f"{cf.CYAN}[Bio] Periodic Time:           {(time()-start_time):6.4f}s")
+                logger.info(f"{cf.CYAN}[Bio] Periodic Time:           {(time()-start_time):6.4f}s {cf.RESET}")
 
                 # Re-calculate overlapped speech count
                 self.overlapped_speech_count = max(0, self.overlapped_speech_count - 0.1)
@@ -133,7 +133,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # -----------------------------------------------------------------------
     async def _handle_overlapped_speech(self):
         self.overlapped_speech_count += 1
-        logger.info(f"{cf.YELLOW}Overlapped speech detected. Count: {self.overlapped_speech_count}")
+        logger.info(f"{cf.YELLOW}Overlapped speech detected. Count: {self.overlapped_speech_count} {cf.RESET}")
 
     # -----------------------------------------------------------------------
     # Audio Data
@@ -144,7 +144,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # Run heavy function in thread pool
         prosody_features, pronunciation_features = await loop.run_in_executor(THREAD_POOL, handle_audio_data, data)
-        logger.info(f"{cf.CYAN}[Aud] Audio data processed:    {(time()-start_time):5.4f}s")
+        logger.info(f"{cf.CYAN}[Aud] Audio data processed:    {(time()-start_time):5.4f}s {cf.RESET}")
     
         # Save the features
         self.bio_args[      "prosody_features"] =       prosody_features
@@ -156,7 +156,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def _handle_transcription(self, data):
         # Format the utterance
         user_utt = data['data'].lower()
-        logger.info(f"{cf.YELLOW}[ASR] Text data received:  {user_utt}")
+        logger.info(f"{cf.YELLOW}[ASR] Text data received:  {user_utt} {cf.RESET}")
         
         # 1) Generate & send LLM response (not threaded...)
         system_utt = await self._LLM_response(user_utt)
@@ -172,11 +172,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def _LLM_response(self, user_utt: str):
         LLM_start_time = time()
         system_utt = process_user_utterance(user_utt, self.chat_history)
-        logger.info(f"{cf.CYAN}[LLM] Received response in:    {(time() - LLM_start_time):6.4f}s")
+        logger.info(f"{cf.CYAN}[LLM] Received response in:    {(time() - LLM_start_time):6.4f}s {cf.RESET}")
         
         # Send the LLMs response through the websocket
         await self.send(json.dumps({'type': 'llm_response', 'data': system_utt, 'time': datetime.now(timezone.utc).strftime("%H:%M:%S")}))
-        logger.info(f"{cf.CYAN}[LLM] Response sent in:        {(time() - LLM_start_time):6.4f}s")
+        logger.info(f"{cf.CYAN}[LLM] Response sent in:        {(time() - LLM_start_time):6.4f}s {cf.RESET}")
 
         # Update chat history & return the system utterance
         self.chat_history.append({'Speaker': 'User',   'Utt': user_utt  })
@@ -191,7 +191,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # Run heavy function in thread pool
         scores = await loop.run_in_executor(THREAD_POOL, lambda: generate_biomarker_scores(user_utt, sys_utt, **self.bio_args))
-        logger.info(f"{cf.CYAN}[Bio] Biomarkers done in:      {(time()-start_time):5.4f}s")
+        logger.info(f"{cf.CYAN}[Bio] Biomarkers done in:      {(time()-start_time):5.4f}s {cf.RESET}")
 
         # Save biomarkers and send them back through the websocket connection
         await self.send(json.dumps({'type': 'biomarker_scores', 'data': scores}))
