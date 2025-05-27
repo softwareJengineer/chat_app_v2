@@ -430,7 +430,6 @@ class ReminderView(APIView):
     def delete(self, request):
         data = request.data
         id = data.get('id')
-        user = request.user
         try:
             Reminder.objects.filter(id=id).delete()
             return Response({

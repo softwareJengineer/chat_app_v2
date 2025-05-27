@@ -32,6 +32,7 @@ class Chat(models.Model):
         return self.date
     
 class Reminder(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False)
     user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="reminder_user")
     title = models.CharField(max_length=100)
     start = models.DateTimeField(null=True, blank=True)

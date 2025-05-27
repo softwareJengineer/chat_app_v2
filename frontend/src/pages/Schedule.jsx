@@ -2,8 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { Button, Modal, Form } from "react-bootstrap";
 import Header from "../components/Header";
 import AuthContext from '../context/AuthContext';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { createReminder, createRepeatReminder, getReminders } from "../functions/apiRequests";
+import { createReminder, createRepeatReminder, getReminders, deleteReminder } from "../functions/apiRequests";
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import rrulePlugin from '@fullcalendar/rrule';
@@ -15,6 +14,8 @@ function Schedule() {
     const [reminders, setReminders] = useState([]);
     const [showNewReminder, setShowNewReminder] = useState(false);
     const [showNewRepeatReminder, setShowNewRepeatReminder] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [reminderToDelete, setReminderToDelete] = useState(null);
     const [title, setTitle] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
@@ -64,6 +65,14 @@ function Schedule() {
         handleRepeatClose();
     };
 
+    const handleDeleteReminder = async () => {
+        console.log(reminderToDelete)
+        const response = await deleteReminder(reminderToDelete, authTokens);
+        if (response) setReminders((prevReminders) => prevReminders.filter(rem => rem.id != reminderToDelete));
+        setShowDeleteModal(false);
+        setReminderToDelete(null);
+    }
+
     const handleClose = () => {
         setShowNewReminder(false);
         resetForm();
@@ -78,6 +87,11 @@ function Schedule() {
         resetRepeatForm();
     }
 
+    const handleCloseDelete = () => {
+        setShowDeleteModal(false);
+        setReminderToDelete(null);
+    };
+
     const resetForm = () => {
         setTitle('');
         setStartDate('');
@@ -91,18 +105,10 @@ function Schedule() {
         setRepeatDay('Sunday');
     };
 
-    const events = [
-        {
-            title: 'example',
-            start: new Date(),
-            end: new Date(new Date().getTime() + 60 * 60 * 1000), // 1 hour later
-            rrule: {
-                freq: 'daily',
-                dtstart: new Date(),
-                until: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000) // 1 week later
-            }, 
-        }
-    ]
+    const eventClick = (rem) => {
+        setReminderToDelete(rem.event.id);
+        setShowDeleteModal(true);
+    }
 
     return (
         <>
@@ -113,6 +119,7 @@ function Schedule() {
                     initialView="timeGridWeek"
                     events={reminders}
                     height={"100%"}
+                    eventClick={eventClick}
                 />
             </div>
             <div className="flex flex-row gap-4 justify-center m-[2rem]">
@@ -228,6 +235,27 @@ function Schedule() {
                         </Modal.Footer>
                     </Modal.Body>
                 </Form>
+            </Modal>
+
+            <Modal
+                show={showDeleteModal}
+                onHide={handleCloseDelete}
+                backdrop="static"
+                keyboard={false}
+                centered
+            >
+                <Modal.Header closeButton>
+                <Modal.Title>Delete this event?</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    Are you sure you want to delete this event? This action cannot be undone.
+                </Modal.Body>
+                <Modal.Footer>
+                <Button variant="outline-primary" onClick={handleCloseDelete}>
+                    No
+                </Button>
+                <Button onClick={() => handleDeleteReminder()} variant="danger">Yes</Button>
+                </Modal.Footer>
             </Modal>
         </>
     );
