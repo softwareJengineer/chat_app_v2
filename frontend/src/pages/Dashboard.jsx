@@ -30,7 +30,7 @@ function Dashboard() {
             const profileChats = await getChats(authTokens);
             setChats(profileChats);
             setChatData(profileChats.length > 0 ? profileChats[0] : blankChat);
-            setScores(profileChats.length > 0 ? profileChats[0].scores : blankChat[0].scores);
+            setScores(profileChats.length > 0 ? profileChats[0].scores : blankChat.scores);
         };
 
         fetchChats();

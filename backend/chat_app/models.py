@@ -38,7 +38,7 @@ class Reminder(models.Model):
     end = models.DateTimeField(null=True, blank=True)
     startTime = models.TimeField(null=True, blank=True)
     endTime = models.TimeField(null=True, blank=True)
-    repeatDay = ArrayField(models.IntegerField(null=True, blank=True), size=7, null=True, blank=True)
+    daysOfWeek = ArrayField(models.IntegerField(null=True, blank=True), size=7, null=True, blank=True)
     
     def __str__(self):
         return "Reminder " + self.title

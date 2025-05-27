@@ -13,13 +13,13 @@ const LoadingPage = () => {
     const getProfile = async () => {
         let response = await fetch('http://localhost:8000/api/profile', {
         method: 'GET',
-        headers:{
+        headers: {
             'Content-Type': 'application/json',
             'Authorization':'Bearer ' + String(authTokens.access)
         }
         })
         let data = await response.json()
-        if(data.success) {
+        if (data.success) {
             setProfile({
                 plwdFirstName: data.plwdFirstName,
                 plwdLastName: data.plwdLastName,
