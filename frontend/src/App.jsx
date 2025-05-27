@@ -27,25 +27,21 @@ function App() {
                 <Route path='/signup' element={<SignUp/>}></Route>
                 <Route path='/loading' element={<LoadingPage/>}></Route>
 
+                {/* PLwD routes */}
                 <Route path='/chat' element={<PrivateRoute><Chat/></PrivateRoute>}></Route>
                 <Route path='/progress' element={<PrivateRoute><ProgressSummary/></PrivateRoute>}></Route>
-                <Route path='/dashboard' element={<PrivateRoute><Dashboard/></PrivateRoute>}></Route>
-                <Route path='/schedule' element={<PrivateRoute><Schedule/></PrivateRoute>}></Route>
-                <Route path='/settings' element={<PrivateRoute><Settings/></PrivateRoute>}></Route>
-                <Route path='/chatdetails' element={<PrivateRoute><ChatDetails/></PrivateRoute>}></Route>
-                <Route path="/history" element={<PrivateRoute><ChatHistory/></PrivateRoute>}></Route>
-                <Route path="/analysis" element={<PrivateRoute><Analysis/></PrivateRoute>}></Route>
                 <Route path='/today' element={<PrivateRoute><Today/></PrivateRoute>}></Route>
 
-                {/* <Route path='/chat' element={<Chat/>}></Route>
-                <Route path='/progress' element={<ProgressSummary/>}></Route>
-                <Route path='/dashboard' element={<Dashboard/>}></Route>
-                <Route path='/schedule' element={<Schedule/>}></Route>
-                <Route path='/settings' element={<Settings/>}></Route>
-                <Route path='/chatdetails' element={<ChatDetails/>}></Route>
-                <Route path="/history" element={<ChatHistory/>}></Route>
-                <Route path="/analysis" element={<Analysis/>}></Route>
-                <Route path='/today' element={<Today/>}></Route> */}
+                {/* Caregiver Routes */}
+                <Route path='/dashboard' element={<PrivateRoute><Dashboard/></PrivateRoute>}></Route>
+                <Route path='/settings' element={<PrivateRoute><Settings/></PrivateRoute>}></Route>
+                <Route path='/chatdetails' element={<PrivateRoute><ChatDetails/></PrivateRoute>}></Route>
+
+                {/* Shared Routes */}
+                <Route path='/schedule' element={<PrivateRoute><Schedule/></PrivateRoute>}></Route>
+                <Route path="/analysis" element={<PrivateRoute><Analysis/></PrivateRoute>}></Route>
+                <Route path="/history" element={<PrivateRoute><ChatHistory/></PrivateRoute>}></Route>
+
             </Routes>
             </AuthProvider>
         );

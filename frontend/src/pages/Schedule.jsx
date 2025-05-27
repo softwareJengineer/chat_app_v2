@@ -113,7 +113,7 @@ function Schedule() {
     return (
         <>
             <Header title="Calendar" page="schedule"/> : 
-            <div className="h-[75vh] m-[2rem]">
+            <div className="h-[75vh] mx-[2rem]">
                 <FullCalendar
                     plugins={[ timeGridPlugin, rrulePlugin ]}
                     initialView="timeGridWeek"
@@ -123,8 +123,8 @@ function Schedule() {
                 />
             </div>
             <div className="flex flex-row gap-4 justify-center m-[2rem]">
-                <Button onClick={handleShow} size="lg">Create a New Reminder</Button>
-                <Button onClick={handleRepeatShow} size="lg">Create a New Repeating Reminder</Button>
+                <Button onClick={handleShow} variant="outline-dark" size="lg">Create a New Reminder</Button>
+                <Button onClick={handleRepeatShow} variant="outline-dark" size="lg">Create a New Repeating Reminder</Button>
             </div>
 
 
@@ -245,10 +245,10 @@ function Schedule() {
                 centered
             >
                 <Modal.Header closeButton>
-                <Modal.Title>Delete this event?</Modal.Title>
+                <Modal.Title>Delete this reminder?</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    Are you sure you want to delete this event? This action cannot be undone.
+                    Are you sure you want to delete this reminder? This action cannot be undone.
                 </Modal.Body>
                 <Modal.Footer>
                 <Button variant="outline-primary" onClick={handleCloseDelete}>

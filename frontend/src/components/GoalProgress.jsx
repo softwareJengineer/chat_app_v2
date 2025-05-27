@@ -7,7 +7,7 @@ function GoalProgress({current, target}) {
 
     return (
         <div className="my-4">
-            <ProgressBar now={percent} />
+            <ProgressBar variant="plwd-progress" now={percent} />
         </div>
     )
 }

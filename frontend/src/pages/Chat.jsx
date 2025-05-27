@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { Button, Modal } from "react-bootstrap";
 import Avatar from "../components/Avatar";
-import { BsStopCircle, BsPlayCircle } from "react-icons/bs";
+import { BsStopCircle, BsPlayCircle, BsPauseCircle } from "react-icons/bs";
 import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import AuthContext from '../context/AuthContext';
@@ -23,13 +23,13 @@ const ws = new WebSocket(wsUrl);
 
 function Chat() {
     const location = useLocation();
-    const {user, authTokens, logoutUser} = useContext(AuthContext);
+    const {user, profile, goal, setGoal, authTokens, logoutUser} = useContext(AuthContext);
     const [recording, setRecording] = useState(false);
     const [systemSpeaking, setSystemSpeaking] = useState(false);
     const [userSpeaking, setUserSpeaking] = useState(false);
     const [messages, setMessages] = useState(location.state ? location.state.messages : []);
     // const [viewMode, setViewMode] = useState(3);
-    const [chatbotMessage, setChatbotMessage] = useState("Hello! I am here to assist you.");
+    const [chatbotMessage, setChatbotMessage] = useState("Hello, " + profile.plwdFirstName + ". Press the Start button to begin chatting with me.");
     const [start, setStart] = useState(null);
     const speechConfig = useRef(null);
     const audioConfig = useRef(null);
@@ -344,6 +344,7 @@ function Chat() {
 
         const response = await createChat(chatData, authTokens);
         if (response) {
+            setGoal({...newGoal, current: goal.current + 1})
             navigate('/progress');
         }
     }
@@ -417,17 +418,17 @@ function Chat() {
         <>
             <div className="float flex flex-row gap-4 m-[2rem]">
                 <p className="text-5xl font-semibold">Chat With Me</p>
-                <div className="float flex ml-auto gap-4">
-                    <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/today'>
-                        <button className="text-gray-700 no-underline">Review Today</button>
+                <div className="float flex ml-auto gap-4 items-center">
+                    <Link className="plwd-link-inactive" to='/today'>
+                        Review Today
                     </Link>
-                    <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/history'>
-                        <button className="text-gray-700 no-underline">Chat History</button>
+                    <Link className="plwd-link-inactive" to='/history'>
+                        Chat History
                     </Link>
-                    <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/schedule'>
-                        <button className="text-gray-700 no-underline">Schedule</button>
+                    <Link className="plwd-link-inactive" to='/schedule'>
+                        Schedule
                     </Link>
-                    <button className="flex bg-blue-700 rounded h-fit p-2 text-white self-center" onClick={() => logoutUser()}>Log Out</button>
+                    <button className="flex plwd-button-fill rounded h-fit p-2 self-center" onClick={() => logoutUser()}>Log Out</button>
                 </div>  
             </div>
             {/* <div className="ml-[1rem] mt-[1rem] flex justify-center">
@@ -451,7 +452,7 @@ function Chat() {
                 </ToggleButtonGroup>
             </div> */}
             <div className="h-[65vh] mb-[2rem]">
-                <div className="my-[1rem] flex justify-center bg-blue-200 p-[1em] rounded-lg mx-[25%]">
+                <div className="my-[1rem] flex justify-center border-1 border-black p-[1em] rounded-lg mx-[25%]">
                     {chatbotMessage}
                 </div>
                 <div className="h-full mt-[1em] w-full">
@@ -459,21 +460,21 @@ function Chat() {
                 </div>
             </div>
             <div className="flex flex-row justify-center mb-[2em] pt-[3em] gap-[4em] items-center">
-                <button
-                    variant="outline-primary"
-                    onClick={() => setRecording(!recording) }>
+                <button 
+                    className="flex flex-col gap-2 items-center"
+                    onClick={() => setRecording(!recording) }
+                >
                     {recording ? 
-                        <BsStopCircle size={50} style={{color: "red"}}/> : 
-                        <BsPlayCircle size={50} style={{color: "lightskyblue"}}/>}
+                        <BsPauseCircle size={50} style={{color: "black"}}/> : 
+                        <BsPlayCircle size={50} style={{color: "black"}}/>}
+                    {recording ? "Pause Chat" : "Start Chat"}
                 </button>
-                <Button
-                    className="border-1 p-[1em] rounded-med"
-                    variant="outline-primary"
-                    size="lg"
+                <button className="flex flex-col gap-2 items-center"
                     onClick={handleShow}
                 >
-                    Finish
-                </Button>
+                    <BsStopCircle size={50} syle={{color: "black"}} />
+                    End Chat
+                </button>
             </div>
             <CloseModal/>
         </>

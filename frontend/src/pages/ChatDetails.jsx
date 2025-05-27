@@ -97,7 +97,7 @@ function ChatDetails() {
                     <FaUser size={50}/>
                     <p className="align-middle">{profile.plwdFirstName} {profile.plwdLastName}</p>
                 </div>
-                <Link to="/settings">
+                <Link to="/settings" className={"caregiver-link"}>
                     Update profile
                 </Link>
             </div>

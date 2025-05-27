@@ -45,9 +45,11 @@ function ChatHistory() {
                     <FaUser size={50}/>
                     <p className="align-middle">{profile.caregiverFirstName} {profile.caregiverLastName}</p>
                 </div>
-                <Link to="/settings">
+                {profile.role == "Caregiver" ? 
+                <Link to="/settings" className={"caregiver-link"}>
                     Update profile
-                </Link>
+                </Link> : null}
+                
             </div>
             <div className="m-[2rem]">
                 <div className="grid md:grid-cols-3 grid-cols-1 gap-2">

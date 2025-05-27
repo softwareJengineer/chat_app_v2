@@ -47,14 +47,6 @@ const Header = ({title, page}) => {
 	const handleClose = () => setShowModal(false);
 	const handleShow = () => setShowModal(true);
 
-	const getStyle = (page, targetPage) => {
-		if (page == targetPage) {
-			return "text-blue-700 underline decoration-blue-700";
-		} else {
-			return "text-gray-700 no-underline decoration-gray-700"
-		}
- 	}
-
 	const changeGoal = async (event) => {
         event.preventDefault();
         const response = await updateGoal(newStartDate, newTarget, authTokens);
@@ -71,13 +63,13 @@ const Header = ({title, page}) => {
 					<h1>{title}</h1>
 					<div className="float flex flex-row gap-2 float-right ml-auto">
 						<button 
-							class={page=="dashboard" ? "linkActive" : "linkInactive"}
+							className={page=="dashboard" ? "linkActive" : "linkInactive"}
 							onClick={toDashboard}
 						>
 							Speech Analysis
 						</button>
 						<button 
-							class={page=="schedule" ? "linkActive" : "linkInactive"}
+							className={page=="schedule" ? "linkActive" : "linkInactive"}
 							onClick={toSchedule}>
 								Calendar
 						</button>
@@ -103,26 +95,26 @@ const Header = ({title, page}) => {
 		<>			
 			<div className="float flex flex-row m-[2rem]">
                 <p className="text-5xl font-semibold">{title}</p>
-                <div className="float-right flex ml-auto gap-4">
-					<Link className="flex align-middle" style={page=="chat" ? {} : {textDecoration: 'none'}} to="/chat">
-						<button className={getStyle(page, 'chat')}>Chat</button>
+                <div className="float-right flex items-center ml-auto gap-4">
+					<Link className={page=="chat" ? "plwd-link-active" : "plwd-link-inactive"} to="/chat">
+						Chat
 					</Link>
-					<Link className="flex align-middle" style={page=="progress" ? {} : {textDecoration: 'none'}} to="/progress">
-						<button className={getStyle(page, 'progress')}>Progress Summary</button>
+					<Link className={page=="progress" ? "plwd-link-active" : "plwd-link-inactive"} to="/progress">
+						Progress Summary
 					</Link>
-					<Link className="flex align-middle" style={page=="today" ? {} : {textDecoration: 'none'}} to="/today">
-						<button className={getStyle(page, 'today')}>Review Today</button>
+					<Link className={page=="today" ? "plwd-link-active" : "plwd-link-inactive"} to="/today">
+						Review Today
 					</Link>
-                    <Link className="flex align-middle" style={page=="history" ? {} : {textDecoration: 'none'}} to='/history'>
-                        <button className={getStyle(page, 'history')}>Chat History</button>
+                    <Link className={page=="history" ? "plwd-link-active" : "plwd-link-inactive"} to='/history'>
+                        Chat History
                     </Link>
-                    <Link className="flex align-middle" style={page=="schedule" ? {} : {textDecoration: 'none'}} to='/schedule'>
-                        <button className={getStyle(page, 'schedule')}>Schedule</button>
+                    <Link className={page=="schedule" ? "plwd-link-active" : "plwd-link-inactive"} to='/schedule'>
+                        Schedule
                     </Link>
 					<button onClick={handleShow}>
 						<GoGear size={25} />
 					</button>
-                    <button className="flex bg-blue-700 rounded h-fit p-2 text-white self-center" onClick={() => logoutUser()}>Log Out</button>
+                    <button className="plwd-button-fill flex rounded h-fit p-2 text-white self-center" onClick={() => logoutUser()}>Log Out</button>
                 </div>  
             </div>
 

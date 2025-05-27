@@ -39,7 +39,7 @@ function Dashboard() {
 
     const getStyle = (chart) => {
         if (activeChart === chart) {
-            return "text-blue-600 underline hover:text-purple-900";
+            return "text-violet-600 underline hover:text-purple-900";
         } else {
             return "text-gray-400 hover:text-gray-600 hover:underline";
         }
@@ -67,7 +67,7 @@ function Dashboard() {
                         </button>
                     </div>
                 </div>
-                <Link to="/settings">
+                <Link to="/settings" className={"caregiver-link"}>
                     Update profile
                 </Link>
             </div>
