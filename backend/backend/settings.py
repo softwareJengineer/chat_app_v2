@@ -29,8 +29,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'localhost', '127.0.0.1'
-    "cognibot.org", "www.cognibot.org", 
+    "cognibot.org",            "www.cognibot.org", 
     "deployment.cognibot.org", "www.deployment.cognibot.org",
+    "sandbox.cognibot.org",    "www.sandbox.cognibot.org",
 ]
 
 
