@@ -3,11 +3,16 @@ FROM python:3.11
 # --------------------------------------------------------------------
 # Set environment variables
 # --------------------------------------------------------------------
+# Accept build-time argument
+ARG APP_ENVIRONMENT=sandbox
+
+# Make it available as an env variable inside the container
+ENV APP_ENVIRONMENT=${APP_ENVIRONMENT}
+RUN echo "The value of APP_ENVIRONMENT is: ${APP_ENVIRONMENT}"
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     DEBIAN_FRONTEND=noninteractive
-
-RUN echo "The value of ENV is: ${ENV}"
 
 WORKDIR /app
 
@@ -35,19 +40,26 @@ RUN apt-get update && apt-get install -y \
 ENV JAVA_HOME = /usr/lib/jvm/java-17-openjdk-amd64 \
     PATH      = $JAVA_HOME/bin:$PATH
 
+
 # --------------------------------------------------------------------
 # Install Python dependencies
 # --------------------------------------------------------------------
 COPY requirements-web.txt .
-RUN pip install --upgrade pip setuptools wheel && \
-    pip install --prefer-binary --no-cache-dir \
-    --timeout=120 --retries=10 \
+
+# Upgrade pip and tools
+RUN pip install --upgrade pip setuptools wheel
+
+# Pre-build wheels to cache them (using PEP 517 if needed)
+RUN pip wheel --wheel-dir=/wheels --no-cache-dir --use-pep517 --prefer-binary --timeout=120 --retries=10 \
     -r requirements-web.txt
+
+# Install packages only from wheels
+RUN pip install --no-index --find-links=/wheels -r requirements-web.txt
 
 # --------------------------------------------------------------------
 # Install python-llama-cpp if in deployment mode
 # --------------------------------------------------------------------
-RUN if [ "${ENV}" = "deployment" ]; then \
+RUN if [ "${APP_ENVIRONMENT}" = "deployment" ]; then \
     apt-get update && apt-get install -y \
         nvidia-cuda-toolkit \
         nvidia-cuda-dev && \
