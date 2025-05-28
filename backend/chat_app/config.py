@@ -115,7 +115,15 @@ try:
     # Load the saved LLM model OR use a testing object that just returns sample data
     if USE_LLM:
         from llama_cpp import Llama
-        llm = Llama(model_path=LLM_model_path, n_ctx=max_length, n_threads=16, n_gpu_layers=0)
+        print(Llama.__doc__)
+        
+        llm = Llama(model_path   = LLM_model_path, 
+                    n_ctx        = max_length, 
+                    n_threads    = 8,    # was 16 before 
+                    n_gpu_layers = -1,   # 0 for CPU
+                    verbose      = True,
+                )
+        
         logger.info("LLM initialized successfully")
     else:
         from .services.llm.dummy_LLM import DummyLLM

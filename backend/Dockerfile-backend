@@ -1,15 +1,22 @@
 FROM python:3.11
 
+# --------------------------------------------------------------------
+# Set environment variables
+# --------------------------------------------------------------------
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     DEBIAN_FRONTEND=noninteractive
+
+RUN echo "The value of ENV is: $ENV"
 
 WORKDIR /app
 
 # Set the timezone to UTC
 RUN ln -sf /usr/share/zoneinfo/UTC /etc/localtime && echo "UTC" > /etc/timezone
 
+# --------------------------------------------------------------------
 # Install system packages
+# --------------------------------------------------------------------
 RUN apt-get update && apt-get install -y \
     cmake \
     g++ \
@@ -28,12 +35,28 @@ RUN apt-get update && apt-get install -y \
 ENV JAVA_HOME = /usr/lib/jvm/java-17-openjdk-amd64 \
     PATH      = $JAVA_HOME/bin:$PATH
 
+# --------------------------------------------------------------------
 # Install Python dependencies
+# --------------------------------------------------------------------
 COPY requirements-web.txt .
 RUN pip install --upgrade pip setuptools wheel && \
     pip install --prefer-binary --no-cache-dir \
     --timeout=120 --retries=10 \
     -r requirements-web.txt
 
+# --------------------------------------------------------------------
+# Install python-llama-cpp if in deployment mode
+# --------------------------------------------------------------------
+RUN if [ "$ENV" = "deployment" ]; then \
+    apt-get update && apt-get install -y \
+        nvidia-cuda-toolkit \
+        nvidia-cuda-dev && \
+    pip install llama-cpp-python \
+        --timeout=120 --retries=10 \
+        --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu121 ; \
+    fi
+
+# --------------------------------------------------------------------
 # Copy project files
+# --------------------------------------------------------------------
 COPY . .
