@@ -7,7 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     DEBIAN_FRONTEND=noninteractive
 
-RUN echo "The value of ENV is: $ENV"
+RUN echo "The value of ENV is: ${ENV}"
 
 WORKDIR /app
 
@@ -47,7 +47,7 @@ RUN pip install --upgrade pip setuptools wheel && \
 # --------------------------------------------------------------------
 # Install python-llama-cpp if in deployment mode
 # --------------------------------------------------------------------
-RUN if [ "$ENV" = "deployment" ]; then \
+RUN if [ "${ENV}" = "deployment" ]; then \
     apt-get update && apt-get install -y \
         nvidia-cuda-toolkit \
         nvidia-cuda-dev && \
