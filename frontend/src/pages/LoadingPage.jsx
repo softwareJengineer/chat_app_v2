@@ -13,13 +13,13 @@ const LoadingPage = () => {
     const getProfile = async () => {
         let response = await fetch('/api/profile', {
         method: 'GET',
-        headers:{
+        headers: {
             'Content-Type': 'application/json',
             'Authorization':'Bearer ' + String(authTokens.access)
         }
         })
         let data = await response.json()
-        if(data.success) {
+        if (data.success) {
             setProfile({
                 plwdFirstName: data.plwdFirstName,
                 plwdLastName: data.plwdLastName,
@@ -42,7 +42,7 @@ const LoadingPage = () => {
     } else {
         return (
             <div className="flex items-center justify-center h-screen w-screen text-xl">
-                Logging user in...
+                Loading...
             </div>
         )
     }

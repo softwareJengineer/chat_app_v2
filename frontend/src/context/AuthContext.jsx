@@ -51,7 +51,7 @@ export const AuthProvider = ({children}) => {
     //         headers: {
     //             'Content-Type': 'application/json'
     //         },
-    //         body:JSON.stringify({refresh:authTokens?.refresh})
+    //         body:JSON.stringify({refresh: authTokens?.refresh})
     //     })
        
     //     const data = await response.json()
@@ -63,10 +63,25 @@ export const AuthProvider = ({children}) => {
     //         logoutUser()
     //     }
 
-    //     if(loading){
+    //     if (loading) {
     //         setLoading(false)
     //     }
     // }
+
+    // useEffect(() => {
+    //     if (loading) {
+    //         updateToken();
+    //     }
+
+    //     const REFRESH_INTERVAL = 1000 * 60 * 15;
+    //     let interval = setInterval(() => {
+    //         if (authTokens) {
+    //             updateToken()
+    //         }
+    //     }, REFRESH_INTERVAL)
+    //     return () => clearInterval(interval)
+
+    // }, [authTokens, loading])
 
     let contextData = {
         user: user,
@@ -80,21 +95,6 @@ export const AuthProvider = ({children}) => {
         goal: goal,
         setGoal: setGoal,
     }
-
-    // useEffect(()=>{
-    //     if(loading){
-    //         updateToken()
-    //     }
-
-    //     const REFRESH_INTERVAL = 1000 * 60 * 15 // 4 minutes
-    //     let interval = setInterval(() => {
-    //         if (authTokens) {
-    //             updateToken()
-    //         }
-    //     }, REFRESH_INTERVAL)
-    //     return () => clearInterval(interval)
-
-    // }, [authTokens, loading])
 
     return(
         <AuthContext.Provider value={contextData}>

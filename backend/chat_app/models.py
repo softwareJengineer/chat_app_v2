@@ -47,13 +47,14 @@ class Chat(models.Model):
     def __str__(self): return self.date
 
 class Reminder(models.Model):
-    user       = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="reminder_user")
-    title      = models.CharField (max_length=100)
-    start      = models.DateTimeField(**init_args)
-    end        = models.DateTimeField(**init_args)
-    startTime  = models.TimeField    (**init_args)
-    endTime    = models.TimeField    (**init_args)
-    daysOfWeek = ArrayField(models.IntegerField(**init_args), size=7, **init_args)
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False)
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="reminder_user")
+    title = models.CharField(max_length=100)
+    start = models.DateTimeField(null=True, blank=True)
+    end = models.DateTimeField(null=True, blank=True)
+    startTime = models.TimeField(null=True, blank=True)
+    endTime = models.TimeField(null=True, blank=True)
+    daysOfWeek = ArrayField(models.IntegerField(null=True, blank=True), size=7, null=True, blank=True)
     
     def __str__(self): return f"Reminder {self.title}"
         

@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { Button, ToggleButton, ToggleButtonGroup, Modal } from "react-bootstrap";
+import { Button, Modal, ToggleButton, ToggleButtonGroup } from "react-bootstrap";
+import Avatar from "../components/Avatar";
+import { BsStopCircle, BsPlayCircle, BsPauseCircle } from "react-icons/bs";
+import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import AuthContext from '../context/AuthContext';
+import calcAvgBiomarkerScores from "../functions/calcAvgBiomarkerScores";
+import { createChat } from "../functions/apiRequests";
+import dummyChats from "../data/dummyChats.json";
 import { useNavigate, useLocation, Link                 } from "react-router-dom";
 
 import AuthContext  from '../context/AuthContext';
@@ -16,15 +24,23 @@ import dummyChats from "../data/dummyChats.json";
 
 function Chat() {
     const location = useLocation();
-    const {user, authTokens, logoutUser} = useContext(AuthContext);
-
-    const [messages,       setMessages      ] = useState(location.state ? location.state.messages : []);
-    const [viewMode,       setViewMode      ] = useState(2);
-    const [chatbotMessage, setChatbotMessage] = useState("Hello! I am here to assist you.");
-    const [start,          setStart         ] = useState(null);
-
-    // Passed to RecordButton
+    const {user, profile, goal, setGoal, authTokens, logoutUser} = useContext(AuthContext);
     const [recording, setRecording] = useState(false);
+    const [systemSpeaking, setSystemSpeaking] = useState(false);
+    const [userSpeaking, setUserSpeaking] = useState(false);
+    const [messages, setMessages] = useState(location.state ? location.state.messages : []);
+    // const [viewMode, setViewMode] = useState(3);
+    const [chatbotMessage, setChatbotMessage] = useState("Hello, " + profile.plwdFirstName + ". Press the Start button to begin chatting with me.");
+    const [start, setStart] = useState(null);
+    const speechConfig = useRef(null);
+    const audioConfig = useRef(null);
+    const recognizer = useRef(null);
+    const synthesizer = useRef(null);
+    const audioContext = useRef(null);
+    const audioProcessor = useRef(null);
+    const stream = useRef(null);
+    const source = useRef(null);
+    const processorNode = useRef(null);
 
     const date = new Date();
     const navigate = useNavigate();
@@ -89,7 +105,10 @@ function Chat() {
 
         // Send the data for this chat to the database & navigate to the progress page when complete
         const response = await createChat(chatData, authTokens);
-        if (response) { navigate('/progress'); }
+        if (response) {
+            setGoal({...newGoal, current: goal.current + 1})
+            navigate('/progress');
+        }
     }
 
 
@@ -148,11 +167,17 @@ function Chat() {
             {/* <Header title="Chat With Me!" page="chat"/> */}
             <div className="float flex flex-row gap-4 m-[2rem]">
                 <p className="text-5xl font-semibold">Chat With Me</p>
-                <div className="float flex ml-auto gap-4">
-                    <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/today'   ><button className="text-gray-700 no-underline">Review Today</button></Link>
-                    <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/history' ><button className="text-gray-700 no-underline">Chat History</button></Link>
-                    <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/schedule'><button className="text-gray-700 no-underline">Schedule    </button></Link>
-                    <button className="flex bg-blue-700 rounded h-fit p-2 text-white self-center" onClick={() => logoutUser()}>Log Out</button>
+                <div className="float flex ml-auto gap-4 items-center">
+                    <Link className="plwd-link-inactive" to='/today'>
+                        Review Today
+                    </Link>
+                    <Link className="plwd-link-inactive" to='/history'>
+                        Chat History
+                    </Link>
+                    <Link className="plwd-link-inactive" to='/schedule'>
+                        Schedule
+                    </Link>
+                    <button className="flex plwd-button-fill rounded h-fit p-2 self-center" onClick={() => logoutUser()}>Log Out</button>
                 </div>  
             </div>
 
@@ -163,6 +188,14 @@ function Chat() {
                     <ToggleButton id="split"    variant="outline-primary" value={2} onChange={(e) => setViewMode(e.currentTarget.value)}> Messages & Chatbot </ToggleButton>
                     <ToggleButton id="avatar"   variant="outline-primary" value={3} onChange={(e) => setViewMode(e.currentTarget.value)}> Chatbot            </ToggleButton>
                 </ToggleButtonGroup>
+            </div> */}
+            <div className="h-[65vh] mb-[2rem]">
+                <div className="my-[1rem] flex justify-center border-1 border-black p-[1em] rounded-lg mx-[25%]">
+                    {chatbotMessage}
+                </div>
+                <div className="h-full mt-[1em] w-full">
+                    <Avatar />
+                </div>
             </div>
 
             {/* View of the chatHistory and/or Avatar */}
@@ -175,7 +208,12 @@ function Chat() {
                     onSystemUtterance = {(txt   ) => {addMessageToChat('System', txt, getMessageTime()); setChatbotMessage(txt);}} 
                     onScores          = {(scores) => {updateScores(scores);}}
                 />
-                <Button className="border-1 p-[1em] rounded-med" variant="outline-primary" size="lg" onClick={handleShow}> Finish </Button>
+                <button className="flex flex-col gap-2 items-center"
+                    onClick={handleShow}
+                >
+                    <BsStopCircle size={50} syle={{color: "black"}} />
+                    End Chat
+                </button>
 
                 {recording && <div> <span className="dot"/> <p>test</p> </div> }   {/* red dot indicator */}
             </div>

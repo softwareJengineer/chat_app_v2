@@ -22,4 +22,4 @@ const getExercises = () => {
     return recommended;
 };
 
-export {getExercises};
+export default getExercises;;

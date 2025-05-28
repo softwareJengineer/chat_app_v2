@@ -100,22 +100,22 @@ const ProgressSummary = () => {
                     <GoalProgress current={goal.current} target={goal.target} />
                     <p className="flex flex-row items-center gap-4 text-xl">
                         <span>
-                            <b className="text-blue-700 text-2xl"> {chatCount} </b> 
-                            {chatCount === 1 ? "chat" : "chats"} completed.
+                            <b className="text-green-700 text-4xl"> {goal.current} </b> 
+                            {goal.current === 1 ? "chat" : "chats"} completed.
                         </span>
                     </p>
                     <p className="text-xl">
                         <span>
-                            <b className="text-blue-700 text-2xl"> {calcGoal()} </b> 
+                            <b className="text-green-700 text-4xl"> {calcGoal()} </b> 
                             more to reach a new goal!
                         </span>
                     </p>
                     <div className="flex flex-row gap-4">
                         <Link to='/chat'>
-                            <Button variant="outline-primary" size="lg">Start Chat Now</Button>
+                            <Button variant="outline-primary" className="plwd-button-outline" size="lg">Start Chat Now</Button>
                         </Link>
                         <Link to='/schedule'>
-                            <Button variant="primary" size="lg">Schedule Future Chat</Button>
+                            <Button variant="primary" size="lg" className="plwd-button-fill">Schedule Future Chat</Button>
                         </Link>
                     </div>
                 </div>
@@ -147,16 +147,16 @@ const ProgressSummary = () => {
                             <h4>Mad Libs</h4>
                             <p>Requires 10 minutes</p>
                             <div className="flex flex-row gap-4 mt-[1rem]">
-                                <Button variant="outline-primary">Start now</Button>
-                                <Button>Schedule</Button>
+                                <Button className="plwd-button-outline" variant="outline-primary">Start now</Button>
+                                <Button className="plwd-button-fill">Schedule</Button>
                             </div>
                         </div>
                         <div className="md:w-1/2 w-full border-1 rounded-md border-gray-300 p-[1rem]">
                             <h4>Word Matching</h4>
                             <p>Requires 10 minutes</p>
                             <div className="flex flex-row gap-4 mt-[1rem]">
-                                <Button variant="outline-primary">Start now</Button>
-                                <Button>Schedule</Button>
+                                <Button className="plwd-button-outline" variant="outline-primary">Start now</Button>
+                                <Button className="plwd-button-fill">Schedule</Button>
                             </div>
                         </div>  
                     </div>
