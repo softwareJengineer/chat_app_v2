@@ -97,7 +97,7 @@ function Chat() {
 
         //FOR TESTING
         let useScores   = (biomarkerData[0].data.length === 0) ? dummyChats[0].scores   : biomarkerData;
-        let useMessages = (messages             .length === 0) ? dummyChats[0].messages : messages;
+        let useMessages = (messages.length === 0) ? dummyChats[0].messages : messages;
         if (messages.length === 0 || biomarkerData[0].data.length === 0) {setMessages(dummyChats[0].messages);}
 
         // Create data for a new chat entry in the database 
@@ -110,30 +110,6 @@ function Chat() {
             navigate('/progress');
         }
     }
-
-
-    // ====================================================================
-    // Main view for the page
-    // ====================================================================
-    function getView() {
-        const chatHistoryWrapper1 = "flex flex-col justify-self-center mt-[1em] mb-[2rem] h-[65vh] w-full md:w-1/2 md:border-x-1 md:border-blue-200";
-        const chatHistoryWrapper2 = "overflow-y-auto w-full md:w-1/2 h-1/2 md:h-full md:border-r-1 md:border-b-0 border-b-1 border-blue-200";
-
-        // Chat history or Avatar views separately
-        if      (viewMode == 1) {return (<div className={chatHistoryWrapper1}> <ChatHistory messages       = { messages       }/> </div>);}
-        else if (viewMode == 3) {return (<div className="h-[65vh] mb-[2rem]">  <AvatarView  chatbotMessage = { chatbotMessage }/> </div>);}
-        
-        // Combined split view
-        else if (viewMode == 2) {
-            return (
-                <div className="flex md:flex-row flex-col h-[65vh] mt-[1em] w-full mb-[2rem]">
-                    <div className={chatHistoryWrapper2}               > <ChatHistory messages       = { messages       }/> </div>
-                    <div className="md:w-1/2 w-[100vw] md:h-full h-1/2"> <AvatarView  chatbotMessage = { chatbotMessage }/> </div>
-                </div> 
-                );
-        }
-    }
-
     
     // ====================================================================
     // Modal (should move this to another file)
@@ -181,14 +157,6 @@ function Chat() {
                 </div>  
             </div>
 
-            {/* Buttons to change the view mode for the page. (old) */}
-            <div className="ml-[1rem] mt-[1rem] flex justify-center">
-                <ToggleButtonGroup type="radio" name="viewMode" defaultValue={3}>
-                    <ToggleButton id="messages" variant="outline-primary" value={1} onChange={(e) => setViewMode(e.currentTarget.value)}> Messages           </ToggleButton>
-                    <ToggleButton id="split"    variant="outline-primary" value={2} onChange={(e) => setViewMode(e.currentTarget.value)}> Messages & Chatbot </ToggleButton>
-                    <ToggleButton id="avatar"   variant="outline-primary" value={3} onChange={(e) => setViewMode(e.currentTarget.value)}> Chatbot            </ToggleButton>
-                </ToggleButtonGroup>
-            </div> */}
             <div className="h-[65vh] mb-[2rem]">
                 <div className="my-[1rem] flex justify-center border-1 border-black p-[1em] rounded-lg mx-[25%]">
                     {chatbotMessage}
@@ -197,9 +165,6 @@ function Chat() {
                     <Avatar />
                 </div>
             </div>
-
-            {/* View of the chatHistory and/or Avatar */}
-            {getView()}
             
             {/* Buttons for starting/stopping the chat & saving the chat history */}
             <div className="flex flex-row justify-center mb-[2em] pt-[3em] gap-[4em] items-center">
