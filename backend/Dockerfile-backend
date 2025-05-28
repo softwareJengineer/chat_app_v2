@@ -1,0 +1,39 @@
+FROM python:3.11
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DEBIAN_FRONTEND=noninteractive
+
+WORKDIR /app
+
+# Set the timezone to UTC
+RUN ln -sf /usr/share/zoneinfo/UTC /etc/localtime && echo "UTC" > /etc/timezone
+
+# Install system packages
+RUN apt-get update && apt-get install -y \
+    cmake \
+    g++ \
+    libblas-dev \
+    liblapack-dev \
+    libffi-dev \
+    libpython3-dev \
+    pkg-config \
+    build-essential \
+    postgresql-client \
+    portaudio19-dev \
+    python3-pyaudio \
+    libasound2-dev \
+    openjdk-17-jre-headless
+
+ENV JAVA_HOME = /usr/lib/jvm/java-17-openjdk-amd64 \
+    PATH      = $JAVA_HOME/bin:$PATH
+
+# Install Python dependencies
+COPY requirements-web.txt .
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install --prefer-binary --no-cache-dir \
+    --timeout=120 --retries=10 \
+    -r requirements-web.txt
+
+# Copy project files
+COPY . .

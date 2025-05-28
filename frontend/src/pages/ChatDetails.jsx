@@ -16,21 +16,15 @@ import getExercises from "../functions/getExercises";
 import { Icon } from '@iconify/react';
 
 
+import { cardStyle } from "../styles/sharedStyles";
+import Biomarker     from "../components/Biomarker";
+
 function ChatDetails() {
     const { profile, goal } = useContext(AuthContext);
     const location = useLocation();
-    const navigate = useNavigate();
     const chatData = location.state?.chatData;
     const prevChatData = location.state?.prevChatData ? 
-        location.state.prevChatData : 
-        {avgScores: {
-            Pragmatic: 0,
-            Grammar: 0,
-            Prosody: 0,
-            Pronunciation: 0,
-            Anomia: 0,
-            "Turn Taking": 0,
-        }};
+        location.state.prevChatData : {avgScores: {Pragmatic: 0, Grammar: 0, Prosody: 0, Pronunciation: 0, Anomia: 0, "Turn Taking": 0,}};
     const chats = location.state?.chats;
     const date = new Date(chatData.date);
 
@@ -89,6 +83,7 @@ function ChatDetails() {
     return (
         <>
             <Header title="Single Chat Analysis" page="chatdetails" />
+
             <div className="mx-[2rem] flex flex-col gap-2">
                 <div className="flex items-center gap-4 align-middle">
                     <FaUser size={50} color="purple" />
@@ -101,6 +96,7 @@ function ChatDetails() {
                     Update profile
                 </Link>
             </div>
+
             <div className="flex flex-row m-[2rem] gap-4">
                 <b className="text-4xl">Overview:</b>
                 <b className="text-purple-500 text-4xl">{style.format(date)}</b>
@@ -168,6 +164,8 @@ function ChatDetails() {
                     </div>
                 </div>
             </div>
+
+            {/* Detailed Analysis */}
             <h3 className="mx-[2rem]">Detailed Analysis</h3>
             <div className="grid md:grid-cols-2 grid-cols-1 h-full justify-stretch m-[2rem] gap-4">
                 <div className={cardStyle}>

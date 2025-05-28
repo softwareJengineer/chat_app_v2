@@ -1,22 +1,21 @@
 import React from "react";
 import { Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext'
+import { AuthProvider  } from './context/AuthContext';
 
-import Chat from './pages/Chat';
-import Login from "./pages/Login";
-import SignUp from "./pages/SignUp";
-import Schedule from "./pages/Schedule";
-import Dashboard from "./pages/Dashboard";
-import Settings from "./pages/Settings";
-import Home from "./pages/Home";
-import ChatDetails from "./pages/ChatDetails";
-import ChatHistory from "./pages/ChatHistory";
-import Analysis from "./pages/Analysis";
-import LoadingPage from "./pages/LoadingPage";
-import PrivateRoute from './utils/PrivateRoute';
-import Today from "./pages/Today";
+import PrivateRoute    from './utils/PrivateRoute';
+import Chat            from './pages/Chat';
+import Login           from "./pages/Login";
+import SignUp          from "./pages/SignUp";
+import Schedule        from "./pages/Schedule";
+import Dashboard       from "./pages/Dashboard";
+import Settings        from "./pages/Settings";
+import Home            from "./pages/Home";
+import ChatDetails     from "./pages/ChatDetails";
+import ChatHistory     from "./pages/ChatHistory";
+import Analysis        from "./pages/Analysis";
+import LoadingPage     from "./pages/LoadingPage";
+import Today           from "./pages/Today";
 import ProgressSummary from "./pages/ProgressSummary";
-
 
 function App() {    
         return (
@@ -43,7 +42,7 @@ function App() {
                 <Route path="/history" element={<PrivateRoute><ChatHistory/></PrivateRoute>}></Route>
 
             </Routes>
-            </AuthProvider>
+           </AuthProvider>
         );
 }
 

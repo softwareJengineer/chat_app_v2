@@ -27,7 +27,12 @@ SECRET_KEY = 'django-insecure-4#!0ew(h%-_%#at0p(ageh1k%uwt-(-1jm2(g)*m*rw5h3tk*#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost', '127.0.0.1',
+    "cognibot.org",            "www.cognibot.org", 
+    "deployment.cognibot.org", "www.deployment.cognibot.org",
+    "sandbox.cognibot.org",    "www.sandbox.cognibot.org",
+]
 
 
 # Application definition

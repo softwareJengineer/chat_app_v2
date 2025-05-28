@@ -1,6 +1,8 @@
+import { API_URL } from "../constants";
+
 const signup = async (signupData) => {
     try {
-        const response = await fetch('http://localhost:8000/api/signup/', {
+        const response = await fetch("api/signup/", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -24,7 +26,7 @@ const signup = async (signupData) => {
 
 const getReminders = async (authTokens) => {
     try {
-        const response = await fetch(`http://localhost:8000/api/reminders/`, {
+        const response = await fetch(`/api/reminders/`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -54,7 +56,7 @@ const getReminders = async (authTokens) => {
 
 const createReminder = async (title, start, end, authTokens) => {
     try {
-        const response = await fetch(`http://localhost:8000/api/reminders/`, {
+        const response = await fetch(`/api/reminders/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -82,7 +84,7 @@ const createReminder = async (title, start, end, authTokens) => {
 
 const createRepeatReminder = async (title, startTime, endTime, daysOfWeek, authTokens) => {
     try {
-        const response = await fetch(`http://localhost:8000/api/reminders/`, {
+        const response = await fetch(`/api/reminders/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -137,7 +139,7 @@ const deleteReminder = async (reminderId, authTokens) => {
 
 const editSettings = async (settings, authTokens) => {
     try {
-        const response = await fetch(`http://localhost:8000/api/settings/`, {
+        const response = await fetch(`/api/settings/`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -163,7 +165,7 @@ const editSettings = async (settings, authTokens) => {
 
 const createChat = async (chatData, authTokens) => {
     try {
-        const response = await fetch(`http://localhost:8000/api/chats/`, {
+        const response = await fetch(`/api/chats/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -188,7 +190,7 @@ const createChat = async (chatData, authTokens) => {
 
 const getChats = async (authTokens) => {
     try {
-        const response = await fetch(`http://localhost:8000/api/chats/`, {
+        const response = await fetch(`/api/chats/`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -217,7 +219,7 @@ const getChats = async (authTokens) => {
 
 const getRecentChat = async (authTokens) => {
     try {
-        const response = await fetch(`http://localhost:8000/api/chat/recent`, {
+        const response = await fetch(`/api/chat/recent`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -243,7 +245,7 @@ const getRecentChat = async (authTokens) => {
 
 const getGoal = async (authTokens) => {
     try {
-        const response = await fetch(`http://localhost:8000/api/goal/`, {
+        const response = await fetch(`/api/goal/`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -268,7 +270,7 @@ const getGoal = async (authTokens) => {
 
 const updateGoal = async (startDay, target, authTokens) => {
     try {
-        const response = await fetch(`http://localhost:8000/api/goal/`, {
+        const response = await fetch(`/api/goal/`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
