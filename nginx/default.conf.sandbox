@@ -6,8 +6,8 @@ server {
     # For the "deployment" version, we want the two "deployment" URLs as well as the base URL
     # ... actually I think deployment will just be at the base URL...
     # --------------------------------------------------------------------
-    server_name cognibot.org www.cognibot.org;
-    #server_name deployment.cognibot.org www.deployment.cognibot.org;
+    #server_name cognibot.org www.cognibot.org;
+    server_name sandbox.cognibot.org www.sandbox.cognibot.org;
 
     location / {
         proxy_pass http://localhost:5173;
