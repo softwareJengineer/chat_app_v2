@@ -45,7 +45,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             # --------------------------------------------------------------------
             self.conversation_start_time = time()
             self.user_utterances         = deque(maxlen=100)
-            self.overlapped_speech_count = 5   # --- should start at 0, but im testing it
+            self.overlapped_speech_count = 0   # --- should start at 0, but im testing it
             self.chat_history            = []
 
             # Features for Prosody and Pronunciation 
@@ -102,19 +102,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Periodic Biomarkers
     # =======================================================================
     async def send_periodic_scores(self):
-        while True:
-            await asyncio.sleep(10) # was 5 -(shouldn't that be 10? if we are doing /10 in the function and -0.1)
-            if self.conversation_start_time is not None:
+        try:
+            while True:
+                # Periodic, every 10 seconds here
+                await asyncio.sleep(10) # ---- was 5 (shouldn't that be 10? if we are doing /10 in the function and -0.1)
+            
                 # Calculate the periodic scores (currently Anomia and Turntaking)
                 start_time = time()
                 periodic_scores = generate_periodic_scores(self.user_utterances, self.conversation_start_time, self.overlapped_speech_count)
                 logger.info(f"{cf.CYAN}[Bio] Periodic Time:           {(time()-start_time):6.4f}s {cf.RESET}")
 
                 # Re-calculate overlapped speech count
-                self.overlapped_speech_count = max(0, self.overlapped_speech_count - 0.1)
+                self.overlapped_speech_count = max(0, self.overlapped_speech_count - 0.2) # was 0.1, but decrease it by 2x since its called slower
 
                 # Send the scores ("Use self.send instead")
                 await self.send(json.dumps({'type': 'periodic_scores', 'data': periodic_scores}))
+        
+        except asyncio.CancelledError:
+            logger.info(f"{cf.RED}[Bio] Periodic task received cancellation. {cf.RESET}")
+            raise  # allow it to propagate
 
     # =======================================================================
     # Handle Incoming Data
