@@ -44,10 +44,11 @@ ENV JAVA_HOME = /usr/lib/jvm/java-17-openjdk-amd64 \
 # --------------------------------------------------------------------
 # Install Python dependencies
 # --------------------------------------------------------------------
-COPY requirements-web.txt .
-
 # Upgrade pip and tools
 RUN pip install --upgrade pip setuptools wheel
+
+# Copy requirements
+COPY requirements-web.txt .
 
 # Pre-build wheels to cache them (using PEP 517 if needed)
 RUN pip wheel --wheel-dir=/wheels --no-cache-dir --use-pep517 --prefer-binary --timeout=120 --retries=10 \
@@ -60,9 +61,6 @@ RUN pip install --no-index --find-links=/wheels -r requirements-web.txt
 # Install python-llama-cpp if in deployment mode
 # --------------------------------------------------------------------
 RUN if [ "${APP_ENVIRONMENT}" = "deployment" ]; then \
-    apt-get update && apt-get install -y \
-        nvidia-cuda-toolkit \
-        nvidia-cuda-dev && \
     pip install llama-cpp-python \
         --timeout=120 --retries=10 \
         --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu121 ; \
