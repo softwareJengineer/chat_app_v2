@@ -2,8 +2,9 @@
 # Three Services
 # ====================================================================
 #  1) Database (postgres)
-#  2) Backend  (websocket server, LLM calls, biomarker logic)
-#  3) Frontend (vite, react) 
+#  2) Llama API
+#  3) Backend  (websocket server, LLM calls, biomarker logic)
+#  4) Frontend (vite, react) 
 services:
   # -------------------------------------------------------------------- 
   # 1) Database
@@ -24,15 +25,42 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - appnet
+
+  # -------------------------------------------------------------------- 
+  # 2) Llama API  https://hub.docker.com/r/jflachman/llama-cpp-python   
+  # --------------------------------------------------------------------
+  llama_api:
+    image: jflachman/llama-cpp-python:v0.2.77-cuda  # ghcr.io/ggerganov/llama-cpp-python:v0.2.77-cuda # or cpu
+    container_name: llama_api
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    environment:
+      - USE_MLOCK=0
+      - MODEL=/models/Phi-3_finetuned.gguf
+      - PORT=11434
+    volumes:
+      - ../deployment-files/models:/models
+      - ./llama_api:/config
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    command: >
+      --config /config/server.config
+    runtime: nvidia
+    networks:
+      - appnet
   
   # --------------------------------------------------------------------
-  # 2) Backend (private, no ports exposed)
+  # 3) Backend (private, no ports exposed)
   # --------------------------------------------------------------------
   # Nginx/Vite proxies traffic here using the container name over the Docker network
   backend:
     build:
       context: ./backend
-      dockerfile: ${BACKEND_DOCKERFILE}  # Dockerfile-backend
+      dockerfile: Dockerfile-backend
     container_name: backend
     command: >
       sh -c "
@@ -44,14 +72,6 @@ services:
     volumes:
       - ./backend:/app                          # general project mount
       - ../deployment-files/logs:/app/logs      # log folder mounted separately
-      - ../deployment-files/wheels:/app/wheels  # wheels folder
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
     env_file: 
       - .env
       - .env.deploy
@@ -59,11 +79,12 @@ services:
       - TZ=UTC
     depends_on:
       - db
+      - llama_api
     networks:
       - appnet
 
   # --------------------------------------------------------------------
-  # 3) Frontend
+  # 4) Frontend
   # --------------------------------------------------------------------
   frontend:
     build:
