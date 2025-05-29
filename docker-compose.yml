@@ -10,9 +10,11 @@ services:
   # --------------------------------------------------------------------
   # Backend/Database are only accessable inside the Docker network.
   db:
-    image: postgres #:13 # pinned version
+    image: postgres 
     container_name: db
-    env_file: .env
+    env_file: 
+      - .env
+      - .env.deploy
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       #- POSTGRES_USER=${POSTGRES_USER}
@@ -30,9 +32,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile-backend
-      args:
-        APP_ENVIRONMENT: ${APP_ENVIRONMENT}
+      dockerfile: ${BACKEND_DOCKERFILE}  # Dockerfile-backend
     container_name: backend
     command: >
       sh -c "
@@ -46,7 +46,9 @@ services:
       - ../deployment-files/logs:/app/logs  # log folder mounted separately
     depends_on:
       - db
-    env_file: .env
+    env_file: 
+      - .env
+      - .env.deploy
     environment:
       - TZ=UTC
     networks:
@@ -62,12 +64,13 @@ services:
     container_name: frontend
     depends_on:
       - backend
-    env_file: .env
+    env_file: 
+      - .env
+      - .env.deploy
     environment:
       - TZ=UTC
     ports:
-      #- "80:80"    # Ports when using nginx for the frontend
-      - "5173:5173" # Vite ports
+      - "5173:5173"
     networks:
       - appnet
 
