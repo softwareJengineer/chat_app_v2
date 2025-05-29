@@ -47,11 +47,15 @@ services:
         reservations:
           devices:
             - capabilities: [gpu]
-    command: >
-      python3 -m llama_cpp.server --config /config/server.config
     runtime: nvidia
     networks:
       - appnet
+    command: >
+      --model /models/Phi-3_finetuned.gguf 
+      --n_ctx 256 
+      --n_gpu_layers -1 
+      --n_threads 12 
+      --config_file /config/server.config
   
   # --------------------------------------------------------------------
   # 3) Backend (private, no ports exposed)
