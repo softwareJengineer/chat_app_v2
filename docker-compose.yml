@@ -53,7 +53,7 @@ services:
     runtime: nvidia
     networks:
       - appnet
-    command: [ "ls", "-lah" ]
+    command: [ "ls", "-lah", "/models" ]
   
   # --------------------------------------------------------------------
   # 3) Backend (private, no ports exposed)
