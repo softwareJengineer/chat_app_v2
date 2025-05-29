@@ -35,6 +35,8 @@ RUN apt-get update && apt-get install -y --fix-missing \
     libasound2-dev \
     openjdk-17-jre-headless
 
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
 # --------------------------------------------------------------------
 # Install Python dependencies
 # --------------------------------------------------------------------
