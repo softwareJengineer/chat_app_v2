@@ -17,7 +17,7 @@ RUN ln -sf /usr/share/zoneinfo/UTC /etc/localtime && echo "UTC" > /etc/timezone
 # --------------------------------------------------------------------
 # Install system packages & Python
 # --------------------------------------------------------------------
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --fix-missing \
     build-essential \
     cmake \
     git \
