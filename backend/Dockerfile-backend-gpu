@@ -56,10 +56,10 @@ RUN pip3 install --no-index --find-links=/wheels -r requirements-web.txt
 # --------------------------------------------------------------------
 # Install python-llama-cpp if in deployment mode
 # --------------------------------------------------------------------
-RUN CMAKE_ARGS="-DGGML_CUDA=on" \
-    pip3 install llama-cpp-python \
-    --timeout=120 --retries=10 \
-    --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu123
+ENV CMAKE_ARGS="-DLLAMA_CUDA=on -DLLAMA_BUILD_LLAVA=off"
+RUN pip3 install llama-cpp-python \
+    --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu123 \
+    --timeout=120 --retries=10
 
 # --------------------------------------------------------------------
 # Copy project files
