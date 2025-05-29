@@ -39,27 +39,38 @@ RUN apt-get update && apt-get install -y --fix-missing \
 # --------------------------------------------------------------------
 # Install Python dependencies
 # --------------------------------------------------------------------
-# Upgrade pip and tools
-RUN pip3 install --upgrade pip setuptools wheel
-
 # Set the working directory & copy requirements
 WORKDIR /app
 COPY requirements-web.txt .
 
-# Pre-build wheels to cache them (using PEP 517 if needed)
+# Upgrade pip and tools
+RUN pip3 install --upgrade pip setuptools wheel
+
+# First try to install everything from the wheel cache
+RUN pip3 install --no-index --find-links=/wheels -r requirements-web.txt || true
+
+# Then build any wheels that were missing and install again
 RUN pip3 wheel --wheel-dir=/wheels --no-cache-dir --use-pep517 --prefer-binary --timeout=120 --retries=10 \
     -r requirements-web.txt
 
-# Install packages only from wheels
+# Install packages again, using the newly added wheels
 RUN pip3 install --no-index --find-links=/wheels -r requirements-web.txt
 
 # --------------------------------------------------------------------
-# Install python-llama-cpp if in deployment mode
+# Handle llama-cpp-python separately and cache its wheel
 # --------------------------------------------------------------------
 ENV CMAKE_ARGS="-DLLAMA_CUDA=on -DLLAMA_BUILD_LLAVA=off"
-RUN pip3 install llama-cpp-python \
+
+# Try install from local wheel first
+RUN pip3 install --no-index --find-links=/wheels llama-cpp-python || true
+
+# If not found, build and cache the wheel
+RUN pip3 wheel --wheel-dir=/wheels llama-cpp-python \
     --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu123 \
-    --timeout=120 --retries=10
+    --timeout=120 --retries=10 || true
+
+# Install again now that it's cached
+RUN pip3 install --no-index --find-links=/wheels llama-cpp-python
 
 # --------------------------------------------------------------------
 # Copy project files

@@ -42,8 +42,9 @@ services:
         daphne -b 0.0.0.0 -p 8000 backend.asgi:application
       "
     volumes:
-      - ./backend:/app                      # general project mount
-      - ../deployment-files/logs:/app/logs  # log folder mounted separately
+      - ./backend:/app                          # general project mount
+      - ../deployment-files/logs:/app/logs      # log folder mounted separately
+      - ../deployment-files/wheels:/app/wheels  # wheels folder
     depends_on:
       - db
     env_file: 
