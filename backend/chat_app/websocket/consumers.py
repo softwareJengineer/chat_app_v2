@@ -16,7 +16,7 @@ from datetime    import datetime, timezone
 # From this project
 from ..                            import config as cf
 from .biomarkers.biomarker_scores  import generate_biomarker_scores, generate_periodic_scores
-from .services.process_utterance   import process_user_utterance 
+from .services.process_utterance   import get_LLM_response, prepare_LLM_input
 from .services.handle_audio_data   import handle_audio_data
 
 # Multi-threading for biomarker and audio processing
@@ -25,7 +25,6 @@ THREAD_POOL = concurrent.futures.ThreadPoolExecutor(max_workers=4)
 
 """
 To do later:
-* clean up process utterance file
 * saving data history
 * stuff like maintaining a speech df
 * pretty sure that some sort of timestamp is sent along with the text from the frontend, use that for conv start time
@@ -176,8 +175,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # Generate LLM Response
     async def _LLM_response(self, user_utt: str):
+        # Prepare a prompt for the LLM
+        full_prompt = prepare_LLM_input(user_utt, self.chat_history)
+
+        # Get response from the LLM
         LLM_start_time = time()
-        system_utt = process_user_utterance(user_utt, self.chat_history)
+        system_utt  = await get_LLM_response(full_prompt)
         logger.info(f"{cf.CYAN}[LLM] Received response in:    {(time() - LLM_start_time):6.4f}s {cf.RESET}")
         
         # Send the LLMs response through the websocket
