@@ -4,8 +4,6 @@ channels[daphne]>=4.0.0
 python-decouple
 psycopg2-binary
 websockets
-#llama-cpp-python==0.3.8
-azure-cognitiveservices-speech==1.40.0
 whitenoise
 librosa
 numpy
@@ -31,6 +29,7 @@ filelock==3.16.1
 fsspec==2024.9.0
 gevent==24.2.1
 greenlet==3.1.1
+httpx
 idna==3.10
 isodate==0.6.1
 Jinja2==3.1.4
