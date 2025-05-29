@@ -45,13 +45,20 @@ services:
       - ./backend:/app                          # general project mount
       - ../deployment-files/logs:/app/logs      # log folder mounted separately
       - ../deployment-files/wheels:/app/wheels  # wheels folder
-    depends_on:
-      - db
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     env_file: 
       - .env
       - .env.deploy
     environment:
       - TZ=UTC
+    depends_on:
+      - db
     networks:
       - appnet
 
