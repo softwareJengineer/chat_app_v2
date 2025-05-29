@@ -37,13 +37,13 @@ services:
       - "11434:11434"
     environment:
       - USE_MLOCK=0
-      - MODEL=/models/Phi-3_finetuned.gguf
+      - MODEL=/var/model/Phi-3_finetuned.gguf
       - PORT=11434
       - N_CTX=256
       - N_THREADS=12
       - N_GPU_LAYERS=-1
     volumes:
-      - ../deployment-files/models:/models
+      - ../deployment-files/models:/var/model
       - ./llama_api:/config
     deploy:
       resources:
