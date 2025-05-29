@@ -43,7 +43,7 @@ services:
       - N_THREADS=12
       - N_GPU_LAYERS=-1
     volumes:
-      - ../deployment-files/models:/models
+      - ./deployment-files/models:/models
       - ./llama_api:/config
     deploy:
       resources:
