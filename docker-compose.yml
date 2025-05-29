@@ -48,7 +48,7 @@ services:
           devices:
             - capabilities: [gpu]
     command: >
-      --config /config/server.config
+      python3 -m llama_cpp.server --config /config/server.config
     runtime: nvidia
     networks:
       - appnet
