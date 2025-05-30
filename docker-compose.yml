@@ -43,7 +43,7 @@ services:
       - N_THREADS=12
       - N_GPU_LAYERS=-1
     volumes:
-      - .../deployment-files/models:/models
+      - ../deployment-files/models:/models
       - ./llama_api:/config
     deploy:
       resources:
@@ -53,7 +53,7 @@ services:
     runtime: nvidia
     networks:
       - appnet
-    command: [ "ls", "-lah", "/models" ]
+    command: [ "ls", "-lah" ]
   
   # --------------------------------------------------------------------
   # 3) Backend (private, no ports exposed)
