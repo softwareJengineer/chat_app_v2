@@ -11,7 +11,7 @@ import httpx
 # Might need to get this endpoint URL from somewhere else and not have it be hardcoded like this...
 class LlamaAPI:
     # Initialize with a given endpoint for the LLM API container
-    def __init__(self, base_url="http://llama_api:11434"):
+    def __init__(self, base_url="http://0.0.0.0:11434"):
         self.base_url = base_url
         logger.info(f"Llama API LLM initialized, URL: {self.base_url}")
 
@@ -23,7 +23,7 @@ class LlamaAPI:
         # Get a response from the API
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.post(f"{self.base_url}/completion", json=llm_json)
+                response = await client.post(f"{self.base_url}", json=llm_json)
                 response.raise_for_status()
                 return response.json()
         
