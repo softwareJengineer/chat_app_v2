@@ -23,7 +23,7 @@ class LlamaAPI:
         # Get a response from the API
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.post(f"{self.base_url}", json=llm_json)
+                response = await client.post(f"{self.base_url}/v1/completions", json=llm_json)
                 response.raise_for_status()
                 return response.json()
         
