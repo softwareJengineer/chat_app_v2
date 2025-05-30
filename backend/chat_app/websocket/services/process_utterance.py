@@ -35,11 +35,11 @@ def prepare_LLM_input(user_utt, chat_history):
 # Get a Response from the LLM
 # =======================================================================
 # Get the users most recent utterance, and the chat history object
-def get_LLM_response(LLM_input):
+async def get_LLM_response(LLM_input):
     # Wrap the response logic in a try-except block
     try:
         # Generate response using the LLM
-        output = cf.llm(LLM_input, max_tokens=cf.MAX_LENGTH, stop=["<|end|>", ".", "?"], echo=True)
+        output = await cf.llm(LLM_input, max_tokens=cf.MAX_LENGTH, stop=["<|end|>", ".", "?"], echo=True)
         system_utt = (output['choices'][0]['text'].split("<|assistant|>")[-1]).strip()
 
     # If the model throws an error...
