@@ -32,7 +32,6 @@ REQUIREMENTS
 <br><br>
 
 # To Do:
-- [ ] Getting a bunch of warnings about vulnerabilities from react-wordcloud
 - [ ] If the first utterance is shorter than our audio buffer chunk size (5 seconds), the audio based scores (prosody, pronunciation) are generated with an error. 
     - Should these be done in another separate async task on reception of audio data? If no audio has been recieved between utterances, the scores will be the same anyways, so there is no reason to re-calculate them.
 - [ ] Rename deployment branch to just "deployment"
