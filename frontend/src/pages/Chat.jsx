@@ -5,22 +5,13 @@ import { BsStopCircle, BsPlayCircle, BsPauseCircle } from "react-icons/bs";
 import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import AuthContext from '../context/AuthContext';
-import calcAvgBiomarkerScores from "../functions/calcAvgBiomarkerScores";
 import { createChat } from "../functions/apiRequests";
 import dummyChats from "../data/dummyChats.json";
-import { useNavigate, useLocation, Link                 } from "react-router-dom";
-
-import AuthContext  from '../context/AuthContext';
 import Header       from '../components/Header';
 import RecordButton from '../components/RecordButton';
 import ChatHistory  from "../components/chat/ChatHistory";
 import AvatarView   from "../components/chat/AvatarView";
-
 import calcAvgBiomarkerScores from "../functions/calcAvgBiomarkerScores";
-import { createChat }         from "../functions/apiRequests";
-
-import dummyChats from "../data/dummyChats.json";
-
 
 function Chat() {
     const location = useLocation();
