@@ -177,7 +177,7 @@ function Chat() {
                 />
                 <Button className="border-1 p-[1em] rounded-med" variant="outline-primary" size="lg" onClick={handleShow}> Finish </Button>
 
-                {recording && <div> <span className="dot"/> <p>test</p> </div> }   {/* red dot indicator */}
+                {/* {recording && <div> <span className="dot"/> <p>test</p> </div> }*/}   {/* red dot indicator */}
             </div>
             <SaveChatModal/>
         </>
