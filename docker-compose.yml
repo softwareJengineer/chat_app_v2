@@ -53,8 +53,8 @@ services:
     runtime: nvidia
     networks:
       - appnet
-    #command: [ "ls", "-lah", "/models" ]
     command: ["python3", "-m", "llama_cpp.server", "--config", "/config/server.config"]
+    #command: ["python3", "-m", "llama_cpp.server", "--config", "/config/server.config"]
   
   # --------------------------------------------------------------------
   # 3) Backend (private, no ports exposed)
