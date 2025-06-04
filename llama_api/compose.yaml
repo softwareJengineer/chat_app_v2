@@ -30,10 +30,11 @@ services:
     command: >
       sh -c "
         python3 -m llama_cpp.server --help &&
-        echo 'Checking volumes' &&
+        echo '\nChecking volumes' &&
         ls &&
+        echo '\nCHecking models volume' &&
         ls models/ &&
-        echo 'Starting actual model now' &&
+        echo '\nStarting actual model now' &&
         python3 -m llama_cpp.server --model models/Phi-3_finetuned.gguf --n_gpu_layers -1 --n_threads 12 --n_ctx 2048 --verbose true &&
         echo 'LLaMA server started'
       "
