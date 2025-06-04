@@ -18,25 +18,32 @@ import Today           from "./pages/Today";
 import ProgressSummary from "./pages/ProgressSummary";
 
 function App() {    
-    return (
-    <AuthProvider>
-        <Routes>
-            <Route exact path='/'       element={               <Home           />                }></Route>
-            <Route path='/login'        element={               <Login          />                }></Route>
-            <Route path='/signup'       element={               <SignUp         />                }></Route>
-            <Route path='/loading'      element={               <LoadingPage    />                }></Route>
-            <Route path='/chat'         element={<PrivateRoute> <Chat           /> </PrivateRoute>}></Route>
-            <Route path='/progress'     element={<PrivateRoute> <ProgressSummary/> </PrivateRoute>}></Route>
-            <Route path='/dashboard'    element={<PrivateRoute> <Dashboard      /> </PrivateRoute>}></Route>
-            <Route path='/schedule'     element={<PrivateRoute> <Schedule       /> </PrivateRoute>}></Route>
-            <Route path='/settings'     element={<PrivateRoute> <Settings       /> </PrivateRoute>}></Route>
-            <Route path='/chatdetails'  element={<PrivateRoute> <ChatDetails    /> </PrivateRoute>}></Route>
-            <Route path="/history"      element={<PrivateRoute> <ChatHistory    /> </PrivateRoute>}></Route>
-            <Route path="/analysis"     element={<PrivateRoute> <Analysis       /> </PrivateRoute>}></Route>
-            <Route path='/today'        element={<PrivateRoute> <Today          /> </PrivateRoute>}></Route>
-        </Routes>
-    </AuthProvider>
-    );
+        return (
+        <AuthProvider>
+            <Routes>
+                <Route exact path='/' element={<Home/>}></Route>
+                <Route path='/login' element={<Login/>}></Route>
+                <Route path='/signup' element={<SignUp/>}></Route>
+                <Route path='/loading' element={<LoadingPage/>}></Route>
+
+                {/* PLwD routes */}
+                <Route path='/chat' element={<PrivateRoute><Chat/></PrivateRoute>}></Route>
+                <Route path='/progress' element={<PrivateRoute><ProgressSummary/></PrivateRoute>}></Route>
+                <Route path='/today' element={<PrivateRoute><Today/></PrivateRoute>}></Route>
+
+                {/* Caregiver Routes */}
+                <Route path='/dashboard' element={<PrivateRoute><Dashboard/></PrivateRoute>}></Route>
+                <Route path='/settings' element={<PrivateRoute><Settings/></PrivateRoute>}></Route>
+                <Route path='/chatdetails' element={<PrivateRoute><ChatDetails/></PrivateRoute>}></Route>
+
+                {/* Shared Routes */}
+                <Route path='/schedule' element={<PrivateRoute><Schedule/></PrivateRoute>}></Route>
+                <Route path="/analysis" element={<PrivateRoute><Analysis/></PrivateRoute>}></Route>
+                <Route path="/history" element={<PrivateRoute><ChatHistory/></PrivateRoute>}></Route>
+
+            </Routes>
+           </AuthProvider>
+        );
 }
 
 export default App;

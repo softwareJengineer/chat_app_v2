@@ -1,6 +1,5 @@
 import { useEffect                  } from 'react';
-import { Button                     } from "react-bootstrap";
-import { BsStopCircle, BsPlayCircle } from "react-icons/bs";
+import { BsPlayCircle, BsPauseCircle } from "react-icons/bs";
 import useSpeechEngine from '../hooks/useSpeechEngine';
 
 export default function RecordButton({onRecordingChange, ...restProps}) {
@@ -12,12 +11,13 @@ export default function RecordButton({onRecordingChange, ...restProps}) {
 
     return (
         <>
-            <Button variant="outline-primary" onClick={recording ? stopRecording : startRecording}>
-                {recording ? 
-                    <BsStopCircle size={50} style={{color: "red"         }}/> : 
-                    <BsPlayCircle size={50} style={{color: "lightskyblue"}}/>
-                }
-            </Button>
+            <button className="flex flex-col gap-2 items-center" onClick={recording ? stopRecording : startRecording}>
+                    {recording ? 
+                        <BsPauseCircle size={50} style={{color: "black"}}/> : 
+                        <BsPlayCircle  size={50} style={{color: "black"}}/>
+                    }
+                    {recording ? "Pause Chat" : "Start Chat"}
+            </button>
         </>
     );
 }

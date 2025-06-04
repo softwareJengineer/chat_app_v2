@@ -1,8 +1,12 @@
-import { API_URL } from "../constants";
+/* 
+
+---- Needs to be modularized ----
+
+*/
 
 const signup = async (signupData) => {
     try {
-        const response = await fetch("api/signup/", {
+        const response = await fetch("/api/signup/", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -110,6 +114,25 @@ const createRepeatReminder = async (title, startTime, endTime, daysOfWeek, authT
         return false;
     }
 };
+
+const deleteReminder = async (reminderId, authTokens) => {
+    try {
+        const response = await fetch(`/api/reminders/`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization':'Bearer ' + String(authTokens.access)
+            },
+            body: JSON.stringify({id: reminderId})
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {alert(data.error); return false;}
+        else               {                   return true; }
+
+    } catch (error) {console.error('Error with deleting reminder:', error); return false;}
+}
 
 const editSettings = async (settings, authTokens) => {
     try {
@@ -268,4 +291,4 @@ const updateGoal = async (startDay, target, authTokens) => {
     }
 }
 
-export {signup, getReminders, createReminder, createRepeatReminder, editSettings, createChat, getChats, getRecentChat, getGoal, updateGoal};
+export {signup, getReminders, createReminder, createRepeatReminder, deleteReminder, editSettings, createChat, getChats, getRecentChat, getGoal, updateGoal};

@@ -1,35 +1,44 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
-import { Button, ToggleButton, ToggleButtonGroup, Modal } from "react-bootstrap";
+import { useState, useContext                           } from "react";
+import { Button, Modal, ToggleButton, ToggleButtonGroup } from "react-bootstrap";
+import { BsStopCircle                                   } from "react-icons/bs";
 import { useNavigate, useLocation, Link                 } from "react-router-dom";
 
-import AuthContext  from '../context/AuthContext';
-import Header       from '../components/Header';
+// Misc
+import   AuthContext            from '../context/AuthContext';
+import { createChat           } from "../functions/apiRequests";
+import   dummyChats             from "../data/dummyChats.json";
+import   calcAvgBiomarkerScores from "../functions/calcAvgBiomarkerScores";
+
+// Components
 import RecordButton from '../components/RecordButton';
 import ChatHistory  from "../components/chat/ChatHistory";
 import AvatarView   from "../components/chat/AvatarView";
+import Avatar       from "../components/Avatar";
+import Header       from '../components/Header';
 
-import calcAvgBiomarkerScores from "../functions/calcAvgBiomarkerScores";
-import { createChat }         from "../functions/apiRequests";
-
-import dummyChats from "../data/dummyChats.json";
-
-
+// ====================================================================
+// Chat.jsx
+// ====================================================================
 function Chat() {
+    // Page setup
     const location = useLocation();
-    const {user, authTokens, logoutUser} = useContext(AuthContext);
-
-    const [messages,       setMessages      ] = useState(location.state ? location.state.messages : []);
-    const [viewMode,       setViewMode      ] = useState(2);
-    const [chatbotMessage, setChatbotMessage] = useState("Hello! I am here to assist you.");
-    const [start,          setStart         ] = useState(null);
-
-    // Passed to RecordButton
-    const [recording, setRecording] = useState(false);
-
-    const date = new Date();
     const navigate = useNavigate();
+    const {user, profile, goal, setGoal, authTokens, logoutUser} = useContext(AuthContext);
+    
+    // Conversation stuff
+    const date = new Date();
+    const [start,          setStart         ] = useState(null);
+    const [viewMode,       setViewMode      ] = useState(4);
 
-    const [biomarkerData, setBiomarkerData] = useState(location.state? location.state.biomarkerData : [
+    // Attached to useSpeechEngine (could do all 3, but only recording implemented right now)
+    const [recording,      setRecording     ] = useState(false);
+    //const [systemSpeaking, setSystemSpeaking] = useState(false);
+    //const [userSpeaking,   setUserSpeaking  ] = useState(false);
+
+    // Initialize chat data (messages & biomarkers)
+    const [messages,       setMessages      ] = useState(location.state ? location.state.messages : []);
+    const [chatbotMessage, setChatbotMessage] = useState(`Hello, ${profile.plwdFirstName}! Press the Start button to begin chatting with me.`);
+    const [biomarkerData,  setBiomarkerData ] = useState(location.state? location.state.biomarkerData : [
         {name: "Pragmatic",     data: []},
         {name: "Grammar",       data: []},
         {name: "Prosody",       data: []},
@@ -38,15 +47,9 @@ function Chat() {
         {name: "Turn Taking",   data: []},
     ]);
 
-  
 
-
-    // on message -> addMessageToChat('AI', response.data, response.time); setChatbotMessage(response.data);
-    // scores     -> else if (response.type.includes("scores")) {updateScores(response);}
-
+    // ... I don't really know whats going on here tbh
     if (!start) { setStart(new Date()); }
-    
-
 
     
     // ====================================================================
@@ -89,9 +92,9 @@ function Chat() {
 
         // Send the data for this chat to the database & navigate to the progress page when complete
         const response = await createChat(chatData, authTokens);
-        if (response) { navigate('/progress'); }
+        if (response) {setGoal({...newGoal, current: goal.current + 1}); navigate('/progress');}
     }
-
+    
 
     // ====================================================================
     // Main view for the page
@@ -103,7 +106,17 @@ function Chat() {
         // Chat history or Avatar views separately
         if      (viewMode == 1) {return (<div className={chatHistoryWrapper1}> <ChatHistory messages       = { messages       }/> </div>);}
         else if (viewMode == 3) {return (<div className="h-[65vh] mb-[2rem]">  <AvatarView  chatbotMessage = { chatbotMessage }/> </div>);}
-        
+
+        // Default / main view for the app -- keeping the other ones still though for debugging (want to be able to see the chat history)
+        else if (viewMode == 4) {
+            return (
+                <div className="h-[65vh] mb-[2rem]">
+                    <div className="my-[1rem] flex justify-center border-1 border-black p-[1em] rounded-lg mx-[25%]"> {chatbotMessage} </div>
+                    <div className="h-full mt-[1em] w-full"> <Avatar /> </div>
+                </div>
+            );
+        }
+
         // Combined split view
         else if (viewMode == 2) {
             return (
@@ -115,7 +128,7 @@ function Chat() {
         }
     }
 
-    
+
     // ====================================================================
     // Modal (should move this to another file)
     // ====================================================================
@@ -148,36 +161,45 @@ function Chat() {
             {/* <Header title="Chat With Me!" page="chat"/> */}
             <div className="float flex flex-row gap-4 m-[2rem]">
                 <p className="text-5xl font-semibold">Chat With Me</p>
-                <div className="float flex ml-auto gap-4">
-                    <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/today'   ><button className="text-gray-700 no-underline">Review Today</button></Link>
-                    <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/history' ><button className="text-gray-700 no-underline">Chat History</button></Link>
-                    <Link className="flex align-middle" style={{textDecoration: 'none'}} to='/schedule'><button className="text-gray-700 no-underline">Schedule    </button></Link>
-                    <button className="flex bg-blue-700 rounded h-fit p-2 text-white self-center" onClick={() => logoutUser()}>Log Out</button>
+                <div className="float flex ml-auto gap-4 items-center">
+                    <Link className="plwd-link-inactive" to='/today'   > Review Today </Link>
+                    <Link className="plwd-link-inactive" to='/history' > Chat History </Link>
+                    <Link className="plwd-link-inactive" to='/schedule'> Schedule     </Link>
+                    <button className="flex plwd-button-fill rounded h-fit p-2 self-center" onClick={() => logoutUser()}>Log Out</button>
                 </div>  
             </div>
 
             {/* Buttons to change the view mode for the page. (old) */}
             <div className="ml-[1rem] mt-[1rem] flex justify-center">
-                <ToggleButtonGroup type="radio" name="viewMode" defaultValue={3}>
-                    <ToggleButton id="messages" variant="outline-primary" value={1} onChange={(e) => setViewMode(e.currentTarget.value)}> Messages           </ToggleButton>
-                    <ToggleButton id="split"    variant="outline-primary" value={2} onChange={(e) => setViewMode(e.currentTarget.value)}> Messages & Chatbot </ToggleButton>
-                    <ToggleButton id="avatar"   variant="outline-primary" value={3} onChange={(e) => setViewMode(e.currentTarget.value)}> Chatbot            </ToggleButton>
+                <ToggleButtonGroup type="radio" name="viewMode" defaultValue={4}>
+                    <ToggleButton id="messages"   variant="outline-primary" value={1} onChange={(e) => setViewMode(e.currentTarget.value)}> Messages           </ToggleButton>
+                    <ToggleButton id="split"      variant="outline-primary" value={2} onChange={(e) => setViewMode(e.currentTarget.value)}> Messages & Chatbot </ToggleButton>
+                    <ToggleButton id="avatar_old" variant="outline-primary" value={3} onChange={(e) => setViewMode(e.currentTarget.value)}> Chatbot (old)      </ToggleButton>
+                    <ToggleButton id="avatar"     variant="outline-primary" value={4} onChange={(e) => setViewMode(e.currentTarget.value)}> Chatbot            </ToggleButton>
                 </ToggleButtonGroup>
             </div>
 
             {/* View of the chatHistory and/or Avatar */}
             {getView()}
-            
-            {/* Buttons for starting/stopping the chat & saving the chat history */}
+
+            {/* Buttons for starting/pausing the chat & saving the chat history/ending the chat */}
             <div className="flex flex-row justify-center mb-[2em] pt-[3em] gap-[4em] items-center">
+                {/* Start/Pause the chat */}
                 <RecordButton onRecordingChange = {setRecording}
                     onUserUtterance   = {(txt   ) => {addMessageToChat('You',    txt, getMessageTime());                        }}
                     onSystemUtterance = {(txt   ) => {addMessageToChat('System', txt, getMessageTime()); setChatbotMessage(txt);}} 
                     onScores          = {(scores) => {updateScores(scores);}}
                 />
-                <Button className="border-1 p-[1em] rounded-med" variant="outline-primary" size="lg" onClick={handleShow}> Finish </Button>
 
-                {/* {recording && <div> <span className="dot"/> <p>test</p> </div> }*/}   {/* red dot indicator */}
+                {/* End/Save the chat */}
+                <button className="flex flex-col gap-2 items-center" onClick={handleShow}>
+                    <BsStopCircle size={50} syle={{color: "black"}} />
+                    End Chat
+                </button>
+
+                {/* Just a demo of how we could be attached to the recording flag from RecordButton (red dot indicator ?) */}
+                {/* {recording && <div> <span className="dot"/> <p>test</p> </div> }*/}   
+
             </div>
             <SaveChatModal/>
         </>

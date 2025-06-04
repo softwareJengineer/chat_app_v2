@@ -373,7 +373,7 @@ class ReminderView(APIView):
         end = data.get('end')
         startTime = data.get('startTime')
         endTime = data.get('endTime')
-        repeatDay = data.get('repeatDay')
+        daysOfWeek = data.get('daysOfWeek')
         user = request.user
         
         profile = None
@@ -390,7 +390,7 @@ class ReminderView(APIView):
                 }, status=status.HTTP_404_NOT_FOUND)
                 
         # Create the reminder
-        reminder = Reminder.objects.create(user=profile, title=title, start=start, end=end, startTime=startTime, endTime=endTime, repeatDay=repeatDay)
+        reminder = Reminder.objects.create(user=profile, title=title, start=start, end=end, startTime=startTime, endTime=endTime, daysOfWeek=daysOfWeek)
         
         # Serialize the reminder and return the response
         serializer = ReminderSerializer(reminder)
@@ -426,6 +426,21 @@ class ReminderView(APIView):
             'success': True,
             'reminders': serializer.data
         })
+        
+    def delete(self, request):
+        data = request.data
+        id = data.get('id')
+        try:
+            Reminder.objects.filter(id=id).delete()
+            return Response({
+                'success': True
+            })
+        except:
+            return Response({
+                'success': False,
+                'error': 'Could not delete the reminder.'
+            })
+            
         
 class GoalsView(APIView):
     permission_classes = [IsAuthenticated]  # Ensure the user is authenticated

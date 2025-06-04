@@ -1,13 +1,13 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import ReactApexChart from "react-apexcharts";
 
 const BiomarkerChart = ({biomarkerData}) => {
 
-    const newBiomarkerData = (biomarkerData) => {
+    const summarizeData = (biomarkerData) => {
         var newData = [];
-        for (var i = 0; i < biomarkerData.length; i++) {
-            var series = biomarkerData[i];
-            if (i >= 2) {
+        for (var key in biomarkerData) {
+            var series = biomarkerData[key];
+            if (key >= 2) {
                 series.hidden = "true";
             }
             newData.push(series);
@@ -44,7 +44,7 @@ const BiomarkerChart = ({biomarkerData}) => {
     }
 
     return (
-        <ReactApexChart options={options} series={newBiomarkerData(biomarkerData)} type="line" height={"100%"}/>
+        <ReactApexChart options={options} series={summarizeData(biomarkerData)} type="line" height={"100%"}/>
     );
 
 }

@@ -13,7 +13,7 @@ import blankChat from "../data/blankChat.json";
 
 function Dashboard() {
     const {profile, authTokens} = useContext(AuthContext);
-    const [activeChart, setActiveChart] = useState("Overall");
+    const [activeChart, setActiveChart] = useState("None");
 
     //FOR TESTING
     // const chats = dummyChats;
@@ -23,12 +23,14 @@ function Dashboard() {
     //FOR DEPLOYMENT
     const [chats, setChats] = useState([]);
     const [chatData, setChatData] = useState(blankChat);
+    const [scores, setScores] = useState([]);
 
     useEffect(() => {
         const fetchChats = async () => {
             const profileChats = await getChats(authTokens);
             setChats(profileChats);
-            setChatData(chats.length > 0 ? profileChats[0] : blankChat);
+            setChatData(profileChats.length > 0 ? profileChats[0] : blankChat);
+            setScores(profileChats.length > 0 ? profileChats[0].scores : blankChat.scores);
         };
 
         fetchChats();
@@ -37,7 +39,7 @@ function Dashboard() {
 
     const getStyle = (chart) => {
         if (activeChart === chart) {
-            return "text-blue-600 underline hover:text-purple-900";
+            return "text-violet-600 underline hover:text-purple-900";
         } else {
             return "text-gray-400 hover:text-gray-600 hover:underline";
         }
@@ -49,19 +51,23 @@ function Dashboard() {
 
     return (
         <>
-            <Header title="Dementia Speech Analysis" page="dashboard" />
+            <Header title="Speech Analysis" page="dashboard" />
             <div className="mx-[2rem] mb-[2rem] flex flex-col gap-2">
                 <div className="flex items-center gap-4 align-middle">
-                    <FaUser size={50}/>
+                    <FaUser size={50} color="purple" />
                     <p className="align-middle">{profile.caregiverFirstName} {profile.caregiverLastName}</p>
                     Care Partner
-                    <FaUser size={50}/>
+                    <FaUser size={50} color="green" />
                     <p className="align-middle">{profile.plwdFirstName} {profile.plwdLastName}</p>
                     <div className="flex float-right ml-auto">
-                        <Button variant="outline-primary">Download Report</Button>
+                        <button
+                            className="text-violet-600 border-1 border-violet-600 p-2 rounded hover:bg-violet-600 hover:text-white duration-200"
+                        >
+                            Download Report
+                        </button>
                     </div>
                 </div>
-                <Link to="/settings">
+                <Link to="/settings" className={"caregiver-link"}>
                     Update profile
                 </Link>
             </div>
@@ -83,9 +89,11 @@ function Dashboard() {
                     <p>Bad days: A list of days with lower biomarker scores.</p>
                 </div>
                 <div className="md:h-full h-[40vh]">
-                    {activeChart === "Overall" ? 
-                    <ScoreTrackGraph chats={chats} /> : 
-                    <BiomarkerChart biomarkerData={chatData.scores} />}
+                    {activeChart === "None" ? 
+                        <p className="flex align-middle items-center h-full justify-center text-2xl">Select a chart to view</p> : 
+                        activeChart === "Overall" ? 
+                            <ScoreTrackGraph chats={chats} /> : 
+                            <BiomarkerChart biomarkerData={scores} />}
                 </div>
             </div>
             <div className="m-[2rem]">

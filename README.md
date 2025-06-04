@@ -58,11 +58,13 @@ REQUIREMENTS
 - [ ] If the first utterance is shorter than our audio buffer chunk size (5 seconds), the audio based scores (prosody, pronunciation) are generated with an error. 
     - Should these be done in another separate async task on reception of audio data? If no audio has been recieved between utterances, the scores will be the same anyways, so there is no reason to re-calculate them.
 
+
 ### llama_api
 - [ ] cap-add SYS_RESOURCE (?)
 
-### Other
-- [ ] 
+
+### Other/general issues
+- [ ] I've gotten signed out/lost authorization a few times mid conversation and not been able to save. The auth lasts 15 minutes now instead of 5, but I still think that some conversations/sessions might last longer...?
 
 
 

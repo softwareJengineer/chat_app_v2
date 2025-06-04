@@ -6,20 +6,18 @@ const LoadingPage = () => {
     const { authTokens, logoutUser, profile, setProfile, setSettings, setGoal } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        getProfile()
-    }, [])
+    useEffect(() => {getProfile()}, []);
 
     const getProfile = async () => {
         let response = await fetch('/api/profile', {
-        method: 'GET',
-        headers:{
-            'Content-Type': 'application/json',
-            'Authorization':'Bearer ' + String(authTokens.access)
-        }
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization':'Bearer ' + String(authTokens.access)
+            }
         })
         let data = await response.json()
-        if(data.success) {
+        if (data.success) {
             setProfile({
                 plwdFirstName: data.plwdFirstName,
                 plwdLastName: data.plwdLastName,
@@ -37,12 +35,11 @@ const LoadingPage = () => {
         else                                             {alert(data.error); logoutUser();}
     }
 
-    if (profile) {
-        return null;
-    } else {
+    if (profile) {return null;} 
+    else {
         return (
             <div className="flex items-center justify-center h-screen w-screen text-xl">
-                Logging user in...
+                Loading...
             </div>
         )
     }

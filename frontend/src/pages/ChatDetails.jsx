@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import Header from "../components/Header";
 import { FaUser } from "react-icons/fa";
+import { GiPartyPopper, GiAlarmClock, GiRobotAntennas, GiChatBubble } from "react-icons/gi";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import MyWordCloud from "../components/WordCloud";
 import Avatar from "../components/Avatar";
@@ -10,9 +11,13 @@ import { FcCalendar, FcClock, FcSms } from "react-icons/fc";
 import { IoThumbsUp } from "react-icons/io5";
 import daysInARow from "../functions/daysInARow";
 import AuthContext from '../context/AuthContext';
+import ScoreRadarChart from "../components/ScoreRadarChart";
+import getExercises from "../functions/getExercises";
+import { Icon } from '@iconify/react';
+
 
 import { cardStyle } from "../styles/sharedStyles";
-import Biomarker     from "../components/Biomarker";
+import   Biomarker   from "../components/Biomarker";
 
 function ChatDetails() {
     const { profile, goal } = useContext(AuthContext);
@@ -23,7 +28,15 @@ function ChatDetails() {
     const chats = location.state?.chats;
     const date = new Date(chatData.date);
 
-    const calcGoal = () => {if (goal.current > goal.target) {return 0;} else {return goal.target - goal.current;}}
+  
+    const calcGoal = () => {return Math.max(0, goal.target - goal.current);}
+    
+    const style = new Intl.DateTimeFormat("en-US", {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+      })
+
 
     return (
         <>
@@ -31,67 +44,70 @@ function ChatDetails() {
 
             <div className="mx-[2rem] flex flex-col gap-2">
                 <div className="flex items-center gap-4 align-middle">
-                    <FaUser size={50}/>
+                    <FaUser size={50} color="purple" />
                     <p className="align-middle">{profile.caregiverFirstName} {profile.caregiverLastName}</p>
                     Care Partner
-                    <FaUser size={50}/>
+                    <FaUser size={50} color="green" />
                     <p className="align-middle">{profile.plwdFirstName} {profile.plwdLastName}</p>
                 </div>
-                <Link to="/settings"> Update profile </Link>
+                <Link to="/settings" className={"caregiver-link"}>
+                    Update profile
+                </Link>
             </div>
 
             <div className="flex flex-row m-[2rem] gap-4">
                 <b className="text-4xl">Overview:</b>
-                <b className="text-purple-500 text-4xl">{date.toDateString()}</b>
+                <b className="text-purple-500 text-4xl">{style.format(date)}</b>
             </div>
-
-            <div className="flex md:flex-row flex-col gap-4 mt-[1rem] mb-[3rem] md:min-h-[45vh]">
-                <div className="md:w-1/3"><Avatar /></div>
-                <div className="md:w-2/3 mx-[2rem] align-self-center">
-                    <p className="font-bold text-2xl">
-                       {profile.plwdFirstName} is doing fantastic!
-                    </p>
-                    <GoalProgress current={goal.current} target={goal.target} />
-                    <p className="flex flex-row items-center gap-4 text-xl">
-                        <span>
-                            <b className="text-blue-700 text-2xl"> {chats} </b> 
-                            {chats === 1 ? "chat" : "chats"} completed.
-                        </span>
-                    </p>
-                    <p className="text-xl">
-                        <span className="">
-                            <b className="text-blue-700 text-2xl"> {calcGoal()} </b> 
-                            more to reach a new goal!
-                        </span>
-                    </p>
-                    <Link to='/schedule'>
-                        <Button variant="primary" size="lg">Schedule Future Chat</Button>
-                    </Link>
+            <div className="grid md:grid-cols-2 grid-cols-1 h-full justify-stretch mx-[2rem] items-center gap-4 mb-[2rem]">
+                <div className="w-full h-full border-1 rounded-lg border-gray-200 p-[1rem] self-stretch">
+                    <h3>Conclusions and Suggestions</h3>
+                    <div className="flex flex-row gap-4 my-[1rem]">
+                        <div className="w-1/3">
+                            <Avatar />
+                        </div>
+                        <div className="w-2/3">
+                            <p className="font-bold text-2xl">
+                                {profile.plwdFirstName} is doing fantastic!
+                            </p>
+                            <GoalProgress current={goal.current} target={goal.target} />
+                            <p className="flex flex-row items-center gap-4 text-xl">
+                                <GiAlarmClock size={40} color="green" /> 
+                                <span>
+                                    {style.format(date)} is chat number
+                                    <b className="text-green-700 text-2xl"> {chats.length} {goal.current} </b> 
+                                    with me.
+                                </span>
+                            </p>
+                            <p className="flex flex-row items-center gap-4 text-xl">
+                                <GiRobotAntennas size={40} color="purple" />
+                                <span className="">
+                                    {profile.plwdFirstName} can complete another 
+                                    <b className="text-fuchsia-900 text-2xl"> {calcGoal()} </b> 
+                                    to reach a new goal!
+                                </span>
+                            </p>
+                            <p className="flex flex-row items-center gap-4 text-xl">
+                                <GiChatBubble size={40} color={"orange"} />
+                                We covered these topics in this conversation: {chatData.topics}
+                            </p>
+                        </div>
+                    </div>
+                    <p className="font-bold text-2xl">Daily suggestions:</p>
+                    {getExercises().map((exercise, index) => {
+                            return (
+                                <p className="text-xl">{exercise}</p>
+                            )
+                        })
+                    }
                 </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 grid-cols-1 h-full mx-[2rem] items-center justify-stretch gap-4 mb-[2rem]">
-                <div className="md:border-r-1 md:border-y-0 md:border-l-0 border-y-1 border-gray-300 pr-[2rem]">
-                    <b className="text-2xl">Today's Conversation</b>
-                    <p className="flex flex-row items-center gap-4 text-xl">
-                        <FcClock size={40} />       
-                        The conversation was {chatData.duration} minutes long.
-                    </p>
-                    <p className="flex flex-row items-center gap-4 text-xl">
-                        <FcCalendar size={40} />
-                        {profile.plwdFirstName} has had conversations with me for {daysInARow(chats)} days in a row!
-                    </p>
-                    <p className="flex flex-row items-center gap-4 text-xl">
-                        <FcSms size={40} />
-                        {profile.plwdFirstName} talked about: {chatData.topics}
-                    </p>
-                    <p className="flex flex-row items-center gap-4 text-xl">
-                        <IoThumbsUp color="e5d754" size={40} />
-                        Tell {profile.plwdFirstName} to keep it up! They're doing fantastic!
-                    </p>
-                </div>
-                <div className="pl-[1rem] h-full">
-                    <b className="text-2xl">Suggested Activities for {profile.plwdFirstName}</b>
+                <div className="w-full h-full border-1 rounded-lg border-gray-200 p-[1rem] self-stretch">
+                    <h3>Radar Track</h3>
+                    <div className="h-[45vh] w-full">
+                        <ScoreRadarChart biomarkerData={chatData.scores} prevBiomarkerData={prevChatData.scores}/>
+                    </div>
+                    <br/>
+                    <p className="text-lg">Based on these scores, I suggest the following activities:</p>
                     <div className="flex md:flex-row flex-col gap-4 my-[1rem]">
                         <div className="md:w-1/2 w-full border-1 rounded-md border-gray-300 p-[1rem]">
                             <h4>Mad Libs</h4>
@@ -116,8 +132,17 @@ function ChatDetails() {
                 </div>
                 <div className={cardStyle}>
                     <h4>Mood Track</h4>
-                    <p>You felt {chatData.sentiment}</p>
-                    <p>Because... </p>
+                    <div className="flex flex-row gap-4">
+                        <Icon 
+                            icon={chatData.sentiment == "Positive" ? "fluent-emoji:beaming-face-with-smiling-eyes" :
+                                chatData.sentiment == "Negative" ? "fluent-emoji:confused-face" : "fluent-emoji:face-with-diagonal-mouth"
+                             }
+                            width="50" 
+                            height="50"
+                        />
+                        <h2 className="text-3xl font-black">{chatData.sentiment}</h2>
+                    </div>
+                    <p>Here would be an analysis of the mood detected in the conversation. </p>
                 </div>
 
                 {/* Biomarker Improvement/Analysis Cards */}
