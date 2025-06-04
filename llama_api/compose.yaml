@@ -26,8 +26,12 @@ services:
     runtime: nvidia
     networks:
       - appnet
-    command: ["python3", "-m", "llama_cpp.server", "--config", "/config/server.config"]
     #command: ["python3", "-m", "llama_cpp.server", "--config", "/config/server.config"]
-
-
-
+    command: >
+      sh -c "
+        python3 -m llama_cpp.server --help
+        python3 -m llama_cpp.server --model models/Phi-3_finetuned.gguf --n_gpu_layers -1 --n_threads 12 --n_ctx 2048 --verbose true &&
+        echo 'LLaMA server started'
+      "
+  
+    
