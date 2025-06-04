@@ -143,8 +143,10 @@ SSH:/home/user/
 
 <br><hr>
 
-
-
+# Misc. Notes
+* The docker extends stuff documentation (later might want to do include or something)
+    - https://docs.docker.com/compose/how-tos/multiple-compose-files/extends/ 
+    - https://docs.docker.com/compose/how-tos/multiple-compose-files/include/ 
 
 
 
