@@ -15,7 +15,7 @@ const makeApiRequest = async ({endpoint, method, data=null, authTokens=null}) =>
                 "Content-Type": "application/json",
                 ...(authTokens != null && {"Authorization": `Bearer ${String(authTokens.access)}`})
             },
-            ...(method !== null && {body: JSON.stringify(data),})
+            ...(method !== "GET" && {body: JSON.stringify(data),})
         });
 
         // Wait for a response from the API & return it
@@ -48,7 +48,7 @@ const processBoolResponse = (data, errorMessage="An unknown error occured") => {
 
 // [POST] Sign Up
 const signup = async (signupData) => {
-    const data = makeApiRequest({endpoint: "signup", method: "POST", data: signupData, authTokens: null});
+    const data = await makeApiRequest({endpoint: "signup", method: "POST", data: signupData, authTokens: null});
     return processBoolResponse(data, "Signup error:");
 }
 
@@ -58,7 +58,7 @@ const signup = async (signupData) => {
 
 // [GET] Get Reminders
 const getReminders = async (authTokens) => {
-    const data = makeApiRequest({endpoint: "reminders", method: "GET", data: null, authTokens: authTokens});
+    const data = await makeApiRequest({endpoint: "reminders", method: "GET", data: null, authTokens: authTokens});
     try {
         if (data?.success) {
             return data.reminders.map(reminder => ({...reminder,
@@ -72,7 +72,7 @@ const getReminders = async (authTokens) => {
 
 // [POST] Create Reminder
 const createReminder = async (title, start, end, authTokens) => {
-    const data = makeApiRequest({
+    const data = await makeApiRequest({
         endpoint   : "reminders", 
         method     : "POST", 
         data       : {title: title, start: start, end: end}, 
@@ -83,7 +83,7 @@ const createReminder = async (title, start, end, authTokens) => {
 
 // [POST] Create Repeat Reminder
 const createRepeatReminder = async (title, startTime, endTime, daysOfWeek, authTokens) => {
-    const data = makeApiRequest({
+    const data = await makeApiRequest({
         endpoint   : "reminders", 
         method     : "POST", 
         data       : {title: title, startTime: startTime, endTime: endTime, daysOfWeek: daysOfWeek}, 
@@ -94,7 +94,7 @@ const createRepeatReminder = async (title, startTime, endTime, daysOfWeek, authT
 
 // [DELETE] Delete Reminder
 const deleteReminder = async (reminderId, authTokens) => {
-    const data = makeApiRequest({
+    const data = await makeApiRequest({
         endpoint   : "reminders", 
         method     : "DELETE", 
         data       : {id: reminderId}, 
@@ -109,7 +109,7 @@ const deleteReminder = async (reminderId, authTokens) => {
 
 // [PUT] Edit Settings
 const editSettings = async (settings, authTokens) => {
-    const data = makeApiRequest({
+    const data = await makeApiRequest({
         endpoint   : "settings", 
         method     : "PUT", 
         data       : { ...settings }, 
@@ -124,7 +124,7 @@ const editSettings = async (settings, authTokens) => {
 
 // [POST] Create a Chat
 const createChat = async (chatData, authTokens) => {
-    const data = makeApiRequest({
+    const data = await makeApiRequest({
         endpoint   : "chats", 
         method     : "POST", 
         data       : chatData, 
@@ -135,7 +135,7 @@ const createChat = async (chatData, authTokens) => {
 
 // [GET] Get Chats
 const getChats = async (authTokens) => {
-    const data = makeApiRequest({endpoint: "chats", method: "GET", data: null, authTokens: authTokens});
+    const data = await makeApiRequest({endpoint: "chats", method: "GET", data: null, authTokens: authTokens});
     try {
         if (data.success) {return data.chats.map(chat => ({...chat, date: chat.date ? new Date(chat.date) : undefined}));} 
         else        {console.error("Could not fetch chats: " + data.error); return false;}
@@ -144,7 +144,7 @@ const getChats = async (authTokens) => {
 
 // [GET] Get the most recent chat
 const getRecentChat = async (authTokens) => {
-    const data = makeApiRequest({endpoint: "chats/recent", method: "GET", data: null, authTokens: authTokens});
+    const data = await makeApiRequest({endpoint: "chats/recent", method: "GET", data: null, authTokens: authTokens});
     try {
         if (data.success) {return data.chats.map(chat => ({...chat, date: chat.date ? new Date(chat.date) : undefined}));}
         else        {console.error("Could not fetch recent chat: " + data.error); return false;}
@@ -157,7 +157,7 @@ const getRecentChat = async (authTokens) => {
 
 // [GET] Get Goal
 const getGoal = async (authTokens) => {
-    const data = makeApiRequest({endpoint: "goal", method: "GET", data: null, authTokens: authTokens});
+    const data = await makeApiRequest({endpoint: "goal", method: "GET", data: null, authTokens: authTokens});
     try {
         if (data.success) {return data.goal;} 
         else        {console.error("Could not fetch goal: " + data.error); return false;}
@@ -166,7 +166,7 @@ const getGoal = async (authTokens) => {
 
 // [PUT] Update Goal
 const updateGoal = async (startDay, target, authTokens) => {
-    const data = makeApiRequest({
+    const data = await makeApiRequest({
         endpoint   : "goal", 
         method     : "PUT", 
         data       : {startDay: startDay, target: target}, 
