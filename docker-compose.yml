@@ -34,6 +34,9 @@ services:
     extends:
       file: ${LLM_COMPOSE_FILE}
       service: llama_api
+    volumes:
+      - ../deployment-files/models:/models
+      - ./llama_api:/config
 
   #llama_api:
   #  image: jflachman/llama-cpp-python:v0.2.77-cuda  # ghcr.io/ggerganov/llama-cpp-python:v0.2.77-cuda # or cpu

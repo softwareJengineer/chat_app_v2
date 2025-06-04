@@ -15,9 +15,9 @@ services:
       - N_CTX=256
       - N_THREADS=12
       - N_GPU_LAYERS=-1
-    volumes:
-      - .../deployment-files/models:/models
-      - ./llama_api:/config
+    #volumes:
+    #  - .../deployment-files/models:/models
+    #  - ./llama_api:/config
     deploy:
       resources:
         reservations:
