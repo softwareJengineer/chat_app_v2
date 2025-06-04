@@ -16,7 +16,7 @@ services:
       - N_THREADS=12
       - N_GPU_LAYERS=-1
     volumes:
-      - ../deployment-files/models:/models
+      - .../deployment-files/models:/models
       - ./llama_api:/config
     deploy:
       resources:
@@ -30,11 +30,11 @@ services:
     command: >
       sh -c "
         python3 -m llama_cpp.server --help &&
-        echo '\nChecking volumes' &&
+        echo '\\nChecking volumes' &&
         ls &&
-        echo '\nCHecking models volume' &&
+        echo '\\nCHecking models volume' &&
         ls models/ &&
-        echo '\nStarting actual model now' &&
+        echo '\\nStarting actual model now' &&
         python3 -m llama_cpp.server --model models/Phi-3_finetuned.gguf --n_gpu_layers -1 --n_threads 12 --n_ctx 2048 --verbose true &&
         echo 'LLaMA server started'
       "
