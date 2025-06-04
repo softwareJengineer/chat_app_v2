@@ -92,7 +92,10 @@ function Chat() {
 
         // Send the data for this chat to the database & navigate to the progress page when complete
         const response = await createChat(chatData, authTokens);
-        if (response) {setGoal({...newGoal, current: goal.current + 1}); navigate('/progress');}
+        if (response) {
+            // setGoal({...newGoal, current: goal.current + 1}); // newGoal doesnt exist
+            navigate('/progress');
+        }
     }
     
 
