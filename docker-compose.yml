@@ -27,34 +27,40 @@ services:
       - appnet
 
   # -------------------------------------------------------------------- 
-  # 2) Llama API  https://hub.docker.com/r/jflachman/llama-cpp-python   
+  # 2) Llama API (included)  
   # --------------------------------------------------------------------
+  # Could probably share more between the two compose files and put it here (port, network, volumes, etc.)
   llama_api:
-    image: jflachman/llama-cpp-python:v0.2.77-cuda  # ghcr.io/ggerganov/llama-cpp-python:v0.2.77-cuda # or cpu
-    container_name: llama_api
-    #restart: unless-stopped
-    ports:
-      - "11434:11434"
-    environment:
-      - USE_MLOCK=0
-      - MODEL=/models/Phi-3_finetuned.gguf
-      - PORT=11434
-      - N_CTX=256
-      - N_THREADS=12
-      - N_GPU_LAYERS=-1
-    volumes:
-      - ../deployment-files/models:/models
-      - ./llama_api:/config
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: [gpu]
-    runtime: nvidia
-    networks:
-      - appnet
-    command: ["python3", "-m", "llama_cpp.server", "--config", "/config/server.config"]
-    #command: ["python3", "-m", "llama_cpp.server", "--config", "/config/server.config"]
+    extends:
+      file: ${LLM_COMPOSE_FILE}
+      service: llama_api
+
+  #llama_api:
+  #  image: jflachman/llama-cpp-python:v0.2.77-cuda  # ghcr.io/ggerganov/llama-cpp-python:v0.2.77-cuda # or cpu
+  #  container_name: llama_api
+  #  #restart: unless-stopped
+  #  ports:
+  #    - "11434:11434"
+  #  environment:
+  #    - USE_MLOCK=0
+  #    - MODEL=/models/Phi-3_finetuned.gguf
+  #    - PORT=11434
+  #    - N_CTX=256
+  #    - N_THREADS=12
+  #    - N_GPU_LAYERS=-1
+  #  volumes:
+  #    - ../deployment-files/models:/models
+  #    - ./llama_api:/config
+  #  deploy:
+  #    resources:
+  #      reservations:
+  #        devices:
+  #          - capabilities: [gpu]
+  #  runtime: nvidia
+  #  networks:
+  #    - appnet
+  #  command: ["python3", "-m", "llama_cpp.server", "--config", "/config/server.config"]
+  #  #command: ["python3", "-m", "llama_cpp.server", "--config", "/config/server.config"]
   
   # --------------------------------------------------------------------
   # 3) Backend (private, no ports exposed)

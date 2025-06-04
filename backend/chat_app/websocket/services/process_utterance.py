@@ -44,7 +44,7 @@ async def get_LLM_response(LLM_input):
 
     # If the model throws an error...
     except Exception as e:
-        logger.error(f"Error in process_user_utterance: {e}")
+        logger.error(f"Error in get_LLM_response: {e}")
         system_utt = "I'm sorry, I encountered an error while processing your request."
 
     return system_utt
