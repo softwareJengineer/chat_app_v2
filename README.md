@@ -19,6 +19,11 @@ Everything is wrapped in docker-compose.yml and the frontend is the only compone
 
 <details closed> <summary>Locally (outdated)</summary>
 <br>
+
+``` docker compose up --build ```
+
+<br>
+
 1. Ensure your machine has the requirements installed
 2. Clone the repo using this terminal command: git clone https://github.com/softwareJengineer/chat_app_v2
 3. Open Docker Desktop
@@ -57,6 +62,9 @@ REQUIREMENTS
 ### General
 - [ ] If the first utterance is shorter than our audio buffer chunk size (5 seconds), the audio based scores (prosody, pronunciation) are generated with an error. 
     - Should these be done in another separate async task on reception of audio data? If no audio has been recieved between utterances, the scores will be the same anyways, so there is no reason to re-calculate them.
+- [ ] Rename docker-compose.yml extension to .yaml (need to do in the deploy repo too though)
+- [ ] Recent chats don't work (not sure if just local difference though)
+- [ ] Changing settings doesn't do anything
 
 
 ### llama_api
