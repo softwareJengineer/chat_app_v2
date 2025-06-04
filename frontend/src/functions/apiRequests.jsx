@@ -1,294 +1,179 @@
-/* 
+// --- there should probably be a subdirectory for API requests, and each endpoint in its own file with these helpers also in a separate file that gets imported
 
----- Needs to be modularized ----
+// ==================================================================== ==================================
+// API Request Helpers 
+// ==================================================================== ==================================
 
-*/
+// Make a request to the API
+// "auth" and "body" are only included as parts of the fetch call if provided in the function call.
+const makeApiRequest = async ({endpoint, method, data=null, authTokens=null}) => {
+    try {
+        // Make a request to the API
+        const response = await fetch(`/api/${endpoint}/`, {
+            method  : method,
+            headers : {
+                "Content-Type": "application/json",
+                ...(authTokens != null && {"Authorization": `Bearer ${String(authTokens.access)}`})
+            },
+            ...(method !== null && {body: JSON.stringify(data),})
+        });
 
+        // Wait for a response from the API & return it
+        const responseData = await response.json(); return responseData;
+    } 
+
+    // Catch errors
+    catch (error) {console.error(`/api/${endpoint} ${method} error:`, error); return false;}
+}
+
+// Re-use logic for functions that return a bool on success or failure
+// (Could add a way to make the alert on success an optional too somehow...)
+const processBoolResponse = (data, errorMessage="An unknown error occured") => {
+    if (data?.success) {return true;}
+    else {
+        const error =  data?.error ?? "An unknown error occured";
+        console.error(errorMessage, error);
+        alert(error); 
+        return false;
+    }
+}
+
+// ==================================================================== ==================================
+// All API Request Functions
+// ==================================================================== ==================================
+
+// --------------------------------------------------------------------
+// "signup" endpoint
+// --------------------------------------------------------------------
+
+// [POST] Sign Up
 const signup = async (signupData) => {
-    try {
-        const response = await fetch("/api/signup/", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(signupData)
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            return true;
-        } else {
-            alert(data.error);
-            return false;
-        }
-    } catch (error) {
-        console.error('Signup error:', error);
-        return false;
-    }
+    const data = makeApiRequest({endpoint: "signup", method: "POST", data: signupData, authTokens: null});
+    return processBoolResponse(data, "Signup error:");
 }
 
+// --------------------------------------------------------------------
+// "reminders" endpoint
+// --------------------------------------------------------------------
+
+// [GET] Get Reminders
 const getReminders = async (authTokens) => {
+    const data = makeApiRequest({endpoint: "reminders", method: "GET", data: null, authTokens: authTokens});
     try {
-        const response = await fetch(`/api/reminders/`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization':'Bearer ' + String(authTokens.access)
-            }
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            const reminders = data.reminders;
-            return reminders.map(reminder => {
-                let obj = reminder;
-                if (obj.start) obj.start = new Date(obj.start);
-                if (obj.end) obj.end = new Date(obj.end);
-                return obj;
-            });
-        } else {
-            console.error("Could not fetch reminders: " + data.error);
-            return [];
-        }
-    } catch (error) {
-        console.error("Could not fetch reminders: " + error);
-        return [];
-    }
+        if (data?.success) {
+            return data.reminders.map(reminder => ({...reminder,
+                start: reminder.start ? new Date(reminder.start) : undefined,
+                end:   reminder.end   ? new Date(reminder.end  ) : undefined,
+            }));
+        } 
+        else        {console.error("Could not fetch reminders: " + data.error); return [];}
+    } catch (error) {console.error("Could not fetch reminders: " +      error); return [];}
 }
 
+// [POST] Create Reminder
 const createReminder = async (title, start, end, authTokens) => {
-    try {
-        const response = await fetch(`/api/reminders/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization':'Bearer ' + String(authTokens.access)
-            },
-            body: JSON.stringify({
-                title: title,
-                start: start,
-                end: end,
-            })
-        });
-
-        const data = await response.json();
-
-        if (!data.success) {
-            alert(data.error);
-            return false;
-        }
-        return true;
-    } catch (error) {
-        console.error('Error with creating reminder:', error);
-        return false;
-    }
+    const data = makeApiRequest({
+        endpoint   : "reminders", 
+        method     : "POST", 
+        data       : {title: title, start: start, end: end}, 
+        authTokens : authTokens
+    });
+    return processBoolResponse(data, "Error with creating reminder:");
 };
 
+// [POST] Create Repeat Reminder
 const createRepeatReminder = async (title, startTime, endTime, daysOfWeek, authTokens) => {
-    try {
-        const response = await fetch(`/api/reminders/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization':'Bearer ' + String(authTokens.access)
-            },
-            body: JSON.stringify({
-                title: title,
-                startTime: startTime,
-                endTime: endTime,
-                daysOfWeek: daysOfWeek
-            })
-        });
-
-        const data = await response.json();
-
-        if (!data.success) {
-            alert(data.error);
-            return false;
-        }
-        return true;
-    } catch (error) {
-        console.error('Error with creating reminder:', error);
-        return false;
-    }
+    const data = makeApiRequest({
+        endpoint   : "reminders", 
+        method     : "POST", 
+        data       : {title: title, startTime: startTime, endTime: endTime, daysOfWeek: daysOfWeek}, 
+        authTokens : authTokens
+    });
+    return processBoolResponse(data, "Error with creating repeating reminder:");
 };
 
+// [DELETE] Delete Reminder
 const deleteReminder = async (reminderId, authTokens) => {
-    try {
-        const response = await fetch(`/api/reminders/`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization':'Bearer ' + String(authTokens.access)
-            },
-            body: JSON.stringify({id: reminderId})
-        });
-
-        const data = await response.json();
-
-        if (!data.success) {alert(data.error); return false;}
-        else               {                   return true; }
-
-    } catch (error) {console.error('Error with deleting reminder:', error); return false;}
+    const data = makeApiRequest({
+        endpoint   : "reminders", 
+        method     : "DELETE", 
+        data       : {id: reminderId}, 
+        authTokens : authTokens
+    });
+    return processBoolResponse(data, "Error with deleting reminder:");
 }
 
+// --------------------------------------------------------------------
+// "settings" endpoint
+// --------------------------------------------------------------------
+
+// [PUT] Edit Settings
 const editSettings = async (settings, authTokens) => {
-    try {
-        const response = await fetch(`/api/settings/`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization':'Bearer ' + String(authTokens.access)
-            },
-            body: JSON.stringify({ ...settings })
-        });
+    const data = makeApiRequest({
+        endpoint   : "settings", 
+        method     : "PUT", 
+        data       : { ...settings }, 
+        authTokens : authTokens
+    });
+    return processBoolResponse(data, "Error setting user settings:");
+}
 
-        const data = await response.json();
+// --------------------------------------------------------------------
+// "chats" endpoint
+// --------------------------------------------------------------------
 
-        if (data.success) {
-            alert("Settings successfully set.");
-            return true;
-        } else {
-            alert(data.error);
-            return false;
-        }
-    } catch (error) {
-        console.error('Error setting user settings:', error);
-        return false;
-    }
-};
-
+// [POST] Create a Chat
 const createChat = async (chatData, authTokens) => {
-    try {
-        const response = await fetch(`/api/chats/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization':'Bearer ' + String(authTokens.access)
-            },
-            body: JSON.stringify(chatData)
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            return true;
-        } else {
-            alert(data.error);
-            return false;
-        }
-    } catch (error) {
-        console.error('Error saving chat data:', error);
-        return false;
-    }
+    const data = makeApiRequest({
+        endpoint   : "chats", 
+        method     : "POST", 
+        data       : chatData, 
+        authTokens : authTokens
+    });
+    return processBoolResponse(data, "Error saving chat data:");
 };
 
+// [GET] Get Chats
 const getChats = async (authTokens) => {
+    const data = makeApiRequest({endpoint: "chats", method: "GET", data: null, authTokens: authTokens});
     try {
-        const response = await fetch(`/api/chats/`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization':'Bearer ' + String(authTokens.access)
-            }
-        });
+        if (data.success) {return data.chats.map(chat => ({...chat, date: chat.date ? new Date(chat.date) : undefined}));} 
+        else        {console.error("Could not fetch chats: " + data.error); return false;}
+    } catch (error) {console.error("Could not fetch chats: " +      error); return false;}
+}
 
-        const data = await response.json();
-
-        if (data.success) {
-            const chats = data.chats;
-            return chats.map(chat => {
-                let obj = chat;
-                obj.date = new Date(obj.date);
-                return obj;
-            });
-        } else {
-            console.error("Could not fetch chats: " + data.error);
-            return false;
-        }
-    } catch (error) {
-        alert(error);
-        return false;
-    }
-};
-
+// [GET] Get the most recent chat
 const getRecentChat = async (authTokens) => {
+    const data = makeApiRequest({endpoint: "chats/recent", method: "GET", data: null, authTokens: authTokens});
     try {
-        const response = await fetch(`/api/chat/recent`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization':'Bearer ' + String(authTokens.access)
-            }
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            let chat = data.chat;
-            chat.date = new Date(chat.date);
-            return chat;
-        } else {
-            console.error("Could not fetch chat: " + data.error);
-            return false;
-        }
-    } catch (error) {
-        alert(error);
-        return false;
-    }
+        if (data.success) {return data.chats.map(chat => ({...chat, date: chat.date ? new Date(chat.date) : undefined}));}
+        else        {console.error("Could not fetch recent chat: " + data.error); return false;}
+    } catch (error) {console.error("Could not fetch recent chat: " +      error); return false;}
 }
 
+// --------------------------------------------------------------------
+// "goal" endpoint
+// --------------------------------------------------------------------
+
+// [GET] Get Goal
 const getGoal = async (authTokens) => {
+    const data = makeApiRequest({endpoint: "goal", method: "GET", data: null, authTokens: authTokens});
     try {
-        const response = await fetch(`/api/goal/`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization':'Bearer ' + String(authTokens.access)
-            }
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            let goal = data.goal
-            return goal;
-        } else {
-            console.error("Could not fetch goal: " + data.error);
-            return false;
-        }
-    } catch (error) {
-        alert(error);
-        return false;
-    }
+        if (data.success) {return data.goal;} 
+        else        {console.error("Could not fetch goal: " + data.error); return false;}
+    } catch (error) {console.error("Could not fetch goal: " + data.error); return false;}
 }
 
+// [PUT] Update Goal
 const updateGoal = async (startDay, target, authTokens) => {
-    try {
-        const response = await fetch(`/api/goal/`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization':'Bearer ' + String(authTokens.access)
-            },
-            body: JSON.stringify({ startDay: startDay, target: target })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            alert("Goal successfully set.");
-            return true;
-        } else {
-            alert(data.error);
-            return false;
-        }
-    } catch (error) {
-        console.error('Error setting goal:', error);
-        return false;
-    }
+    const data = makeApiRequest({
+        endpoint   : "goal", 
+        method     : "PUT", 
+        data       : {startDay: startDay, target: target}, 
+        authTokens : authTokens
+    });
+    return processBoolResponse(data, "Error setting goal:");
 }
 
+// Export
 export {signup, getReminders, createReminder, createRepeatReminder, deleteReminder, editSettings, createChat, getChats, getRecentChat, getGoal, updateGoal};
