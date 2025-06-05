@@ -79,7 +79,7 @@ export default function useLatencyLogger() {
 
     // [TTS] Log the start & end time of speech synthesis (currently not correct... "synthesis" != audio playing) 
     const ttsStart = () => {logTime    ("[TTS] LLM response sent:  ", ttsStartRef);};
-    const ttsEnd   = () => {logStartEnd("TTS", ttsTimesRef,          ttsStartRef);};
+    const ttsEnd   = () => {logStartEnd("TTS", ttsTimesRef,           ttsStartRef);};
 
     // ====================================================================
     // Return/Expose Logging Functions

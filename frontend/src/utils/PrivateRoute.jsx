@@ -6,14 +6,10 @@ import AuthContext from '../context/AuthContext';
 const PrivateRoute = ({children}) => {
     let { authTokens, profile, setProfile, setSettings, setGoal, logoutUser } = useContext(AuthContext);
 
-    useEffect(() => {
-        if (!profile) {
-            getProfile();
-        }
-    }, [])
+    useEffect(() => {if (!profile) {getProfile();}}, [])
 
     const getProfile = async () => {
-        let response = await fetch('http://localhost:8000/api/profile', {
+        let response = await fetch('/api/profile', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -33,12 +29,9 @@ const PrivateRoute = ({children}) => {
             });
             setSettings(data.settings);
             setGoal(data.goal);
-        } else if(response.statusText === 'Unauthorized') {
-            logoutUser();
-        } else {
-            alert(data.error);
-            logoutUser();
-        }
+        } 
+        else if(response.statusText === 'Unauthorized') {                   logoutUser();} 
+        else                                            {alert(data.error); logoutUser();}
     }
 
     if (!authTokens && !localStorage.getItem('authTokens')) {

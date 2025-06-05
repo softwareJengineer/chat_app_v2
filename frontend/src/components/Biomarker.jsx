@@ -30,7 +30,8 @@ function getImprovement(current, prev) {
 export default function Biomarker({ name, chatData, prevChatData }) {
     // Per-biomarker configuration
     const navigate = useNavigate();
-    const onClick = () => navigate('/analysis', {state: {chatData: chatData, biomarker: name}});
+    const onClick  = () => navigate('/analysis', {state: {chatData: chatData, biomarker: name}});
+    const cardText = `Here would be an overview of the ${name} analysis.`;
 
     // Return a UI component
     return (
@@ -38,6 +39,7 @@ export default function Biomarker({ name, chatData, prevChatData }) {
             <div className={cardStyle}>
                 <h4> {name} Review </h4>
                 {getImprovement(chatData.avgScores[name], prevChatData.avgScores[name])}
+                <p>{cardText}</p>
                 <button className={buttStyle} onClick={onClick}> View in Transcript </button>
             </div>
         </>

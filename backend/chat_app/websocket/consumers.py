@@ -16,7 +16,7 @@ from datetime    import datetime, timezone
 # From this project
 from ..                            import config as cf
 from .biomarkers.biomarker_scores  import generate_biomarker_scores, generate_periodic_scores
-from .services.process_utterance   import process_user_utterance 
+from .services.process_utterance   import get_LLM_response, prepare_LLM_input
 from .services.handle_audio_data   import handle_audio_data
 
 # Multi-threading for biomarker and audio processing
@@ -25,7 +25,6 @@ THREAD_POOL = concurrent.futures.ThreadPoolExecutor(max_workers=4)
 
 """
 To do later:
-* clean up process utterance file
 * saving data history
 * stuff like maintaining a speech df
 * pretty sure that some sort of timestamp is sent along with the text from the frontend, use that for conv start time
@@ -45,7 +44,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             # --------------------------------------------------------------------
             self.conversation_start_time = time()
             self.user_utterances         = deque(maxlen=100)
-            self.overlapped_speech_count = 5   # --- should start at 0, but im testing it
+            self.overlapped_speech_count = 0   # --- should start at 0, but im testing it
             self.chat_history            = []
 
             # Features for Prosody and Pronunciation 
@@ -102,19 +101,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Periodic Biomarkers
     # =======================================================================
     async def send_periodic_scores(self):
-        while True:
-            await asyncio.sleep(10) # was 5 -(shouldn't that be 10? if we are doing /10 in the function and -0.1)
-            if self.conversation_start_time is not None:
+        try:
+            while True:
+                # Periodic, every 10 seconds here
+                await asyncio.sleep(10) # ---- was 5 (shouldn't that be 10? if we are doing /10 in the function and -0.1)
+            
                 # Calculate the periodic scores (currently Anomia and Turntaking)
                 start_time = time()
                 periodic_scores = generate_periodic_scores(self.user_utterances, self.conversation_start_time, self.overlapped_speech_count)
                 logger.info(f"{cf.CYAN}[Bio] Periodic Time:           {(time()-start_time):6.4f}s {cf.RESET}")
 
                 # Re-calculate overlapped speech count
-                self.overlapped_speech_count = max(0, self.overlapped_speech_count - 0.1)
+                self.overlapped_speech_count = max(0, self.overlapped_speech_count - 0.2) # was 0.1, but decrease it by 2x since its called slower
 
                 # Send the scores ("Use self.send instead")
                 await self.send(json.dumps({'type': 'periodic_scores', 'data': periodic_scores}))
+        
+        except asyncio.CancelledError:
+            logger.info(f"{cf.RED}[Bio] Periodic task received cancellation. {cf.RESET}")
+            raise  # allow it to propagate
 
     # =======================================================================
     # Handle Incoming Data
@@ -170,8 +175,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # Generate LLM Response
     async def _LLM_response(self, user_utt: str):
+        # Prepare a prompt for the LLM
+        full_prompt = prepare_LLM_input(user_utt, self.chat_history)
+
+        # Get response from the LLM
         LLM_start_time = time()
-        system_utt = process_user_utterance(user_utt, self.chat_history)
+        system_utt  = await get_LLM_response(full_prompt)
         logger.info(f"{cf.CYAN}[LLM] Received response in:    {(time() - LLM_start_time):6.4f}s {cf.RESET}")
         
         # Send the LLMs response through the websocket

@@ -17,7 +17,7 @@ import { Icon } from '@iconify/react';
 
 
 import { cardStyle } from "../styles/sharedStyles";
-import Biomarker     from "../components/Biomarker";
+import   Biomarker   from "../components/Biomarker";
 
 function ChatDetails() {
     const { profile, goal } = useContext(AuthContext);
@@ -28,57 +28,15 @@ function ChatDetails() {
     const chats = location.state?.chats;
     const date = new Date(chatData.date);
 
-    const cardStyle = "border-1 border-gray-300 rounded p-[2rem] hover:shadow-xl h-full w-full justify-self-start";
-
-    const calcGoal = () => {
-        if (goal.current > goal.target) {
-            return 0;
-        } else {
-            return goal.target - goal.current;
-        }
-    }
-
-    const getImprovement = (current, prev) => {
-        const score = Math.abs(Math.round((current - prev) * 1000) / 10);
-        if (current > prev) {
-            return (
-                <div className="flex flex-row gap-3 items-center">
-                    <p className="rounded-full bg-green-500 p-2 size-[3rem] aspect-square items-center justify-center flex font-bold">
-                        +{score}
-                    </p>
-                    <p className="font-bold">Improved</p>
-                </div>
-            )
-        } else if (current < prev) {
-            return (
-                <div className="flex flex-row gap-3 items-center">
-                    <p className="rounded-full bg-red-500 p-2 size-[3rem] aspect-square items-center justify-center flex font-bold">
-                        -{score}
-                    </p>
-                    <p className="font-bold">Declined</p>
-                </div>
-            )
-        } else {
-            return (
-                <div className="flex flex-row gap-3 items-center">
-                    <p className="rounded-full bg-gray-300 p-2 size-[3rem] aspect-square items-center justify-center flex font-bold">
-                        +0
-                    </p>
-                    <p className="font-bold">Steady</p>
-                </div>
-            )
-        }
-    }
-
+  
+    const calcGoal = () => {return Math.max(0, goal.target - goal.current);}
+    
     const style = new Intl.DateTimeFormat("en-US", {
         year: 'numeric',
         month: 'short',
         day: '2-digit',
       })
 
-    const toAnalysis = (biomarker) => {
-        navigate('/analysis', {state: {chatData: chatData, biomarker: biomarker}})
-    }
 
     return (
         <>
@@ -186,54 +144,15 @@ function ChatDetails() {
                     </div>
                     <p>Here would be an analysis of the mood detected in the conversation. </p>
                 </div>
-                <div className={cardStyle}>
-                    <h4>Pragmatic Review</h4>
-                    {getImprovement(chatData.avgScores.Pragmatic, prevChatData.avgScores.Pragmatic)}
-                    <p>Here would be an overview of the pragmatic analysis.</p>
-                    <button className="bg-violet-600 rounded p-2 text-white" onClick={() => toAnalysis("Pragmatic")}>
-                        View in Transcript
-                    </button>
-                </div>
-                <div className={cardStyle}>
-                    <h4>Grammar Review</h4>
-                    {getImprovement(chatData.avgScores.Grammar, prevChatData.avgScores.Grammar)} 
-                    <p>Here would be an overview of the grammar analysis.</p>
-                    <button className="bg-violet-600 rounded p-2 text-white" onClick={() => toAnalysis("Grammar")}>
-                        View in Transcript
-                    </button>
-                </div>
-                <div className={cardStyle}>
-                    <h4>Prosody Review</h4>
-                    {getImprovement(chatData.avgScores.Prosody, prevChatData.avgScores.Prosody)} 
-                    <p>Here would be an overview of the prosody analysis.</p>
-                    <button className="bg-violet-600 rounded p-2 text-white" onClick={() => toAnalysis("Prosody")}>
-                        View in Transcript
-                    </button>
-                </div>
-                <div className={cardStyle}>
-                    <h4>Pronunciation Review</h4>
-                    {getImprovement(chatData.avgScores.Pronunciation, prevChatData.avgScores.Pronunciation)} 
-                    <p>Here would be an overview of the pronunciation analysis.</p>
-                    <button className="bg-violet-600 rounded p-2 text-white" onClick={() => toAnalysis("Pronunciation")}>
-                        View in Transcript
-                    </button>
-                </div>
-                <div className={cardStyle}>
-                    <h4>Anomia Review</h4>
-                    {getImprovement(chatData.avgScores.Anomia, prevChatData.avgScores.Anomia)} 
-                    <p>Here would be an overview of the anomia analysis.</p>
-                    <button className="bg-violet-600 rounded p-2 text-white" onClick={() => toAnalysis("Anomia")}>
-                        View in Transcript
-                    </button>
-                </div>
-                <div className={cardStyle}>
-                    <h4>Turn Taking Review</h4>
-                    {getImprovement(chatData.avgScores["Turn Taking"], prevChatData.avgScores["Turn Taking"])} 
-                    <p>Here would be an overview of the turn taking analysis.</p>
-                    <button className="bg-violet-600 rounded p-2 text-white" onClick={() => toAnalysis("Turn Taking")}>
-                        View in Transcript
-                    </button>
-                </div>
+
+                {/* Biomarker Improvement/Analysis Cards */}
+                <Biomarker name={ "Pragmatic"     } chatData={chatData} prevChatData={prevChatData} />
+                <Biomarker name={ "Grammar"       } chatData={chatData} prevChatData={prevChatData} />
+                <Biomarker name={ "Prosody"       } chatData={chatData} prevChatData={prevChatData} />
+                <Biomarker name={ "Pronunciation" } chatData={chatData} prevChatData={prevChatData} />
+                <Biomarker name={ "Anomia"        } chatData={chatData} prevChatData={prevChatData} />
+                <Biomarker name={ "Turn Taking"   } chatData={chatData} prevChatData={prevChatData} />
+
             </div>
         </>
     )
