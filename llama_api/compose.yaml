@@ -12,7 +12,7 @@ services:
       #- USE_MLOCK=0
       - MODEL=/models/Phi-3_finetuned.gguf
       - PORT=11434
-      - N_CTX=256
+      - N_CTX=2048
       - N_THREADS=12
       - N_GPU_LAYERS=-1
     #volumes:
@@ -35,7 +35,7 @@ services:
         echo '\\nCHecking models volume' &&
         ls models/ &&
         echo '\\nStarting actual model now' &&
-        python3 -m llama_cpp.server --model models/Phi-3_finetuned.gguf --n_gpu_layers -1 --n_threads 12 --n_ctx 256 --verbose true &&
+        python3 -m llama_cpp.server --model models/Phi-3_finetuned.gguf --n_gpu_layers -1 --n_threads 12 --n_ctx 2048 --verbose true &&
         echo 'LLaMA server started'
       "
   
