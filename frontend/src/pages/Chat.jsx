@@ -8,18 +8,103 @@ import AuthContext from '../context/AuthContext';
 import calcAvgBiomarkerScores from "../functions/calcAvgBiomarkerScores";
 import { createChat } from "../functions/apiRequests";
 import dummyChats from "../data/dummyChats.json";
+import { GoogleGenAI, Modality } from '@google/genai';
 
-const SPEECH_KEY = "3249fb4e6d8248569b42d5dbf693c259";
-const SPEECH_REGION = "eastus";
-const bufferSize = 4096;
+// const SPEECH_KEY = process.env.AZURE_KEY;
+// const SPEECH_REGION = "eastus";
+// const bufferSize = 4096;
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_KEY });
+const model = 'gemini-2.0-flash-live-001';
+const config = { 
+    responseModalities: [Modality.TEXT],
+    outputAudioTranscription: {},
+    inputAudioTranscription: {}
+ };
 
 // Replace static wsUrl with dynamic version
-const wsUrl = window.location.hostname === 'localhost' 
-    ? `ws://${window.location.hostname}:8000/ws/chat/`
-    : `ws://${window.location.hostname}/ws/chat/`;
+// const wsUrl = window.location.hostname === 'localhost' 
+//     ? `ws://${window.location.hostname}:8000/ws/chat/`
+//     : `ws://${window.location.hostname}/ws/chat/`;
 // const wsUrl = "wss://dementia.ngrok.app";
 
 const ws = new WebSocket(wsUrl);
+
+async function live() {
+    const responseQueue = [];
+
+    async function waitMessage() {
+        let done = false;
+        let message = undefined;
+        while (!done) {
+        message = responseQueue.shift();
+        if (message) {
+            done = true;
+        } else {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+        }
+        return message;
+    }
+
+    async function handleTurn() {
+        const turns = [];
+        let done = false;
+        while (!done) {
+            const message = await waitMessage();
+            turns.push(message);
+            if (message.serverContent && message.serverContent.turnComplete) {
+                done = true;
+            }
+        }
+        return turns;
+    }
+
+    const session = await ai.live.connect({
+        model: model,
+        callbacks: {
+        onopen: function () {
+            console.debug('Opened');
+        },
+        onmessage: function (message) {
+            responseQueue.push(message);
+        },
+        onerror: function (e) {
+            console.debug('Error:', e.message);
+        },
+        onclose: function (e) {
+            console.debug('Close:', e.reason);
+        },
+        },
+        config: config,
+    });
+
+    session.sendRealtimeInput({
+        audio: {
+            data: base64Audio,
+            mimeType: "audio/pcm;rate=16000"
+        }
+    });
+
+    const turns = await handleTurn();
+    for (const turn of turns) {
+        if (turn.text) {
+        console.debug('Received text: %s\n', turn.text);
+        }
+        else if (turn.data) {
+        console.debug('Received inline data: %s\n', turn.data);
+        }
+    }
+
+  session.close();
+
+    async function main() {
+        await live().catch((e) => console.error('got error', e));
+    }
+  // Send content...
+
+  session.close();
+}
 
 function Chat() {
     const location = useLocation();
