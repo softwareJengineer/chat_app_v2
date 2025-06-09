@@ -18,7 +18,7 @@ export const AuthProvider = ({children}) => {
     const navigate = useNavigate()
 
     let loginUser = async (formData) => {
-        const response = await fetch('/api/token/', {
+        const response = await fetch('http://localhost:8000/api/token/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

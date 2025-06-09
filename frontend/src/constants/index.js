@@ -1,1 +1,1 @@
-export const API_URL = "http://backend:8000/api";
+export const API_URL = "http://localhost:8000/api/chat_app/";

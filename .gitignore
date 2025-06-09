@@ -1,38 +1,9 @@
-# Mac
-**/.DS_Store
-
-# Python
-__pycache__/
-*.py[cod]
-
-Pipfile
-Pipfile.lock
-pyvenv.cfg
-.venv/
-venv/
-
-# Deployment Files
 .env
 Phi-3_finetuned.gguf
+node_modules/
 new_LSA.csv
 stanford-parser-4.2.0-models.jar
-
-# Shell Files (never in the repo, I just have them here for editing)
-deploy.sh
-start_ngrok.sh
-
-# Backend Generated Files
-backend/staticfiles/
-backend/logs/
-backend/script/
-# backend/websocket.log
-
-# Frontend
 Lib/
 Include/
 Scripts/
 share/
-node_modules/
-
-# VS Code
-.vscode/*

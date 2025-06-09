@@ -2,19 +2,20 @@ import nltk
 nltk.download('vader_lexicon')
 nltk.download('stopwords')
 nltk.download('punkt_tab')
-
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-from nltk.tokenize        import word_tokenize
-from nltk.corpus          import stopwords
-
 from collections import Counter
-
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
 
 def get_message_text(messages):
-    return " ".join([message["message"] for message in messages if (message["sender"] == "You")])
-
+    text = ""
+    for message in messages:
+        if message['sender'] == "You":
+            text += message['message'] + " "
+    return text
 
 def sentiment_scores(sentence): # From Geeks for Geeks
+
     # Create a SentimentIntensityAnalyzer object.
     sid_obj = SentimentIntensityAnalyzer()
 
@@ -22,9 +23,12 @@ def sentiment_scores(sentence): # From Geeks for Geeks
     # which contains pos, neg, neu, and compound scores.
     sentiment_dict = sid_obj.polarity_scores(sentence)
     
-    if   sentiment_dict['compound'] >=  0.05: return "Positive"
-    elif sentiment_dict['compound'] <= -0.05: return "Negative"
-    else:                                     return "Neutral"
+    if sentiment_dict['compound'] >= 0.05 :
+        return "Positive"
+    elif sentiment_dict['compound'] <= -0.05 :
+        return "Negative"
+    else :
+        return "Neutral"
     
 def get_topics(text): # From freeCodeCamp
     
