@@ -8,103 +8,17 @@ import AuthContext from '../context/AuthContext';
 import calcAvgBiomarkerScores from "../functions/calcAvgBiomarkerScores";
 import { createChat } from "../functions/apiRequests";
 import dummyChats from "../data/dummyChats.json";
-import { GoogleGenAI, Modality } from '@google/genai';
+import { marked } from 'https://esm.sh/marked'; // Markdown
+import markedKatex from 'https://esm.sh/marked-katex-extension'; // LaTeX
+import { GoogleGenAI, Modality } from 'https://esm.run/@google/genai';
+import { Buffer } from 'buffer';
+import { playL16Audio } from "../functions/audioFunctions";
 
-// const SPEECH_KEY = process.env.AZURE_KEY;
-// const SPEECH_REGION = "eastus";
-// const bufferSize = 4096;
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_KEY });
-const model = 'gemini-2.0-flash-live-001';
-const config = { 
-    responseModalities: [Modality.TEXT],
-    outputAudioTranscription: {},
-    inputAudioTranscription: {}
- };
-
-// Replace static wsUrl with dynamic version
-// const wsUrl = window.location.hostname === 'localhost' 
-//     ? `ws://${window.location.hostname}:8000/ws/chat/`
-//     : `ws://${window.location.hostname}/ws/chat/`;
+const wsUrl = window.location.hostname === 'localhost' 
+    ? `ws://${window.location.hostname}:8000/ws/chat/`
+    : `ws://${window.location.hostname}/ws/chat/`;
 // const wsUrl = "wss://dementia.ngrok.app";
-
 const ws = new WebSocket(wsUrl);
-
-async function live() {
-    const responseQueue = [];
-
-    async function waitMessage() {
-        let done = false;
-        let message = undefined;
-        while (!done) {
-        message = responseQueue.shift();
-        if (message) {
-            done = true;
-        } else {
-            await new Promise((resolve) => setTimeout(resolve, 100));
-        }
-        }
-        return message;
-    }
-
-    async function handleTurn() {
-        const turns = [];
-        let done = false;
-        while (!done) {
-            const message = await waitMessage();
-            turns.push(message);
-            if (message.serverContent && message.serverContent.turnComplete) {
-                done = true;
-            }
-        }
-        return turns;
-    }
-
-    const session = await ai.live.connect({
-        model: model,
-        callbacks: {
-        onopen: function () {
-            console.debug('Opened');
-        },
-        onmessage: function (message) {
-            responseQueue.push(message);
-        },
-        onerror: function (e) {
-            console.debug('Error:', e.message);
-        },
-        onclose: function (e) {
-            console.debug('Close:', e.reason);
-        },
-        },
-        config: config,
-    });
-
-    session.sendRealtimeInput({
-        audio: {
-            data: base64Audio,
-            mimeType: "audio/pcm;rate=16000"
-        }
-    });
-
-    const turns = await handleTurn();
-    for (const turn of turns) {
-        if (turn.text) {
-        console.debug('Received text: %s\n', turn.text);
-        }
-        else if (turn.data) {
-        console.debug('Received inline data: %s\n', turn.data);
-        }
-    }
-
-  session.close();
-
-    async function main() {
-        await live().catch((e) => console.error('got error', e));
-    }
-  // Send content...
-
-  session.close();
-}
 
 function Chat() {
     const location = useLocation();
@@ -114,19 +28,36 @@ function Chat() {
     const [userSpeaking, setUserSpeaking] = useState(false);
     const [messages, setMessages] = useState(location.state ? location.state.messages : []);
     // const [viewMode, setViewMode] = useState(3);
-    const [chatbotMessage, setChatbotMessage] = useState("Hello, " + profile.plwdFirstName + ". Press the Start button to begin chatting with me.");
+    const [chatbotMessage, setChatbotMessage] = useState("Hello, user. Press the Start button to begin chatting with me.");
     const [start, setStart] = useState(null);
     const speechConfig = useRef(null);
     const audioConfig = useRef(null);
     const recognizer = useRef(null);
     const synthesizer = useRef(null);
-    const audioContext = useRef(null);
     const audioProcessor = useRef(null);
     const stream = useRef(null);
     const source = useRef(null);
     const processorNode = useRef(null);
     const date = new Date();
     const navigate = useNavigate();
+
+    const API_KEY = "AIzaSyAC8sLYGeyWLKB9RuDLt2pGiedHdBkHmnA";
+    
+    const MODEL_NAME = "gemini-2.0-flash-live-001"; // Realtime/Live model
+    const TARGET_SAMPLE_RATE = 16000; // Gemini requires 16kHz audio
+    const SYSTEM_PROMPT = 'Transcribe the audio input.'
+
+
+    // --- State Variables ---
+    const genAI = useRef(null);
+    const liveSession = useRef(null);
+    const mediaStream = useRef(null);
+    const audioContext = useRef(null);
+    const audioSource = useRef(null);
+    const audioWorkletNode = useRef(null);
+    const volumeWorkletNode = useRef(null);
+    const [totalBytesSent, setTotalBytesSent] = useState(0);
+    const [contextTurns, setContextTurns] = useState([])
 
     const [biomarkerData, setBiomarkerData] = useState(location.state? location.state.biomarkerData : [
         {
@@ -173,12 +104,18 @@ function Chat() {
         const response = JSON.parse(event.data);
         if (!recording) return;
         if (response.type === 'llm_response') {
-            // console.log(response);
+            console.log(response);
             addMessageToChat('AI', response.data, response.time);
             setChatbotMessage(response.data);
             speakResponse(response.data);
         } else if (response.type.includes("scores")) {
             updateScores(response);
+        }
+    }
+
+    function sendTranscriptionToServer(transcription) {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'transcription', data: transcription }));
         }
     }
 
@@ -190,178 +127,345 @@ function Chat() {
         if (!start) {
             setStart(new Date());
         }
-        speechConfig.current = SpeechSDK.SpeechConfig.fromSubscription(
-            SPEECH_KEY,
-            SPEECH_REGION
-        );
-        speechConfig.current.speechRecognitionLanguage = 'en-US';
-    
-        audioConfig.current = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
-        recognizer.current = new SpeechSDK.SpeechRecognizer(
-            speechConfig.current,
-            audioConfig.current
-        );
-        synthesizer.current = new SpeechSDK.SpeechSynthesizer(speechConfig.current);
-    
-        const processRecognizedTranscript = (event) => {
-            const result = event.result;
-            console.log('Recognition result:', result);
-        
-            if (result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
-                setUserSpeaking(false);
-                const transcription = result.text;
-                const msgTime = date.getUTCHours() + ':' + date.getUTCMinutes() + ':' + date.getUTCSeconds();
-                console.log(`Recognized: ${transcription}`);
-                addMessageToChat('You', transcription, msgTime);
-                sendTranscriptionToServer(transcription);
-            }
-        };
-    
-        const processRecognizingTranscript = (event) =>{
-            const result = event.result;
-            // console.log('Recognition result:', result);
-            if (result.reason === SpeechSDK.ResultReason.RecognizingSpeech) {
-                setUserSpeaking(true);
-                checkOverlap();
-            }
-        }
-    
-        recognizer.current.recognized = (s, e) => processRecognizedTranscript(e);
-        recognizer.current.recognizing = (s, e) => processRecognizingTranscript(e);
-    
+
         if (recording) {
-            recognizer.current.startContinuousRecognitionAsync(() => {
-                console.log('Speech recognition started.');
-            });
-            initAudioProcessing();
+           startStreaming();
+        } else {
+            stopStreaming();
         }
-        
-        return () => {
-            recognizer.current.stopContinuousRecognitionAsync(() => {
-                console.log('Speech recognition stopped.');
-            });
-            recognizer.current = undefined;
-            audioConfig.current = undefined;
-            audioProcessor.current = undefined;
-            if (source.current && processorNode.current) {
-                source.current.disconnect(processorNode.current);
-                processorNode.current.disconnect(audioContext.current.destination);
-            }             
-        };
     }, [recording]);
-    
-    function sendTranscriptionToServer(transcription) {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: 'transcription', data: transcription }));
-        }
-    }
 
-    function speakResponse(text) {
+    async function speakResponse(text) {
         setSystemSpeaking(true);
-        synthesizer.current.speakTextAsync(
-            text, 
-            result => {
-                if (result.reason === SpeechSDK.ResultReason.SynthesizingAudioCompleted) {
-                    console.log("Speech synthesized");
-                    setSystemSpeaking(false);
-                }
+        console.log("Speaking response: ", text)
+        const ai = new GoogleGenAI({ apiKey: API_KEY });
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash-preview-tts",
+            contents: [{ parts: [{ text: 'Say cheerfully: ' + text }] }],
+            config: {
+                responseModalities: ['AUDIO'],
+                speechConfig: {
+                    voiceConfig: {
+                        prebuiltVoiceConfig: { voiceName: 'Kore' },
+                    },
+                },
             },
-            error => {
-                console.log(`Error synthesizing speech: ${error}`);
-                setSystemSpeaking(false);
+        });
+        const data = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+        const audioBuffer = Buffer.from(data, 'base64');
+
+        playL16Audio(data);
+        setSystemSpeaking(false);
+    }
+
+    const AudioRecordingWorklet = `
+            class AudioProcessingWorklet extends AudioWorkletProcessor {
+                buffer = new Int16Array(2048);
+                bufferWriteIndex = 0;
+
+                constructor() {
+                    super();
+                }
+
+                process(inputs, outputs, parameters) {
+                    if (inputs.length > 0 && inputs[0].length > 0) {
+                        const channelData = inputs[0][0];
+                        this.processChunk(channelData);
+                    }
+                    return true; // Keep processor alive
+                }
+
+                sendAndClearBuffer() {
+                    if (this.bufferWriteIndex > 0) {
+                        const dataToSend = this.buffer.slice(0, this.bufferWriteIndex);
+                        this.port.postMessage({
+                            eventType: "audioData",
+                            audioData: dataToSend.buffer // Send ArrayBuffer
+                        }, [dataToSend.buffer]); // Transfer buffer ownership for efficiency
+                        this.bufferWriteIndex = 0;
+                    }
+                }
+
+                processChunk(float32Array) {
+                    for (let i = 0; i < float32Array.length; i++) {
+                        const clampedValue = Math.max(-1.0, Math.min(1.0, float32Array[i]));
+                        const int16Value = Math.floor(clampedValue * 32767);
+                        this.buffer[this.bufferWriteIndex++] = int16Value;
+                        if (this.bufferWriteIndex >= this.buffer.length) {
+                            this.sendAndClearBuffer();
+                        }
+                    }
+                }
             }
-        );
-    }
+            registerProcessor('audio-processing-worklet', AudioProcessingWorklet);
+        `;
 
-    function checkOverlap() {
-        if (systemSpeaking && userSpeaking) {
-            console.log("Overlapped speech detected!", true);
-            ws.send(JSON.stringify({ type: 'overlapped_speech' }));
+    const VolumeMeterWorklet = `
+        class VolumeMeter extends AudioWorkletProcessor {
+            constructor() {
+                super();
+                this.volume = 0;
+            }
+            
+            process(inputs) {
+                const input = inputs[0];
+                if (input.length > 0 && input[0].length > 0) {
+                    // Calculate RMS (Root Mean Square)
+                    let sumOfSquares = 0.0;
+                    for (const sample of input[0]) {
+                        sumOfSquares += sample * sample;
+                    }
+                    const rms = Math.sqrt(sumOfSquares / input[0].length);
+                    
+                    // Convert RMS to a linear scale (0.0 to 1.0)
+                    this.volume = Math.min(1.0, rms * 10); // Adjust multiplier as needed for sensitivity
+                    // Post a message to main thread with the volume level
+                    this.port.postMessage({ volume: this.volume });
+                } else {
+                    this.volume = 0;
+                }
+                
+                return true;
+            }
         }
-    }
+        registerProcessor('volume-meter', VolumeMeter);
+        `;
 
-    // Helper function to convert array buffer to base64
     function arrayBufferToBase64(buffer) {
-        let binary = '';
+        let binary = "";
         const bytes = new Uint8Array(buffer);
         const len = bytes.byteLength;
         for (let i = 0; i < len; i++) {
             binary += String.fromCharCode(bytes[i]);
         }
-        return btoa(binary);
+        return window.btoa(binary);
     }
 
-    async function initAudioProcessing() {
+    async function startStreaming() {
+        setRecording(true);
         try {
-            stream.current = await navigator.mediaDevices.getUserMedia({ audio: true });
-            audioContext.current = new AudioContext({
-                sampleRate: 16000
-            });
-            
-            source.current = audioContext.current.createMediaStreamSource(stream.current);
-    
-            // Create ScriptProcessor for direct audio processing
-            processorNode.current = audioContext.current.createScriptProcessor(bufferSize, 1, 1);
-            
-            // Buffer to accumulate smaller chunks of audio
-            const sampleRate = audioContext.current.sampleRate;
-            const chunkBufferSize = sampleRate * 5; 
-            let audioBuffer = new Float32Array(chunkBufferSize);
-            let bufferIndex = 0;
-            
-            processorNode.current.onaudioprocess = (e) => {
-                if (!recording) return;
-                
-                const input = e.inputBuffer.getChannelData(0);
-                
-                // Add input to buffer
-                for (let i = 0; i < input.length && bufferIndex < chunkBufferSize; i++) {
-                    audioBuffer[bufferIndex++] = input[i];
+            // Step 1: Initialize GoogleGenAI Client
+            genAI.current = new GoogleGenAI({ apiKey: API_KEY });
+            try {
+                const modelInfo = await genAI.current.models.get({ model: MODEL_NAME });
+            } catch (testError) {
+                console.log("error initializing googlegenai: ", testError)
+                return;
+            }
+
+            // Step 2: Get Microphone Access
+            mediaStream.current = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    sampleRate: TARGET_SAMPLE_RATE,
+                    echoCancellation: true,
+                    noiseSuppression: true
                 }
+            });
                 
-                // When we have enough audio data
-                if (bufferIndex >= chunkBufferSize) {
-                    try {
-                        // Convert to 16-bit integers
-                        const intData = new Int16Array(chunkBufferSize);
-                        for (let i = 0; i < chunkBufferSize; i++) {
-                            intData[i] = Math.max(-32768, Math.min(32767, Math.round(audioBuffer[i] * 32767)));
+            // Step 3: Create Audio Context and Source
+            audioContext.current = new AudioContext({ sampleRate: TARGET_SAMPLE_RATE });
+            // Resume context if suspended (often needed after page load)
+            if (audioContext.current.state === 'suspended') {
+                await audioContext.current.resume();
+            }
+            audioSource.current = audioContext.current.createMediaStreamSource(mediaStream.current);
+            // Create a gain node to split the audio signal
+            const splitter = audioContext.current.createChannelSplitter(2);
+            const merger = audioContext.current.createChannelMerger(2);
+            const gainNode = audioContext.current.createGain();
+            gainNode.gain.value = 1; // No gain change
+               
+            // Step 4: Set up Audio Worklet
+            const workletBlob = new Blob([AudioRecordingWorklet], { type: 'application/javascript' });
+            const workletURL = URL.createObjectURL(workletBlob);
+            try {
+                await audioContext.current.audioWorklet.addModule(workletURL);
+            } catch (e) {
+                console.log(`Error adding AudioWorklet module: ${e.message}. Make sure you are serving this page over HTTPS or localhost.`, 'error');
+                throw e; // Re-throw to be caught by outer catch
+            }
+            audioWorkletNode.current = new AudioWorkletNode(audioContext.current, 'audio-processing-worklet');
+
+            // Add the volume meter worklet
+            const volumeWorkletBlob = new Blob([VolumeMeterWorklet], { type: 'application/javascript' });
+            const volumeWorkletURL = URL.createObjectURL(volumeWorkletBlob);
+            try {
+                await audioContext.current.audioWorklet.addModule(volumeWorkletURL);
+            } catch (e) {
+                console.log(`Error adding VolumeMeter AudioWorklet module: ${e.message}. Make sure you are serving this page over HTTPS or localhost.`, 'error');
+                throw e; // Re-throw to be caught by outer catch
+            }
+            volumeWorkletNode.current = new AudioWorkletNode(audioContext.current, 'volume-meter');
+
+            // Connect audio nodes: Mic Source -> Gain Node -> Volume Worklet
+            audioSource.current.connect(gainNode);
+            gainNode.connect(volumeWorkletNode.current);
+            
+            //connect audio nodes: Gain Node -> split -> merge -> Gemini Worklet
+            gainNode.connect(splitter);
+            splitter.connect(merger, 0, 0); // Connect channel 0 to input 0
+            splitter.connect(merger, 0, 1); // Connect channel 0 to input 1
+            merger.connect(audioWorkletNode.current);
+
+            volumeWorkletNode.current.connect(audioWorkletNode.current);
+            
+            // Step 5: Connect to Gemini Live API
+            // Assign to liveSession *after* connection is successful
+            const config = {
+                responseModalities: [Modality.TEXT],
+                inputAudioTranscription: {},
+                maxOutputTokens: 1,
+            };
+
+            liveSession.current = await genAI.current.live.connect({
+                model: MODEL_NAME,
+                audioConfig: { targetSampleRate: TARGET_SAMPLE_RATE},
+                config: config,
+                callbacks: {
+                    onopen: () => {
+                        console.log("Connected to Gemini. Listening...", 'info');
+                    },
+                    onmessage: (message) => {
+                        // Handle transcript text
+                        if (message.serverContent && message.serverContent.inputTranscription) {
+                            const date = new Date();
+                            const msgTime = date.getUTCHours() + ':' + date.getUTCMinutes() + ':' + date.getUTCSeconds();
+                            const transcription = message.serverContent.inputTranscription.text;
+                            console.log("Sending transcription to server: ", transcription);
+                            addMessageToChat('You', transcription, msgTime);
+                            sendTranscriptionToServer(transcription);
                         }
-                        
-                        // Convert to base64 directly from buffer
-                        const base64Data = arrayBufferToBase64(intData.buffer);
-                        
-                        // Send to server
-                        if (ws && ws.readyState === WebSocket.OPEN && recording) {
-                            const timestamp = Date.now();
-                            ws.send(JSON.stringify({
-                                type: 'audio_data',
-                                timestamp: timestamp,
-                                data: base64Data,
-                                sampleRate: sampleRate
-                            }));
-                            console.log(`Sent audio chunk at ${new Date(timestamp).toISOString()}, length: ${intData.length} samples`);
+
+                        if (message.error) {
+                            console.log(`Gemini Error: ${message.error.message || JSON.stringify(message.error)}`, 'error');
                         }
-                    } catch (error) {
-                        console.log(`Error processing audio chunk: ${error.message}`);
-                    }
+                    },
+                    onerror: (errorEvent) => {
+                        // Use errorEvent directly if it's an Error object, otherwise stringify
+                        const errorMessage = errorEvent instanceof Error ? errorEvent.message : JSON.stringify(errorEvent);
+                        console.log(`Gemini connection error: ${errorMessage}`, 'error');
+                        stopStreaming(); // Stop on connection error
+                    },
+                    onclose: (closeEvent) => {
+                        // Only call stopStreaming if the closure was unexpected while we were actively streaming
+                            if (recording) {
+                                console.log("Connection closed.");
+                                stopStreaming();
+                            }
+                        },
+                },
+            });
+            // send prior context if any
+            if (contextTurns.length) {
+                console.log(`Sending ${contextTurns.length} turns of prior context above.`);
+                setContextTurns([...contextTurns, ({role: 'user', parts: [{text: "Please summarize our discussion so far."}]})]);
+                await liveSession.current.sendClientContent({
+                    turns: contextTurns,
+                    turnComplete: true
+                });
+            }
+
+            // Step 6: Handle Audio Data from Worklet
+            audioWorkletNode.current.port.onmessage = (event) => {
+                // Check if it's audio data, if the session exists, and if we are still streaming
+                if (event.data.eventType === 'audioData' && liveSession.current && recording) {
+                    const audioDataBuffer = event.data.audioData;
+                    const base64AudioData = arrayBufferToBase64(audioDataBuffer);
                     
-                    // Reset buffer
-                    bufferIndex = 0;
-                    audioBuffer = new Float32Array(chunkBufferSize);
+                    try {
+                        // Send audio chunk to Gemini
+                        liveSession.current.sendRealtimeInput({
+                            media: {
+                                data: base64AudioData,
+                                mimeType: `audio/pcm;rate=${TARGET_SAMPLE_RATE}`
+                            }
+                        });
+                        setTotalBytesSent(totalBytesSent + audioDataBuffer.byteLength);
+                        if ((totalBytesSent - 4096) % 163840 === 0) { // every ~5 seconds
+                            // console.log("Audio sent", totalBytesSent, "bytes,",
+                            //     Math.round(totalBytesSent / 32000), "seconds");
+                        }
+                    } catch (sendError) {
+                        console.log(`Error sending audio data: ${sendError.message}`, 'error');
+                        // Optionally stop streaming if sending fails repeatedly
+                        // stopStreaming();
+                    }
                 }
             };
-            
-            // Connect the nodes
-            source.current.connect(processorNode.current);
-            processorNode.current.connect(audioContext.current.destination);
-            
-            // Store nodes for cleanup
-            audioProcessor.current = processorNode.current;
-            
-            console.log(`Audio processing initialized with 0.5-second chunks at ${sampleRate}Hz`);
+
+            // Handle volume events
+            volumeWorkletNode.current.port.onmessage = (event) => {
+                if (event.data.volume !== undefined) {
+                //    console.log(event.data.volume);
+                }
+            };
+
         } catch (error) {
-            console.log(`Error initializing audio: ${error.message}`);
+            console.log(`Error starting stream: ${error.message || error}`, 'error');
+            setRecording(false);
+            await stopStreaming(); // Ensure cleanup happens even on startup error
+        }
+
+        return () => {
+            stopStreaming();       
+        };
+    }
+
+    async function stopStreaming() {
+            // Prevent multiple stop calls overlapping
+            if (!recording && !liveSession.current && !mediaStream.current && !audioContext) {
+                console.log("Stop called but already stopped/cleaned up.");
+                return;
+            } 
+            const wasStreaming = recording; // Keep track if we were actively streaming
+            setRecording(false); // Set flag immediately to stop sending data
+
+            // Step 7: Close Gemini Session
+            if (liveSession.current) {
+                try {
+                    liveSession.current.close();
+                } catch (e) {
+                    console.log(`Error closing Gemini session: ${e.message}`, 'error');
+                } finally {
+                    liveSession.current = null;
+                }
+            }
+
+            // Step 8: Stop Audio Processing
+            if (audioWorkletNode.current) {
+                audioWorkletNode.current.disconnect();
+                audioWorkletNode.current = null;
+            }
+            // disconnect the volume meter node
+            if (volumeWorkletNode.current) {
+                volumeWorkletNode.current.disconnect();
+                
+                volumeWorkletNode.current = null;
+                
+            }
+            if (audioSource.current) {
+                audioSource.current.disconnect();
+                audioSource.current = null;
+            }            
+            // Step 9: Stop Media Stream Tracks
+            if (mediaStream.current) {
+                mediaStream.current.getTracks().forEach(track => track.stop());
+                mediaStream.current = null;
+            }
+            // Step 10: Close Audio Context
+            if (audioContext.current && audioContext.current.state !== 'closed') {
+                try {
+                    await audioContext.current.close();
+                } catch (e) {
+                    console.log(`Error closing AudioContext: ${e.message}`, 'error');
+                } finally { audioContext.current = null;
+                }
+            }
+        }
+    
+    function sendTranscriptionToServer(transcription) {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'transcription', data: transcription }));
         }
     }
 
@@ -434,41 +538,6 @@ function Chat() {
         }
     }
 
-    // function getView() {
-    //     if (viewMode == 1) {
-    //         return (
-    //             <div className="flex justify-self-center md:border-x-1 md:border-blue-200 mb-[2rem] flex-col h-[65vh] mt-[1em] md:w-1/2 w-full">
-    //                 <ChatLog messages={messages} />
-    //             </div> 
-    //         );
-    //     } else if (viewMode == 2) {
-    //         return (
-    //         <div className="flex md:flex-row flex-col h-[65vh] mt-[1em] w-full mb-[2rem]">
-    //             <div className="md:w-1/2 md:border-r-1 border-blue-200 overflow-y-auto md:border-b-0 border-b-1 w-full md:h-full h-1/2">
-    //                 <ChatLog messages={messages} />
-    //             </div>
-    //             <div className="md:w-1/2 w-[100vw] md:h-full h-1/2">
-    //                 <div className="my-[1rem] flex justify-center bg-blue-200 p-[1em] rounded-lg mx-[25%]">
-    //                         {chatbotMessage}
-    //                 </div>
-    //                 <Avatar />
-    //             </div>
-    //         </div> 
-    //         );
-    //     } else {
-    //         return (
-    //             <div className="h-[65vh] mb-[2rem]">
-    //                 <div className="my-[1rem] flex justify-center bg-blue-200 p-[1em] rounded-lg mx-[25%]">
-    //                     {chatbotMessage}
-    //                 </div>
-    //                 <div className="h-full mt-[1em] w-full">
-    //                     <Avatar />
-    //                 </div>
-    //             </div>
-    //         )
-    //     }
-    // }
-
     const [showModal, setShowModal] = useState(false);
 
     const handleShow = () => setShowModal(true);
@@ -516,26 +585,6 @@ function Chat() {
                     <button className="flex plwd-button-fill rounded h-fit p-2 self-center" onClick={() => logoutUser()}>Log Out</button>
                 </div>  
             </div>
-            {/* <div className="ml-[1rem] mt-[1rem] flex justify-center">
-                <ToggleButtonGroup 
-                    type="radio"
-                    name="viewMode"
-                    defaultValue={3}
-                >
-                    <ToggleButton id="messages" variant="outline-primary" value={1} onChange={(e) => setViewMode(e.currentTarget.value)}
-                    >
-                        Messages
-                    </ToggleButton>
-                    <ToggleButton id="split" variant="outline-primary" value={2} onChange={(e) => setViewMode(e.currentTarget.value)}
-                    >
-                        Messages & Chatbot
-                    </ToggleButton>
-                    <ToggleButton id="avatar" variant="outline-primary" value={3} onChange={(e) => setViewMode(e.currentTarget.value)}
-                    >
-                        Chatbot
-                    </ToggleButton>
-                </ToggleButtonGroup>
-            </div> */}
             <div className="h-[65vh] mb-[2rem]">
                 <div className="my-[1rem] flex justify-center border-1 border-black p-[1em] rounded-lg mx-[25%]">
                     {chatbotMessage}

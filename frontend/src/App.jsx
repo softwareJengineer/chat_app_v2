@@ -28,7 +28,8 @@ function App() {
                 <Route path='/loading' element={<LoadingPage/>}></Route>
 
                 {/* PLwD routes */}
-                <Route path='/chat' element={<PrivateRoute><Chat/></PrivateRoute>}></Route>
+                {/* <Route path='/chat' element={<PrivateRoute><Chat/></PrivateRoute>}></Route> */}
+                <Route path='/chat' element={<Chat/>}></Route>
                 <Route path='/progress' element={<PrivateRoute><ProgressSummary/></PrivateRoute>}></Route>
                 <Route path='/today' element={<PrivateRoute><Today/></PrivateRoute>}></Route>
 

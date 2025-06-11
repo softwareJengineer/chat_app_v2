@@ -162,11 +162,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.global_llm_response = response
                 
                 # Generate biomarker scores
-                biomarker_scores = self.generate_biomarker_scores(user_utt)
-                await self.send(json.dumps({
-                    'type': 'biomarker_scores',
-                    'data': biomarker_scores
-                })) 
+                # biomarker_scores = self.generate_biomarker_scores(user_utt)
+                # await self.send(json.dumps({
+                #     'type': 'biomarker_scores',
+                #     'data': biomarker_scores
+                # })) 
                 
                 self.global_llm_response = response
             
@@ -287,7 +287,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.overlapped_speech_count = max(0, self.overlapped_speech_count - 0.1)
         return normalized_score
 
-    def generate_anomia_score(self):
+    def generate_anomia_score(self, user_utt):
         pattern = r'\b(u+h+|a+h+|u+m+|h+m+|h+u+h+|m+h+|h+m+|h+a+h+)\b'
         all_fillers = []
         for sentence in self.user_utterances:
@@ -298,17 +298,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
         fillers_per_minute = len(all_fillers) / duration_minutes if duration_minutes > 0 else 0
         return min(fillers_per_minute / 10, 1)
 
-    def generate_prosody_score(self):
+    def generate_prosody_score(self, user_utt=None):
+        print("Generating prosody score")
         if self.prosody_features is not None:
             try:
                 chunk_size = int(WINDOW_SIZE / HOP_LENGTH)
                 score = self.process_scores(self.prosody_features, chunk_size, self.prosody_model)
+                print("Prosody score: ", score)
                 return score
             except Exception as e:
                 logger.error(f"Error processing prosody features: {e}")
                 return 1
 
-    def generate_pronunciation_score(self):
+    def generate_pronunciation_score(self, user_utt=None):
         if self.pronunciation_features is not None:
             try:
                 print("\tGenerating pronunciation score...")
@@ -323,11 +325,35 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.user_utterances.append(user_utt)
         if self.conversation_start_time is not None:
                 current_duration = time() - self.conversation_start_time
+        pragmatic_score = self.generate_pragmatic_score(user_utt)
+        grammar_score = self.generate_altered_grammar_score(user_utt, current_duration)
+        prosody_score = self.generate_prosody_score(user_utt)
+        pronunciation_score = self.generate_pronunciation_score(user_utt)
+        try:
+            pragmatic_score = 1.0 - pragmatic_score
+        except:
+            print("Error generating pragmatic score.")
+            pragmatic_score = 0.0
+        try:
+            grammar_score = 1.0 - grammar_score
+        except:
+            print("Error generating grammar score.")
+            grammar_score = 0.0
+        try:
+            prosody_score = 1.0 - prosody_score
+        except:
+            print("Error generating prosody score.")
+            prosody_score = 0.0
+        try:
+            pronunciation_score = 1.0 - pronunciation_score
+        except:
+            print("Error generating pronunciation score.")
+            pronunciation_score = 0.0
         return {
-            'pragmatic': 1.0 - self.generate_pragmatic_score(user_utt),
-            'grammar': 1.0 - self.generate_altered_grammar_score(user_utt, current_duration),
-            'prosody': 1.0 - self.generate_prosody_score(user_utt),
-            'pronunciation': 1.0 - self.generate_pronunciation_score(user_utt)
+            'pragmatic': pragmatic_score,
+            'grammar': grammar_score,
+            'prosody': prosody_score,
+            'pronunciation': pronunciation_score
         }
     
     async def send_periodic_scores(self):  # Remove websocket parameter
