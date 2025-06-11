@@ -41,7 +41,7 @@ function Chat() {
     const date = new Date();
     const navigate = useNavigate();
 
-    const API_KEY = "AIzaSyAC8sLYGeyWLKB9RuDLt2pGiedHdBkHmnA";
+    const API_KEY = "";
     
     const MODEL_NAME = "gemini-2.0-flash-live-001"; // Realtime/Live model
     const TARGET_SAMPLE_RATE = 16000; // Gemini requires 16kHz audio
