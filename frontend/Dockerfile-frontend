@@ -1,33 +1,39 @@
-# Stage 1: Build with Vite
-#FROM node:18 AS builder
-#WORKDIR /app
-#COPY . .
-#RUN npm install
-#RUN npm run build
-
-# Stage 2: Serve with Nginx
-#FROM nginx:stable
-#COPY --from=builder /app/dist /usr/share/nginx/html
-#COPY ../nginx/default.conf /etc/nginx/conf.d/default.conf
-
-# --------------------------------------------------------------------
-# Still using Vite while in development
-# --------------------------------------------------------------------
-FROM node
-
-# --------------------------------------------------------------------
-# Set environment variables
-# --------------------------------------------------------------------
-
-# Make it available as an env variable inside the container
-ENV APP_ENVIRONMENT=${APP_ENVIRONMENT}
-RUN echo "The value of APP_ENVIRONMENT is: ${APP_ENVIRONMENT}"
-
-
-# --------------------------------------------------------------------
+# 
+# ---- This stuff would be for if we were for real ready for production ----
+# ---- Would need to change the nginx stuff + i think maybe vite.config.js (?) ----
 # 
 # --------------------------------------------------------------------
+# Stage 1: Build with Vite
+# --------------------------------------------------------------------
+#FROM node AS builder
+#RUN echo "The value of APP_ENVIRONMENT is: ${APP_ENVIRONMENT}"
+#WORKDIR /app
+#COPY . .
+#RUN npm install --legacy-peer-deps
+#RUN npm run build
+
+# --------------------------------------------------------------------
+# Stage 2: Serve with nginx
+# --------------------------------------------------------------------
+#FROM nginx:stable-alpine
+#COPY --from=builder /app/dist /usr/share/nginx/html
+#COPY nginx.conf /etc/nginx/conf.d/default.conf
+#EXPOSE 80
+
+# ====================================================================
+# Still using Vite while in development
+# ====================================================================
+# Using "preview" here instead of "dev" might help with the crashing errors.
+FROM node
+
+RUN echo "The value of APP_ENVIRONMENT is: ${APP_ENVIRONMENT}"
+
 WORKDIR /app
 COPY . .
+
 RUN npm install --legacy-peer-deps
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+RUN npm run build
+
+# Might need to change the exposed port here to 4173 (preview uses that, dev uses 5173)
+EXPOSE 5173
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0"]

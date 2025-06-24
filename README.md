@@ -44,6 +44,8 @@ REQUIREMENTS
 5. new_LSA.csv
 6. stanford-parser models file
 7. Phi-3_finetuned.gguf
+
+<br>
 </details>
 
 <details closed> <summary>Deployed (Google Cloud)</summary>
@@ -54,6 +56,7 @@ REQUIREMENTS
 3. Run ```deploy_app.sh```
     * More info on how this works: https://github.com/amurphy99/chat_app_deployment
 
+<br>
 </details>
 
 
@@ -65,6 +68,7 @@ REQUIREMENTS
 - [ ] Rename docker-compose.yml extension to .yaml (need to do in the deploy repo too though)
 - [ ] Recent chats don't work (not sure if just local difference though)
 - [ ] Changing settings doesn't do anything
+- [ ] When the robots responses are long and the height of the text box increases, it pushes the avatar down and on top of the finish button making it so users cannot click on it to finish & save a conversation
 
 
 ### llama_api
@@ -82,12 +86,12 @@ REQUIREMENTS
 
 ## To start it up:
 1. SSH into the instance
-2. Upload deploy.sh
-3. Run deploy.sh
+2. Upload deploy_app.sh
+3. Run deploy_app.sh (```bash deploy_app.sh```)
     * Installs docker & updates other dependencies
     * Downloads required, non-tracked files from cloud storage
     * Clones the repo & copies the non-tracked files (.env, model files) into their proper locations 
-    * Builds the Docker containers
+    * Builds the Docker containers & starts the app
 
 
 
@@ -115,8 +119,8 @@ SSH:/home/user/
  │   │   └── ...
  │   │
  │   ├── llama_api/
- │   │   ├── Dockerfile           # Starting up the container
-+│   │   ├── Phi-3_finetuned.gguf # LLM model (doesn't actually copy this here, accesses via volume)
+ │   │   ├── Dockerfile           # Not actually used-- we download an image instead
++│   │   ├── Phi-3_finetuned.gguf # LLM model (isn't actually here, accesses via volume)
  │   │   └── server.config        # Reverse proxy + static serving
  │   │
  │   ├── nginx/
@@ -127,7 +131,7 @@ SSH:/home/user/
  │   ├── docker-compose.yml       # Starts up all of the containers
  │   └── ...
  │
- ├── deployment-files/            # Non-tracked files downloaded from GCS bucket by deploy_app.sh
+ ├── deployment-files/            # Untracked files downloaded from GCS bucket by deploy_app.sh
 +│   ├── .env
  │   ├── models/      
 +│   │   ├── new_LSA.csv
