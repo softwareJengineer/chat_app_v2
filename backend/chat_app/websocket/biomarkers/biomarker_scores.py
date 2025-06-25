@@ -53,21 +53,15 @@ else:
 # =======================================================================
 # Generate Multiple Scores
 # =======================================================================
-# On-utterance biomarkers
-def generate_biomarker_scores(user_utt: str, LLM_response: str, conversation_start_time, prosody_features, pronunciation_features):
-    biomarker_scores = {
-        "pragmatic"     : gen_score(BioConfig.PRAG, prag, {"user_utt": user_utt, "llm_response"           : LLM_response           }),
-        "grammar"       : gen_score(BioConfig.GRAM, gram, {"user_utt": user_utt, "conversation_start_time": conversation_start_time}),
-        "prosody"       : gen_score(BioConfig.PROS, pros, {      "prosody_features":       prosody_features}),
-        "pronunciation" : gen_score(BioConfig.PRON, pron, {"pronunciation_features": pronunciation_features}),
-    }
-    return biomarker_scores
+# 1) On-Utterance Biomarkers
+def generate_utterance_biomarkers(context_buffer):
+    return {"pragmatic": gen_score(BioConfig.PRAG, prag, {"context_buffer": context_buffer}),
+            "grammar"  : gen_score(BioConfig.GRAM, gram, {"context_buffer": context_buffer}), 
+            "anomia"   : gen_score(BioConfig.ANOM, anom, {"context_buffer": context_buffer}),}
 
-# Periodic biomarkers
-def generate_periodic_scores(user_utterances, conversation_start_time, overlapped_speech_count):
-    biomarker_scores = {
-        "anomia"     : gen_score(BioConfig.ANOM, anom, {"user_utterances": user_utterances, "conversation_start_time": conversation_start_time}),
-        "turntaking" : gen_score(BioConfig.TURN, turn, {"overlapped_speech_count": overlapped_speech_count                                    }),
-    }
-    return biomarker_scores
-
+# 2) On-Audio Biomarkers
+def generate_audio_biomarkers(prosody_features, pronunciation_features, overlapped_speech_count):
+    return {"prosody"      : gen_score(BioConfig.PROS, pros, {      "prosody_features" :       prosody_features }),
+            "pronunciation": gen_score(BioConfig.PRON, pron, {"pronunciation_features" : pronunciation_features }),
+             "turntaking"  : gen_score(BioConfig.TURN, turn, {"overlapped_speech_count": overlapped_speech_count}),}
+    
