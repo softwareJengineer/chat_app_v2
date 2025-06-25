@@ -7,7 +7,7 @@ from asgiref.sync                    import sync_to_async
 ALLOWED_SOURCES = {"webapp", "mobile", "qtrobot", "buddyrobot"}
 
 # =======================================================================
-# Authentification  
+# Authentication  
 # =======================================================================
 @sync_to_async
 def _get_user(token_key):
@@ -22,7 +22,7 @@ def _get_user(token_key):
 class QueryAuthMiddleware(BaseMiddleware):
     """
     Parse data from the WebSocket connection.
-        * token/user -> authentification for the user making the request/having the conversation
+        * token/user -> authentication for the user making the request/having the conversation
         * source     -> identify the source of the request (i.e. the web app, robot, etc.)
     """
     async def __call__(self, scope, receive, send):

@@ -13,19 +13,11 @@ from time     import time
 from datetime import datetime, timezone
 
 # From this project
-from ..                    import config as cf
-from ..services            import ChatService
-from .services.chatHelpers import generate_LLM_response
-from .services.audioHelpers import extract_audio_biomarkers, extract_text_biomarkers
+from ..                      import config as cf
+from ..services.db_services  import ChatService
+from  .services.chatHelpers  import generate_LLM_response
+from  .services.audioHelpers import extract_audio_biomarkers, extract_text_biomarkers
 
-"""
-To do here:
-
-For turntaking/overlapped speech, we know how much time is passing because of the audio data, so we canuse that as a reference
-
-maybe shouldnt use send_json ?
-
-"""
 # ------------------------------------------------------------------
 # Helper: Start a background task and log any exception it raises --- put into another file
 # ------------------------------------------------------------------
@@ -40,24 +32,54 @@ def fire_and_log(coro):
 # ChatConsumer 
 # ======================================================================= ===================================
 class ChatConsumer(AsyncJsonWebsocketConsumer):
-    MAX_CONTEXT = 15  # (how many recent messages to keep for the LLM)
+    """
+    Have the ability here to add optional ASR/TTS in the frontend or backend by using different endpoints. If
+    a text message is received, assume ASR/TTS was done in the frontend and just reply with a message (could
+    also base this on the "source" field). If audio of a shorter length is received (would be every ~100 ms
+    or so), then we know we should be doing ASR/TTS in the backend here. The longer, 5 second, audio data we
+    receive is for the opensmile biomarkers, so a different "type" would be used for shorter audio.
+
+    * ToDo: send_json or do json.dumps inside send ?
+
+    """
+    MAX_CONTEXT = 10  # (how many recent messages to keep for the LLM)
 
     # =======================================================================
-    # Initiate the WebSocket connection
+    # Open WebSocket Connection
     # =======================================================================
     async def connect(self):
+        """
+        1) Authentication Block -> user information, chat source
+            Later on, when adding functionality for users to connect to the same chat via webapp & robot simultaneously, 
+            this is how we will do it. If the current active chat source is "buddyrobot" or "qtrobot" and we are connecting
+            from "webapp" or "mobile", disable the chat functionality but send updates for the each utterance so the UI
+            can follow along with each message in real time. 
+            ToDo: If the current ChatSession source is webapp and we are a robot, close it and remake a new one automatically.
+
+        2) Load or create active session
+            get_or_create_active_session(user) will return a chat if it's still active. The consumer builds a brand-new 
+            context_buffer from those persisted messages so the LLM has context.
+        """
         # -----------------------------------------------------------------------
-        # 1) Authentication Block (authenticate before accepting the connection, uses custom "unauth" code)
+        # 1) Authentication Block 
         # -----------------------------------------------------------------------
+        # Authenticate before accepting connection (uses custom "unauth" code)
         if not self.scope["user"].is_authenticated: await self.close(code=4001); return
-        self.user = self.scope["user"]
+        self.user   = self.scope["user"]
+        self.source = self.scope.get("source", "unknown")
         await self.accept()
+
+        # I don't think any frontend uses these during the chat right now, but I'll leave this option in
+        self.return_biomarkers = (self.source in ["webapp"])
 
         # -----------------------------------------------------------------------
         # 2) Load or create an active session
         # -----------------------------------------------------------------------
-        self.session = await database_sync_to_async(ChatService.get_or_create_active_session)(self.user)
+        self.session = await database_sync_to_async(ChatService.get_or_create_active_session)(self.user, self.source)
         recent = await database_sync_to_async(lambda: list(self.session.messages.all().order_by("-start_ts")[: self.MAX_CONTEXT])[::-1])()
+
+        # ToDo: Check if the incoming source matches or doesn't match the source of the loaded session
+        # if not, do something....
 
         # ToDo: I added the timestamps in just now for biomarker scores, but I actually don't really like how this works at the moment...
         self.context_buffer = [(m.role, m.content, m.ts.timestamp()) for m in recent]
@@ -67,9 +89,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         self.audio_windows_count      = 0.0
         self.overlapped_speech_events = []  # List of timestamps (ToDo: Add this to the DB somehow)
 
-        # There's almost no reason to send these back live right?
-        self.return_biomarkers       = False   # ToDo: change this based on the chat "source" field (?) only send back if source is webapp
-
         # -----------------------------------------------------------------------
         # 3) Send misc information to the frontend (ToDo: biomarkers, etc)
         # -----------------------------------------------------------------------
@@ -77,11 +96,25 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         if self.return_biomarkers: await self.send_json({"type": "history", "messages": self.context_buffer})
 
     # -----------------------------------------------------------------------
-    # Close connection 
+    # Close Connection 
     # -----------------------------------------------------------------------
     async def disconnect(self, code):
+        """
+        # DO NOT close the session -- just clean local state.
+        """
+        # 1) Close the ChatSession in the DB
+        
+
+        # Cancel background tasks (if any -- none right now)
+        for task in getattr(self, "_bg_tasks", []): task.cancel()
+        await asyncio.gather(*getattr(self, "_bg_tasks", []), return_exceptions=True)
+
         # Reset some properties for the next connection
         self.context_buffer.clear()
+        self.overlapped_speech_count  = 0.0
+        self.audio_windows_count      = 0.0
+        self.overlapped_speech_events.clear()
+
         logger.info(f"Client disconnected: {self.user} {code}") 
 
 
@@ -98,19 +131,15 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         # Audio data or text transcription
         elif data["type"] == "audio_data"   : await self._handle_audio_data   (data)
         elif data["type"] == "transcription": await self._handle_transcription(data)
-
+        elif data["type"] == "end_chat"     : await database_sync_to_async(ChatService.close_session)(self.user, self.source)
 
     # =======================================================================
     # Text Transcriptions
     # =======================================================================
-    # On-Utterance Biomarkers
+    # On-Utterance Biomarkers (saves them to the DB as soon as we get them)
     async def _on_utterance_biomarkers(self):
         utterance_biomarkers = await extract_text_biomarkers(self.context_buffer)
-
-        # Save biomarkers to the DB
-        fire_and_log(database_sync_to_async(ChatService.add_biomarker)(self.user, "pragmatic", utterance_biomarkers["pragmatic"]))
-        fire_and_log(database_sync_to_async(ChatService.add_biomarker)(self.user, "grammar",   utterance_biomarkers["grammar"  ]))
-        fire_and_log(database_sync_to_async(ChatService.add_biomarker)(self.user, "anomia",    utterance_biomarkers["anomia"   ]))
+        fire_and_log(database_sync_to_async(ChatService.add_biomarkers_bulk)(self.user, utterance_biomarkers))
         if self.return_biomarkers: await self.send(json.dumps({"type": "biomarker_scores", "data": utterance_biomarkers}))
     
     # Process and respond to the users utterance text
@@ -145,7 +174,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         if len(self.context_buffer) > self.MAX_CONTEXT: self.context_buffer.pop(0)
 
         # On-utterance biomarker scores (run in a thread so we don't block the loop)
-        fire_and_log(self._on_utterance_biomarkers(text, system_utt))
+        fire_and_log(self._on_utterance_biomarkers())
 
     # =======================================================================
     # Audio Data
@@ -155,22 +184,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         audio_biomarkers = await extract_audio_biomarkers(data, self.overlapped_speech_count)
       
         # Save biomarkers to the DB
-        fire_and_log(database_sync_to_async(ChatService.add_biomarker)(self.user, "prosody",       audio_biomarkers["prosody"      ]))
-        fire_and_log(database_sync_to_async(ChatService.add_biomarker)(self.user, "pronunciation", audio_biomarkers["pronunciation"]))
-        fire_and_log(database_sync_to_async(ChatService.add_biomarker)(self.user, "turntaking",    audio_biomarkers["turntaking"   ]))
+        fire_and_log(database_sync_to_async(ChatService.add_biomarkers_bulk)(self.user, audio_biomarkers))
         if self.return_biomarkers: await self.send(json.dumps({"type": "audio_scores", "data": audio_biomarkers}))
 
         # Update turntaking (12 audio windows for 1 minute of data)
         self.audio_windows_count += 1
         self.overlapped_speech_count = self.overlapped_speech_count / (self.audio_windows_count / 12)
      
-
-    # =======================================================================  
-    # Save the chat
-    # =======================================================================
-    @database_sync_to_async
-    def store_chat(self, user, date, time, scores, avgScores, notes, messages):
-        """Store utterance in database asynchronously"""
-        try: self.Chat.objects.create(chatID=self.chatID, user=user, date=date, time=time, scores=scores, avgScores=avgScores, notes=notes, messages=messages)
-        except Exception as e: logger.error(f"Failed to store chat: {e}")
-
