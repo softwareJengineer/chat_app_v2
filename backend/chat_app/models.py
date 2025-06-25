@@ -38,8 +38,8 @@ class ChatSession(models.Model):
 
     # Optional metadata to be filled when closing
     notes     = models.TextField(**init_args)
-    topics    = models.CharField(**init_args, max_length=255)
-    sentiment = models.CharField(**init_args, max_length=255)
+    topics    = models.CharField(**init_args, max_length=255, default="N/A")
+    sentiment = models.CharField(**init_args, max_length=255, default="N/A")
 
     class Meta:
         # One active session per user

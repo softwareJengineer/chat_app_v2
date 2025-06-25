@@ -1,9 +1,8 @@
 from rest_framework import serializers
-from .models import ChatSession, ChatMessage, ChatBiomarkerScore, Profile, UserSettings, Reminder, Goal
+from ..models import ChatSession, ChatMessage, ChatBiomarkerScore, Profile, UserSettings, Reminder, Goal
 
 from django.contrib.auth import get_user_model
 from django.db           import transaction
-
 
 # =======================================================================
 # ChatSession Related Data
@@ -32,7 +31,6 @@ class ChatSessionSerializer(serializers.ModelSerializer):
         # Everything except notes
         read_only_fields = (field for field in fields if field not in ["notes"])
 
-
 # =======================================================================
 # Other Data
 # =======================================================================
@@ -55,7 +53,6 @@ class GoalSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "remaining")
 
     def get_remaining(self, obj): return obj.remaining
-
 
 # =======================================================================
 # Profiles

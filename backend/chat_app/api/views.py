@@ -5,7 +5,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 # Can I move the serializers.py file into this folder ?
 from ..models      import                    Goal,           UserSettings,           Reminder,           ChatSession
-from ..serializers import ProfileSerializer, GoalSerializer, UserSettingsSerializer, ReminderSerializer, ChatSessionSerializer, SignupSerializer
+from  .serializers import ProfileSerializer, GoalSerializer, UserSettingsSerializer, ReminderSerializer, ChatSessionSerializer, SignupSerializer
 from  .mixins      import ProfileMixin
 
 """
