@@ -22,6 +22,101 @@ DAYS_OF_WEEK = (
     (6, 'Sunday'),
 )
 
+# ======================================================================= ===================================
+# New chat framework
+# ======================================================================= ===================================
+"""
+ChatSession fields potentially calculated on retrieval, i know that was a thing in postgres
+    Overlapped speech
+    average scores
+These would be added as properties like duration is
+
+
+"""
+from django.conf      import settings
+from django.db        import models
+from django.db.models import UniqueConstraint, Q
+
+# =======================================================================
+# ChatSession 
+# =======================================================================
+# Every conversation is a ChatSession, but only one is ever active at once
+class ChatSession(models.Model):
+    SOURCE_CHOICES = [("webapp", "WebApp"), ("qtrobot", "QTRobot"), ("buddyrobot", "BuddyRobot")]
+
+    # Initialized on chat creation
+    user       = models.ForeignKey   (settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="chat_sessions")
+    source     = models.CharField    (max_length=32, choices=SOURCE_CHOICES, default="webapp")
+    started_at = models.DateTimeField(auto_now_add=True)
+
+    # Updated on chat end
+    is_active = models.BooleanField (default=True) 
+    ended_at  = models.DateTimeField(**init_args)
+
+    # Optional metadata to be filled when closing
+    notes     = models.TextField(**init_args)
+    topics    = models.CharField(**init_args, max_length=255)
+    sentiment = models.CharField(**init_args, max_length=255)
+
+    class Meta:
+        ordering = ["-started_at", "id"]
+
+        # One active session per user
+        constraints = [
+            UniqueConstraint(fields=["user"], condition=Q(is_active=True), name="unique_active_session_per_user",),
+        ]
+
+    # Returns session duration in seconds (None if active)
+    @property
+    def duration(self):
+        end = self.ended_at or models.functions.Now()
+        return (end - self.started_at).total_seconds()
+
+# =======================================================================
+# ChatMessage -- an array of these is assigned to each ChatSession
+# =======================================================================
+class ChatMessage(models.Model):
+    # This may have to change later if word-level timestamps are added.
+    ROLE_CHOICES = [("user", "User"), ("assistant", "Assistant")]
+    
+    session   = models.ForeignKey(ChatSession, on_delete=models.CASCADE, related_name="messages")
+    role      = models.CharField(max_length=32, choices=ROLE_CHOICES)
+    content   = models.TextField()
+    ts        = models.DateTimeField(auto_now_add=True)
+
+    # ToDo: we don't realy have anything implemented yet that could get these here
+    start_ts  = models.DateTimeField(**init_args)
+    end_ts    = models.DateTimeField(**init_args)
+
+    class Meta:
+        ordering = ["-ts", "id"]
+
+# =======================================================================
+# ChatBiomarkerScore -- an array of these is assigned to each ChatSession
+# =======================================================================
+class ChatBiomarkerScore(models.Model):
+    BIOMARKER_CHOICES = [("alteredgrammar", "AlteredGrammar"), ("anomia", "Anomia"), ("pragmatic", "Pragmatic"), 
+                         ("pronunciation", "Pronunciation"), ("prosody", "Prosody"), ("turntaking", "Turntaking")]
+    
+    session    = models.ForeignKey(ChatSession, on_delete=models.CASCADE, related_name="biomarker_scores")
+    score_type = models.CharField(max_length=32, choices=BIOMARKER_CHOICES)
+    score      = models.FloatField()
+    ts         = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-ts", "score_type", "id"]
+
+
+
+
+
+
+
+
+
+
+
+
 # =======================================================================
 # Create Models
 # =======================================================================
