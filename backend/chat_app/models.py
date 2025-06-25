@@ -42,7 +42,7 @@ from django.db.models import UniqueConstraint, Q
 # =======================================================================
 # Every conversation is a ChatSession, but only one is ever active at once
 class ChatSession(models.Model):
-    SOURCE_CHOICES = [("webapp", "WebApp"), ("qtrobot", "QTRobot"), ("buddyrobot", "BuddyRobot")]
+    SOURCE_CHOICES = [("webapp", "WebApp"), ("mobile", "Mobile"), ("qtrobot", "QTRobot"), ("buddyrobot", "BuddyRobot")]
 
     # Initialized on chat creation
     user       = models.ForeignKey   (settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="chat_sessions")
