@@ -73,8 +73,9 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 
 try:
     # Get paths to the saved models
-    pronunciation_model_path = current_path + "/services/pronunciation_rf(v4).pkl"
-    prosody_model_path       = current_path + "/services/prosody_rf(v1).pkl"
+    rf_model_path = "/websocket/biomarkers/rf_models"
+    pronunciation_model_path = current_path + f"{rf_model_path}/pronunciation_rf_v4.pkl"
+    prosody_model_path       = current_path + f"{rf_model_path}/prosody_rf_v1.pkl"
 
     # Make sure the saved models exist
     check_for_model_files(pronunciation_model_path, prosody_model_path)

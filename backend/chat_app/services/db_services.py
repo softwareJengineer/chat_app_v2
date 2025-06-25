@@ -24,12 +24,12 @@ class ChatService:
     
     @staticmethod
     @transaction.atomic
-    def close_session(user, *, notes=None, topics=None, sentiment=None):
+    def close_session(user, *, source="webapp", notes=None, topics=None, sentiment=None):
         """
         Marks the current session inactive, fills in "ended_at", stores 
         optional metadata, and immediately opens a fresh/blank session.
         """
-        session = ChatSession.objects.select_for_update().filter(user=user, is_active=True).first()
+        session = ChatSession.objects.select_for_update().filter(user=user, source=source, is_active=True).first()
         if not session: return None
 
         session.is_active = False
@@ -60,5 +60,10 @@ class ChatService:
     def add_biomarker(user, score_type, score):
         session = ChatService.get_or_create_active_session(user)
         return ChatBiomarkerScore.objects.create(session=session, score_type=score_type, score=score)
+    
+    @staticmethod
+    def add_biomarkers_bulk(user, scores: dict):
+        session = ChatService.get_or_create_active_session(user)
+        ChatBiomarkerScore.objects.bulk_create([ChatBiomarkerScore(session=session, scoreType=k, score=v) for k, v in scores.items()])
 
   
