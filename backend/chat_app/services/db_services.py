@@ -1,6 +1,6 @@
 from django.db    import transaction
 from django.utils import timezone
-from .models      import ChatSession, ChatMessage, ChatBiomarkerScore
+from ..models     import ChatSession, ChatMessage, ChatBiomarkerScore
 
 # =======================================================================
 # Service for working with chat data
@@ -29,11 +29,11 @@ class ChatService:
         Marks the current session inactive, fills in "ended_at", stores 
         optional metadata, and immediately opens a fresh/blank session.
         """
-        session = ChatSession.objects.select_for_update().filter(user=user, source=source, is_active=True).first()
+        session = ChatSession.objects.select_for_update().filter(user=user, is_active=True).first()
         if not session: return None
 
         session.is_active = False
-        session.ended_at  = timezone.now()
+        session.end_ts    = timezone.now()
 
         # ToDo: Probably should calculate the topics and sentiment right here using helper functions
         if notes     is not None: session.notes     = notes
@@ -43,7 +43,7 @@ class ChatService:
         session.save()
 
         # Get ready for next conversation
-        ChatSession.objects.create(user=user)
+        ChatSession.objects.create(user=user, source=source)
         return session
     
     # -----------------------------------------------------------------------

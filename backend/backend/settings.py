@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-4#!0ew(h%-_%#at0p(ageh1k%uwt-(-1jm2(g)*m*rw5h3tk*#
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'localhost', '127.0.0.1',
+    'localhost',               '127.0.0.1',
     "cognibot.org",            "www.cognibot.org", 
     "deployment.cognibot.org", "www.deployment.cognibot.org",
     "sandbox.cognibot.org",    "www.sandbox.cognibot.org",
@@ -36,7 +36,6 @@ ALLOWED_HOSTS = [
 
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -64,7 +63,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'backend.urls'
-
 CORS_ALLOW_ALL_ORIGINS = True  # For development only
 
 TEMPLATES = [
@@ -83,14 +81,8 @@ TEMPLATES = [
     },
 ]
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
-}
+REST_FRAMEWORK = {'DEFAULT_AUTHENTICATION_CLASSES'  : ('rest_framework_simplejwt.authentication.JWTAuthentication', ),
+                  'DEFAULT_PERMISSION_CLASSES'      : ('rest_framework.permissions.IsAuthenticated',                ),}
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
@@ -133,74 +125,47 @@ SIMPLE_JWT = {
 }
 
 CORS_ALLOW_CREDENTIALS = True
-
 WSGI_APPLICATION = 'backend.wsgi.application'
-
 ASGI_APPLICATION = 'backend.asgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('POSTGRES_DB'),
-        'USER': config('POSTGRES_USER'),
-        'PASSWORD': config('POSTGRES_PASSWORD'),
-        'HOST': 'db',
-        'PORT': '5432',
+        'ENGINE'    : 'django.db.backends.postgresql',
+        'NAME'      : config('POSTGRES_DB'),
+        'USER'      : config('POSTGRES_USER'),
+        'PASSWORD'  : config('POSTGRES_PASSWORD'),
+        'HOST'      : 'db',
+        'PORT'      : '5432',
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
-
+AUTH_PASSWORD_VALIDATORS = [{'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
+                            {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',          },
+                            {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',         },
+                            {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',        },]
 AUTH_PASSWORD_VALIDATORS = []
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
-
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
-USE_I18N = True
-
-USE_TZ = True
-
+LANGUAGE_CODE   = 'en-us'
+TIME_ZONE       = 'UTC'
+USE_I18N        = True
+USE_TZ          = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
-
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    BASE_DIR / "chat_app/static",
-]
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_URL       = '/static/'
+STATICFILES_DIRS = [BASE_DIR / "chat_app/static",]
+STATIC_ROOT      = BASE_DIR / "staticfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-LOGIN_REDIRECT_URL = '/'
+DEFAULT_AUTO_FIELD  = 'django.db.models.BigAutoField'
+LOGIN_REDIRECT_URL  = '/'
 LOGOUT_REDIRECT_URL = '/'
-LOGIN_URL = '/'
+LOGIN_URL           = '/'
