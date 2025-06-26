@@ -6,8 +6,10 @@ Django based backend. Provides database access via an API and provides the chat 
 * In ```db_services.py``` add functionality to calculate topics and analysis and save them when the session is closed. Also get/create the user's goal and add 1 to it.
     - There is some old sample code in a comment at the top that can be used as a reference.
 * Biomarker calculations need to be looked over. Specific inputs like time ranges, single words, full conversation, etc.
-* Django secret key moved to .env file or config. Turn debug mode on and off via environment variables as well.
-* Make sure requirements actually covers everything.
+* Django secret key moved to ```.env``` file or config. Turn debug mode on and off via environment variables as well.
+* Make sure ```requirements-web.txt``` actually covers everything.
+* When we load a chat, check if X minutes have passed since the last interaction, and if so close it and create a new one.
+    - Means we need to add in a "last interaction" timer... Or I guess I can use the same logic as start_ts for end_ts.
 
 <br>
 

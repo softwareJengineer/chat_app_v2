@@ -17,7 +17,6 @@ DAYS_OF_WEEK = ((0, 'Monday'), (1, 'Tuesday'), (2, 'Wednesday'), (3, 'Thursday')
 # Every conversation is a ChatSession, but only one is ever active at once
 class ChatSession(models.Model):
     """
-    * started_at & ended_at need work
     * overlapped speech needs to be handled
 
     These properties would work totally fine as cached properties once the session 
@@ -182,5 +181,5 @@ class UserSettings(models.Model):
     def __str__(self): return f"{self.user.plwd.username}'s settings"
 
     class Meta:
-        constraints = [models.UniqueConstraint(fields=["user"], name="one_goal_per_user")]
+        constraints = [models.UniqueConstraint(fields=["user"], name="one_settings_per_user")]
 
