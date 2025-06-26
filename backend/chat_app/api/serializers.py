@@ -75,7 +75,8 @@ class ProfileSerializer(serializers.ModelSerializer):
     role      = serializers.SerializerMethodField()
     class Meta:
         model  = Profile
-        fields = ("plwd", "caregiver", "linked_to")
+        fields = ("id", "plwd", "caregiver")
+        read_only_fields = fields # Not sure...
 
     def get_role(self, obj):
         req_user = self.context["request"].user

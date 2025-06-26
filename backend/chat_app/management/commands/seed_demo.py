@@ -9,10 +9,10 @@ class Command(BaseCommand):
         with transaction.atomic():
 
             # Delete then recreate
-            User.objects.filter(username__in=["demo_plwd", "demo_caregiver"]).delete()
+            User.objects.filter(username__in=["demo_patient", "demo_caregiver"]).delete()
 
             # Create user entries for both the patient and caregiver
-            plwd = User.objects.create_user("demo_plwd",      password="demo", first_name="John", last_name="Patient",   is_staff=False)
+            plwd = User.objects.create_user("demo_patient",   password="demo", first_name="John", last_name="Patient",   is_staff=False)
             care = User.objects.create_user("demo_caregiver", password="demo", first_name="John", last_name="Caregiver", is_staff=True )
             profile = Profile.objects.create(plwd=plwd, caregiver=care)
 

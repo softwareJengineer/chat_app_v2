@@ -99,8 +99,21 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-        token["username"] = user.username
+        token["id"        ] = user.id
+        token["username"  ] = user.username
         return token
+    
+    # Extra keys that appear in the JSON response
+    def validate(self, attrs):
+        data = super().validate(attrs)  # gives you {"refresh": ..., "access": ...}
+        data["user"] = {
+            "id"        : self.user.id,
+            "username"  : self.user.username,
+            "first_name": self.user.first_name,
+            "last_name" : self.user.last_name,
+            "is_staff"  : self.user.is_staff,
+        }
+        return data
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
