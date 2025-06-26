@@ -1,8 +1,8 @@
-# Speech System / Backend
+# Speech System // Backend
 Django based backend. Provides database access via an API and provides the chat function via WebSocket.
 
-
 ### ToDo:
+* Add ```ChatSessions``` return to ```Profile``` API queries (?)
 * In ```db_services.py``` add functionality to calculate topics and analysis and save them when the session is closed. Also get/create the user's goal and add 1 to it.
     - There is some old sample code in a comment at the top that can be used as a reference.
 * Biomarker calculations need to be looked over. Specific inputs like time ranges, single words, full conversation, etc.
@@ -10,8 +10,109 @@ Django based backend. Provides database access via an API and provides the chat 
 * Make sure ```requirements-web.txt``` actually covers everything.
 * When we load a chat, check if X minutes have passed since the last interaction, and if so close it and create a new one.
     - Means we need to add in a "last interaction" timer... Or I guess I can use the same logic as start_ts for end_ts.
+    - Probably should be done in ```db_services.py```.
+* Also add logic that checks if the source loading the chat is the same as the source that created the current chat.
+    - If something is the first message or first biomarker added to the chat, set the source to that (an empty chat could have been made previously).
+    - Do this in ```consumers.py``` or ```db_services.py```. Probably ```db_services.py``` though ?
+    - This could be how to have 2 connections to a chat at once. If the chat was created on the robot and you are connecting from the webapp, do:...
 
 <br>
+
+
+
+
+
+
+
+
+
+
+# Backend System Architecture
+
+<details closed> <summary> <b>Frameworks Used</b> </summary>
+
+| Layer         | Framework                              | Role                                                                                                                                      |
+| ------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **Network**   | **Docker compose**                     | Starts up Postgres, Django app, Nginx reverse-proxy                                                                                        |
+| **Auth**      | **JSON Web Tokens (SimpleJWT)**        | Browser/robot obtains tokens at `/api/token/`, sends `Authorization: Bearer <access>` on HTTP or `?token=<access>&source=<client>` on WS  |
+| **HTTP API**  | **Django REST Framework**              | JSON endpoints mounted at `/api/...`                                                                                                      |
+| **WebSocket** | **Django Channels 4**                  | WebSocket endpoint `ws://<host>/ws/chat/` (one socket per active conversation)                                                            |
+<hr>
+</details>
+
+<details closed> <summary> <b>Database Models Overview</b> </summary>
+
+| Model                  | Purpose                                  | Key fields / constraints                              |
+| ---------------------- | ---------------------------------------- | ----------------------------------------------------- |
+| **User (`auth_user`)** | Login credentials                        | Django default class                                  |
+| **Profile**            | One patient linked 1-to-1 to a caregiver | `Unique(plwd)` & `Unique(caregiver)`                  |
+| **ChatSession**        | One conversation (active or archived)    | `is_active`, `source`, `Unique(user, is_active=True)` |
+| **ChatMessage**        | Single utterance                         | FK(`ChatSession`), `role = user/assistant`            |
+| **ChatBiomarkerScore** | Biomarkers calculated during chats       |  FK(`ChatSession`), `score_type`, `score`, `ts`       |
+| **Goal**               | Track number of user conversations       | `Unique(user)`                                        |
+| **UserSettings**       | View / scheduling toggles                | `Unique(user)`                                        |
+| **Reminder**           | Calendar entry                           | FK(`Profile`), `daysOfWeek` Array                     |
+<hr>
+</details>
+
+<details closed> <summary> <b>HTTP API surface (all JSON)</b> </summary>
+
+| Endpoint                              | Method(s)               | Notes                                                                 |
+| ------------------------------------- | ----------------------- | --------------------------------------------------------------------- |
+| `/api/signup/`                        | **POST**                | Creates patient & caregiver users, `Profile`, `UserSettings`, `Goal`  |
+| `/api/token/` & `/api/token/refresh/` | **POST**                | JWT login / refresh                                                   |
+| `/api/profile/`                       | **GET**                 | Returns patient & caregiver names, settings, goal                     |
+| `/api/goal/`                          | **GET PUT**             | Single row per user                                                   |
+| `/api/settings/`                      | **GET PUT**             | Single row per user                                                   |
+| `/api/reminders/`                     | **GET POST PUT DELETE** | User can have multiple                                                |
+| `/api/chatsessions/`                  | **GET**                 | List + detail with nested messages & biomarkers                       |
+
+All endpoints are protected by `IsAuthenticated` (JWT or session cookie) except `/signup/` and token endpoints.
+<hr>
+</details>
+
+<details closed> <summary> <b>WebSocket Flow</b> </summary>
+
+1. **Client connects:** 
+    * ```wss://<host>/ws/chat/?token=<JWT_ACCESS>&source=robot```
+    * `QueryAuthMiddleware`
+        - Extracts `token`, verifies it, and sets `scope["user"]`
+        - Passes `source` string into `scope`
+            * ```webapp``` | ```mobile``` | ```qtrobot``` | ```buddyrobot```
+
+2. **`ChatConsumer.connect()`**
+    * Calls `ChatService.get_or_create_active_session(user, source)`, which fetches or creates `ChatSession(is_active=True)`
+    * Builds `context_buffer` from the last 10 messages between the user and LLM
+
+3. **Receive JSON messages during chat:**
+    - `"overlapped_speech"` => Simple notification that there was overlapped speech between the user and system
+        * ***ToDo: Send the timestamp this occured instead. Also add it as a property of ChatSessions. Makes "interruptions over the last X seconds" simple.***
+    - `"audio_data"` => Expects 5 second audio chunks to be used for calculating openSMILE features
+        * ***ToDo: Create a second audio data endpoint that receives chunks of ~100ms. This would be used for backend ASR.***
+    - `"transcription"` => Assumes this to be the users utterance (ASR was done on the frontend), and replies with the LLM
+        * ***ToDo: Send utterance start/end timestamps along with the text.*** 
+    - `"end_chat"` => Set the current ```ChatSession``` as inactive, and creates a new one
+        * ***ToDo: Update ```Goal``` with +1 completed chats and add topics/sentiment data to the ```ChatSession``` object now that it is completed.*** 
+        * ***ToDo: Actually, should just change the ```current``` property of ```Goal``` to a method. Query the associated user, check how many non-```is_active``` chats the have that come after the goals ```startDay``` field.***
+<hr>
+</details>
+
+<details closed> <summary> <b>Default/Demo Data</b> </summary>
+
+| User      | Username          | Password  |
+| --------- | ----------------- | --------- |
+| User      | `demo_patient`    | `demo`    |
+| Caregiver | `demo_caregiver`  | `demo`    |
+<hr>
+</details>
+<br>
+
+
+
+
+
+
+
 
 
 ## Java Access
@@ -38,7 +139,6 @@ String refreshToken = Json.parse(loginRes.body()).at("/refresh").asText();
 ```
 </details>
 
-
 <details closed> <summary> Call any API endpoint </summary>
 
 ```java
@@ -52,7 +152,6 @@ HttpResponse<String> profileRes = client.send(profileReq, HttpResponse.BodyHandl
 ```
 </details>
 
-
 <details closed> <summary>  Open the WebSocket chat </summary>
 
 ```java
@@ -65,11 +164,19 @@ WebSocket webSocket = client.newWebSocketBuilder()
         .join();
 ```
 </details>
-
-
 <br>
 
+
+
+
+
+
+
+
+
+
 ## LLama API Server
+
 <details closed> <summary> Will be moved to separate instance </summary>
 
 Default ```User``` model contains an ```is_staff``` field. Database should be initialized with some starter data for testing, but also with some admin profiles. Admin profiles will havve ```is_staff``` and should be able to access a page that gets the status of the Google cloud compute instance hosting the LLM. If offline, a button will be available to send a command to restart the server automatically.
