@@ -8,45 +8,6 @@ from ..models      import                    Goal,           UserSettings,      
 from  .serializers import ProfileSerializer, GoalSerializer, UserSettingsSerializer, ReminderSerializer, ChatSessionSerializer, SignupSerializer
 from  .mixins      import ProfileMixin
 
-"""
-ToDo:
-* I should go back over everything and make sure the stuff that is sent/received makes sense
-* Sentiment and topics need to be calculated somewhere
-* Goal is supposed to be automatically updated when a ChatSession is finished
-
-        sentiment = "N/A"
-        topics = "N/A"
-        message_text = get_message_text(messages)
-        try:
-            sentiment = sentiment_scores(message_text)
-            topics = get_topics(message_text)
-        except Exception as e:
-            print(e)
-            pass  # If there is an error in extracting sentiment or topics, we will return "N/A"
-        
-        # Update the goal
-        goal = Goal.objects.get(user=profile)
-        goal.reset()
-        goal.current += 1
-        goal.save()
-
-        
-def get_sentiment_topics(data_messages):
-    message_text = get_message_text(data_messages)
-
-    # Sentiment
-    try:    sentiment = sentiment_scores(message_text)
-    except: sentiment = "N/A"
-
-    # Topics
-    try:    topics = get_topics(message_text)
-    except: topics = "N/A"
-
-    return sentiment, topics
-
-"""
-
-
 # ======================================================================= ===================================
 # Single-object endpoints (no list, one-to-one)
 # ======================================================================= ===================================

@@ -9,39 +9,43 @@ from django.db           import transaction
 # =======================================================================
 class ChatMessageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ChatMessage
+        model  = ChatMessage
         fields = ("id", "role", "content", "ts", "start_ts", "end_ts")
         read_only_fields = fields
 
 class BiomarkerSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ChatBiomarkerScore
+        model  = ChatBiomarkerScore
         fields = ("id", "score_type", "score", "ts")
         read_only_fields = fields
 
 class ChatSessionSerializer(serializers.ModelSerializer):
-    messages   = ChatMessageSerializer(many=True, read_only=True)
-    biomarkers = BiomarkerSerializer  (many=True, read_only=True, source="biomarker_scores")
+    messages       = ChatMessageSerializer(many=True, read_only=True)
+    biomarkers     = BiomarkerSerializer  (many=True, read_only=True, source="biomarker_scores")
+    start_ts       = serializers.SerializerMethodField()
+    duration       = serializers.SerializerMethodField()
+    average_scores = serializers.SerializerMethodField()
 
     class Meta:
         model  = ChatSession
-        fields = ("id", "user", "source", "date",  
-                  "is_active", "start_ts", "end_ts", "topics", "sentiment",
-                  "notes", "messages", "biomarkers",)
-        # Everything except notes
+        fields = ("id", "user", "source", "date", "is_active", "start_ts", "end_ts", "topics", "sentiment", "notes", "messages", "biomarkers",)
         read_only_fields = (field for field in fields if field not in ["notes"])
+
+    def get_start_ts      (self, obj): return obj.start_ts
+    def get_duration      (self, obj): return obj.duration
+    def get_average_scores(self, obj): return obj.average_scores
 
 # =======================================================================
 # Other Data
 # =======================================================================
 class UserSettingsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserSettings
+        model  = UserSettings
         fields = ("patientViewOverall", "patientCanSchedule")
         
 class ReminderSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Reminder
+        model  = Reminder
         fields = ("id", "title", "notes", "start", "end", "startTime", "endTime", "daysOfWeek")
         read_only_fields = ("id")
         

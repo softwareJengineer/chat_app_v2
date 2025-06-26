@@ -1,5 +1,5 @@
 from django.db        import models
-from django.db.models import UniqueConstraint, Q, Avg
+from django.db.models import UniqueConstraint, Q, Avg, Min
 from django.conf      import settings
 from django.utils     import timezone
 from django.contrib.postgres.fields import ArrayField
@@ -32,8 +32,7 @@ class ChatSession(models.Model):
     date       = models.DateTimeField(auto_now_add=True, blank=True)
 
     # Updated on chat end
-    is_active = models.BooleanField (default=True) 
-    start_ts  = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField (default=True)
     end_ts    = models.DateTimeField(**init_args)
 
     # Optional metadata to be filled when closing
@@ -42,8 +41,7 @@ class ChatSession(models.Model):
     sentiment = models.CharField(**init_args, max_length=255, default="N/A")
 
     class Meta:
-        # One active session per user
-        constraints = [UniqueConstraint(fields=["user"], condition=Q(is_active=True), name="unique_active_session_per_user",),]
+        constraints = [UniqueConstraint(fields=["user"], condition=Q(is_active=True), name="unique_active_session_per_user",),] # One active session per user
         ordering    = ["-date", "id"]
 
     @property
@@ -57,9 +55,13 @@ class ChatSession(models.Model):
         qs = (self.biomarker_scores.values("score_type").annotate(avg=Avg("score")))
         return {row["score_type"]: row["avg"] for row in qs}
 
-    # ToDo: Make start_ts a property that is the earliest timestamp of any linked messages/biomarkers
-    #@property
-    #def start_ts(self): pass
+    @property
+    def start_ts(self):
+        """Returns the earliest timestamp from related biomarker scores or messages"""
+        biomarker_ts = self.biomarker_scores.aggregate(min_ts=Min("ts"))["min_ts"]
+        message_ts   = self.messages        .aggregate(min_ts=Min("ts"))["min_ts"]
+        timestamps   = [ts for ts in [biomarker_ts, message_ts] if ts is not None]
+        return min(timestamps) if timestamps else None
 
     def __str__(self): return self.date
 
@@ -105,11 +107,6 @@ class ChatBiomarkerScore(models.Model):
 
     def __str__(self): return f"{self.score_type:16}: {self.score:.4f}"
 
-
-
-
-
-
 # =======================================================================
 # Non-Chat Models
 # =======================================================================
@@ -126,7 +123,6 @@ class Profile(models.Model):
     
     def __str__(self): return f"{self.plwd.username} is linked to {self.caregiver.username}"
 
-
 class Reminder(models.Model):
     user       = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="reminder_user")
     title      = models.CharField(max_length=100)
@@ -139,14 +135,16 @@ class Reminder(models.Model):
     
     def __str__(self): return f"Reminder {self.title}"
 
-
-
-
-
-
-
+# =======================================================================
+# One-to-one Models
+# =======================================================================
 class Goal(models.Model):
-    user       = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="goal_user")
+    """
+    ToDo: 
+        Do we need these functions? Or can this be done in PUT? 
+        If so, should probably remove them from here just to keep things clean.
+    """
+    user       = models.ForeignKey  (Profile, on_delete=models.CASCADE, related_name="goal_user")
     target     = models.IntegerField(default=5)
     startDay   = models.IntegerField(default=0, choices=DAYS_OF_WEEK)
     current    = models.IntegerField(default=0)
@@ -171,11 +169,10 @@ class Goal(models.Model):
             self.last_reset = today
             self.save()
     
-    def __str__(self):
-        return f"{self.user.plwd.username} goal"
+    def __str__(self): return f"{self.user.plwd.username} goal"
     
-    #class Meta:
-    #    constraints = [models.UniqueConstraint(fields=["user"], name="one_goal_per_user")]
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["user"], name="one_goal_per_user")]
 
 class UserSettings(models.Model):
     user               = models.OneToOneField(Profile, on_delete=models.CASCADE, primary_key=True, related_name="settings_user")

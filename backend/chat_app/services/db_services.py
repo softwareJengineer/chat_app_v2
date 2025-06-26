@@ -8,6 +8,40 @@ from ..models     import ChatSession, ChatMessage, ChatBiomarkerScore
 # --- ToDo: Need to add topic/sentiment fields, probably on close ---
 # --- ToDo: If chat hasn't been modified in X time, save it and remake one automatically ---
 # Later on may need to specifically add start/end timestamps to chats/messages
+"""
+
+        sentiment = "N/A"
+        topics = "N/A"
+        message_text = get_message_text(messages)
+        try:
+            sentiment = sentiment_scores(message_text)
+            topics = get_topics(message_text)
+        except Exception as e:
+            print(e)
+            pass  # If there is an error in extracting sentiment or topics, we will return "N/A"
+        
+        # Update the goal
+        goal = Goal.objects.get(user=profile)
+        goal.reset()
+        goal.current += 1
+        goal.save()
+
+        
+def get_sentiment_topics(data_messages):
+    message_text = get_message_text(data_messages)
+
+    # Sentiment
+    try:    sentiment = sentiment_scores(message_text)
+    except: sentiment = "N/A"
+
+    # Topics
+    try:    topics = get_topics(message_text)
+    except: topics = "N/A"
+
+    return sentiment, topics
+
+"""
+
 class ChatService:
     # -----------------------------------------------------------------------
     # Session Helpers
@@ -36,6 +70,7 @@ class ChatService:
         session.end_ts    = timezone.now()
 
         # ToDo: Probably should calculate the topics and sentiment right here using helper functions
+        # Topics and sentiment won't be sent as arguments, they will be calculated here
         if notes     is not None: session.notes     = notes
         if topics    is not None: session.topics    = topics
         if sentiment is not None: session.sentiment = sentiment
