@@ -116,7 +116,7 @@ class Profile(models.Model):
         Also caregiver should maybe be ForeignKey, not OneToOne so that they can have multiple plwds
         (maybe caregiver is supposed to be the "main" one and linkedUser is others? ...)
     """
-    plwd       = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True, related_name="PLwD")
+    plwd       = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="PLwD")
     caregiver  = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="primary_caregiver")
     linkedUser = models.ForeignKey   (settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, **init_args)
     
@@ -143,7 +143,7 @@ class Goal(models.Model):
         Do we need these functions? Or can this be done in PUT? 
         If so, should probably remove them from here just to keep things clean.
     """
-    user       = models.ForeignKey  (Profile, on_delete=models.CASCADE, related_name="goal_user")
+    user       = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name="goal")
     target     = models.IntegerField(default=5)
     startDay   = models.IntegerField(default=0, choices=DAYS_OF_WEEK)
     current    = models.IntegerField(default=0)
@@ -174,7 +174,7 @@ class Goal(models.Model):
         constraints = [models.UniqueConstraint(fields=["user"], name="one_goal_per_user")]
 
 class UserSettings(models.Model):
-    user               = models.OneToOneField(Profile, on_delete=models.CASCADE, primary_key=True, related_name="settings_user")
+    user               = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name="settings_user")
     patientViewOverall = models.BooleanField(default=True)
     patientCanSchedule = models.BooleanField(default=True)
 

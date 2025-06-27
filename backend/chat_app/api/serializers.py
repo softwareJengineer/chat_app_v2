@@ -71,11 +71,11 @@ class ProfileSerializer(serializers.ModelSerializer):
     plwd      = UserSerializer        (read_only=True)
     caregiver = UserSerializer        (read_only=True)
     settings  = UserSettingsSerializer(read_only=True, source = "settings_user")
-    goal      = GoalSerializer        (read_only=True, source =     "goal_user")
+    goal      = GoalSerializer        (read_only=True)
     role      = serializers.SerializerMethodField()
     class Meta:
         model  = Profile
-        fields = ("id", "plwd", "caregiver")
+        fields = ("id", "plwd", "caregiver", "settings", "goal", "role")
         read_only_fields = fields # Not sure...
 
     def get_role(self, obj):
