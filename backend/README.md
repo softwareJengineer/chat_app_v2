@@ -35,17 +35,6 @@ Django based backend. Provides database access via an API and provides the chat 
 
 # Backend System Architecture
 
-<details closed> <summary> <b>Frameworks Used</b> </summary>
-
-| Layer         | Framework                              | Role                                                                                                                                      |
-| ------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| **Network**   | **Docker compose**                     | Starts up Postgres, Django app, Nginx reverse-proxy                                                                                        |
-| **Auth**      | **JSON Web Tokens (SimpleJWT)**        | Browser/robot obtains tokens at `/api/token/`, sends `Authorization: Bearer <access>` on HTTP or `?token=<access>&source=<client>` on WS  |
-| **HTTP API**  | **Django REST Framework**              | JSON endpoints mounted at `/api/...`                                                                                                      |
-| **WebSocket** | **Django Channels 4**                  | WebSocket endpoint `ws://<host>/ws/chat/` (one socket per active conversation)                                                            |
-<hr>
-</details>
-
 <details closed> <summary> <b>Database Models Overview</b> </summary>
 
 | Model                  | Purpose                                  | Key fields / constraints                              |
@@ -58,22 +47,6 @@ Django based backend. Provides database access via an API and provides the chat 
 | **Goal**               | Track number of user conversations       | `Unique(user)`                                        |
 | **UserSettings**       | View / scheduling toggles                | `Unique(user)`                                        |
 | **Reminder**           | Calendar entry                           | FK(`Profile`), `daysOfWeek` Array                     |
-<hr>
-</details>
-
-<details closed> <summary> <b>HTTP API surface (all JSON)</b> </summary>
-
-| Endpoint                              | Method(s)               | Notes                                                                 |
-| ------------------------------------- | ----------------------- | --------------------------------------------------------------------- |
-| `/api/signup/`                        | **POST**                | Creates patient & caregiver users, `Profile`, `UserSettings`, `Goal`  |
-| `/api/token/` & `/api/token/refresh/` | **POST**                | JWT login / refresh                                                   |
-| `/api/profile/`                       | **GET**                 | Returns patient & caregiver names, settings, goal                     |
-| `/api/goal/`                          | **GET PUT**             | Single row per user                                                   |
-| `/api/settings/`                      | **GET PUT**             | Single row per user                                                   |
-| `/api/reminders/`                     | **GET POST PUT DELETE** | User can have multiple                                                |
-| `/api/chatsessions/`                  | **GET**                 | List + detail with nested messages & biomarkers                       |
-
-All endpoints are protected by `IsAuthenticated` (JWT or session cookie) except `/signup/` and token endpoints.
 <hr>
 </details>
 
