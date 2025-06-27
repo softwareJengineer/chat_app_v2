@@ -27,6 +27,10 @@ backend/staticfiles/
 backend/logs/
 backend/script/
 # backend/websocket.log
+backend/chat_app/migrations/
+backend/chat_app/migrations/0001_initial.py
+backend/chat_app/migrations/!__init__.py
+
 
 # Frontend
 Lib/
