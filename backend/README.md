@@ -1,6 +1,12 @@
 # Speech System // Backend
 Django based backend. Provides database access via an API and provides the chat function via WebSocket.
 
+### To run the project locally:
+1. `cd` into the `backend` directory
+2. `docker compose -f docker-compose.backend.yaml up --build`
+
+
+
 ### ToDo:
 * Add ```ChatSessions``` return to ```Profile``` API queries (?)
 * In ```db_services.py``` add functionality to calculate topics and analysis and save them when the session is closed. Also get/create the user's goal and add 1 to it.
@@ -101,8 +107,8 @@ All endpoints are protected by `IsAuthenticated` (JWT or session cookie) except 
 
 | User      | Username          | Password  |
 | --------- | ----------------- | --------- |
-| User      | `demo_patient`    | `demo`    |
-| Caregiver | `demo_caregiver`  | `demo`    |
+| User      | `demo_patient`    | `dpu1`    |
+| Caregiver | `demo_caregiver`  | `dpu1`    |
 <hr>
 </details>
 <br>

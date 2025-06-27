@@ -4,8 +4,6 @@ FROM python:3.11
 # Set environment variables
 # --------------------------------------------------------------------
 # Make it available as an env variable inside the container
-ENV APP_ENVIRONMENT=${APP_ENVIRONMENT}
-RUN echo "The value of APP_ENVIRONMENT is: ${APP_ENVIRONMENT}"
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \

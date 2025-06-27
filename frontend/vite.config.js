@@ -25,8 +25,8 @@ export default defineConfig({
         strictPort   : true,           // make sure it uses 5173
         cors         : true,           // allow cross-origin access if needed
         proxy        : {
-            '/ws'  : {target: 'http://backend:8000', ws: true},
-            '/api' : {target: 'http://backend:8000', }, // changeOrigin: true,
+            '/ws'  : {target: 'http://127.0.0.1:8000', ws: true}, //backend
+            '/api' : {target: 'http://127.0.0.1:8000', }, // changeOrigin: true,
         },
         allowedHosts : ['localhost', '127.0.0.1', 'cognibot.org', "deployment.cognibot.org", "sandbox.cognibot.org"], 
     },
