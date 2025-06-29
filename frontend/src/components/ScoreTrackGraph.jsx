@@ -1,6 +1,6 @@
 import ReactApexChart      from "react-apexcharts";
 import { useChatSessions } from "@/hooks/queries/useChatSessions";
-import { dateFormat      } from "@/utils/styling/numFormatting";
+import { dateFormatShort } from "@/utils/styling/numFormatting";
 import { biomarkerKeys, biomarkerColors } from "@/utils/styling/options";
 
 export default function ScoreTrackGraph() {
@@ -9,7 +9,7 @@ export default function ScoreTrackGraph() {
     if (!data.length) return <p>No sessions yet.</p>;
 
     // Prepare chart data
-    const labels = data.map((s) => dateFormat.format(new Date(s.date)));
+    const labels = data.map((s) => dateFormatShort.format(new Date(s.date)));
     const series = biomarkerKeys.map((key) => ({
         name: key,
         data: data.map((s) => {
