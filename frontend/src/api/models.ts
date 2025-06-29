@@ -23,7 +23,7 @@ export interface Reminder {
 export interface Goal {
   id         : number;
   target     : number;
-  startDay   : string;
+  startDay   : number; // Sunday = 0 ... Saturday = 6 
   current    : number;
   remaining  : number;
   last_reset : string; 

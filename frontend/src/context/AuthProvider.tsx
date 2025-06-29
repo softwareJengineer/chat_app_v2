@@ -1,8 +1,8 @@
 import { createContext, useContext, useState } from "react";
 import { Spinner } from "../components/Spinner";
 
-import { setAccess, User, Profile, getProfile } from "../api"
-import * as authApi  from "../api/auth";
+import { setAccess, User, Profile, getProfile } from "@/api"
+import * as authApi  from "@/api/auth";
 
 // Create the context (describes what any component will get when it calls useAuth())
 interface AuthCtx { user?: User; profile?: Profile, login(username: string, password: string): Promise<void>; logout(): void; }
