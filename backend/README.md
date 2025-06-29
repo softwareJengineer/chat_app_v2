@@ -5,10 +5,10 @@ Django based backend. Provides database access via an API and provides the chat 
 1. `cd` into the `backend` directory
 2. `docker compose -f docker-compose.backend.yaml up --build`
 
-
+<br>
 
 ### ToDo:
-* Add ```ChatSessions``` return to ```Profile``` API queries (?)
+* This will be a big task, and needs to be done across a lot of files... Change "plwd" references to just "patient." (database, views, etc.)
 * In ```db_services.py``` add functionality to calculate topics and analysis and save them when the session is closed. Also get/create the user's goal and add 1 to it.
     - There is some old sample code in a comment at the top that can be used as a reference.
 * Biomarker calculations need to be looked over. Specific inputs like time ranges, single words, full conversation, etc.
@@ -112,7 +112,7 @@ HttpRequest loginReq = HttpRequest.newBuilder()
 
 HttpResponse<String> loginRes = client.send(loginReq, HttpResponse.BodyHandlers.ofString());
 
-// Parse {"access":"...", "refresh":"..."}
+// Parse {"access":"...", "refresh":"...", "user":"..."}
 String accessToken  = Json.parse(loginRes.body()).at("/access" ).asText();
 String refreshToken = Json.parse(loginRes.body()).at("/refresh").asText();
 ```
@@ -144,6 +144,7 @@ WebSocket webSocket = client.newWebSocketBuilder()
 ```
 </details>
 <br>
+
 
 
 

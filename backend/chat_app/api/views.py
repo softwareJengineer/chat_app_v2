@@ -74,7 +74,7 @@ class ChatSessionViewSet(ProfileMixin, viewsets.ReadOnlyModelViewSet):
     def get_queryset(self): 
         profile = self.get_profile()
         return (ChatSession.objects
-                .filter(user=profile)    # (only sessions for the logged-in user)
+                .filter(user=profile.plwd)
                 .select_related("user")
                 .prefetch_related("messages", "biomarker_scores"))
 
