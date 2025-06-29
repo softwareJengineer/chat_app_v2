@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { Spinner } from "../components/Spinner";
 
 import { setAccess, User, Profile, getProfile } from "../api"
@@ -26,11 +26,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const response = await authApi.login(username, password);  // { access, refresh, user }
             setAccess(response.access);
             setUser  (response.user  ); 
+            
+            console.log(response.user.first_name, response.user.last_name)
 
             // Fetch user profile; blocks until the profile returns and we have data to populate pages
             await getProfile().then(setProfile).catch(console.error);
 
-        } catch (err) { setError((err as Error).message); throw err; 
+        } catch (err) { setError((err as Error).message); console.log((err as Error).message); throw err; // ToDo: Add toast back here
         } finally     { setLoading(false); }
     };
 

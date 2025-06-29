@@ -1,16 +1,26 @@
-console.log("index.jsx loaded")
+console.log("index.jsx loaded");
 
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import 'bootstrap/dist/css/bootstrap.css';
-import { BrowserRouter } from 'react-router-dom';
-import './index.css'
-import App from './App.jsx'
+import { StrictMode    } from "react";
+import { createRoot    } from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
 
-createRoot(document.getElementById('root')).render(
+import { Toaster } from "react-hot-toast";
+
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+const qc = new QueryClient();
+
+
+import "bootstrap/dist/css/bootstrap.css";
+import "./index.css";
+import App from "./App.jsx";
+
+createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <QueryClientProvider client={qc}> 
+      <BrowserRouter>
+        <App />
+        <Toaster position="top-right" /> {/* Toast pop-up container */}
+      </BrowserRouter>
+    </QueryClientProvider>
   </StrictMode>
-)
+);
