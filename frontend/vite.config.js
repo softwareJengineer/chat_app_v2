@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import { VitePWA      } from 'vite-plugin-pwa'
 import react       from '@vitejs/plugin-react'
+import path        from "node:path";
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
@@ -30,4 +31,5 @@ export default defineConfig({
         },
         allowedHosts : ['localhost', '127.0.0.1', 'cognibot.org', "deployment.cognibot.org", "sandbox.cognibot.org"], 
     },
+    resolve: { alias: {"@": path.resolve(__dirname, "src"),},}, // sets the "@" symbol to the src directory, makes things quicker sometimes
 })
