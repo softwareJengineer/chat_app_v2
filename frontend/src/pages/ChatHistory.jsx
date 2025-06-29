@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from "react"
 import AuthContext from '../context/AuthContext';
-import ChatSummary from "../components/ChatSummary"
+//import ChatSummary from "../components/ChatSummary"
 import { getChats } from "../functions/apiRequests";
 import { FaUser } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";

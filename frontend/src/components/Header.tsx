@@ -1,11 +1,92 @@
-import React, { useContext, useState } from "react";
-import { Button, Form, Modal } from "react-bootstrap";
-import { useNavigate, Link } from "react-router-dom";
-import AuthContext from '../context/AuthContext';
-import { GoGear, GoGraph } from "react-icons/go";
-import { GrSchedules } from "react-icons/gr";
+import { NavLink, useLocation } from "react-router-dom";
+import { useState } from "react";
+
+import { GoGear        } from "react-icons/go";
 import { IoExitOutline } from "react-icons/io5";
-import { updateGoal } from "../functions/apiRequests";
+
+import { useAuth } from "@/context/AuthProvider";
+import   GoalModal from "@/components/modals/GoalModal";
+import { navLinkCls } from "@/utils/styling/colors";
+
+// Page title
+const TITLES: Record<string, string> = {
+    "/"         : "Dashboard",
+    "/dashboard": "Dashboard",
+    "/chat"     : "Chat",
+    "/history"  : "Chat History",
+    "/schedule" : "Schedule",
+    default     : "Cognibot",
+};
+
+// --------------------------------------------------------------------
+// Header
+// --------------------------------------------------------------------
+export default function Header() {
+    const { logout } = useAuth();
+    const { pathname } = useLocation();
+    const [showModal, setShowModal] = useState(false);
+
+    const title = TITLES[pathname] ?? TITLES.default;
+
+    const navLinkCls = ({ isActive }: { isActive: boolean }) =>
+    isActive
+        ? "underline decoration-2 text-violet-600"
+        : "no-underline text-gray-500 hover:text-gray-700 visited:text-gray-500";
+
+
+    const logOutStyle = "flex items-center gap-2 rounded bg-violet-600 px-3 py-1 text-white hover:bg-violet-700";
+
+    return (
+        <>
+        <header className="flex items-center gap-6 px-6 py-3 shadow">
+            <h1 className="text-2xl font-semibold whitespace-nowrap"> {title} </h1>
+            <div className="ml-auto flex items-center gap-3">
+
+                {/* Navigation Links */}
+                <nav className="flex gap-4">
+                    <NavLink to="/" end      className={({ isActive }) => linkCls(isActive)}> Dashboard </NavLink>
+                    <NavLink to="/dashboard" className={({ isActive }) => linkCls(isActive)}> Dashboard </NavLink>
+                    <NavLink to="/chat"      className={navLinkCls}> Chat      </NavLink>
+                    <NavLink to="/history"   className={navLinkCls}> History   </NavLink>
+                    <NavLink to="/schedule"  className={navLinkCls}> Schedule  </NavLink>
+                </nav>
+
+                {/* Right Side Icons */}
+                <button onClick={() => setShowModal(true)}> <GoGear size={22}/> </button>
+                <button onClick={() => logout()} className={logOutStyle}> <IoExitOutline size={18}/> Log out</button>
+            </div>
+        </header>
+
+        {/* Modal */}
+        <GoalModal show={showModal} onHide={() => setShowModal(false)} />
+        </>
+    );
+}
+
+
+function linkCls(active: boolean) {
+    return active
+        ? "text-violet-600 underline hover:text-purple-900"
+        : "text-gray-400 hover:text-gray-600 hover:underline";
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
+import { useNavigate, Link } from "react-router-dom";
+
 
 
 const Header = ({title, page}) => {
@@ -16,36 +97,8 @@ const Header = ({title, page}) => {
 	const isCaregiver = profile.role !== "Patient";
 	const navigate = useNavigate();
 
-	const toDashboard = () => {
-        navigate('/dashboard');
-    }
 
-    const toSchedule = () => {
-        navigate('/schedule');
-    }
 
-	const toHistory = () => {
-        navigate('/history');
-    }
-
-	const toChat = () => {
-		navigate('/chat');
-	}
-
-	const toToday = () => {
-		navigate('/today');
-	}
-
-	const toProgress = () => {
-		navigate('/progress');
-	}
-
-    const toSettings = () => {
-        navigate('/settings');
-    }
-
-	const handleClose = () => setShowModal(false);
-	const handleShow = () => setShowModal(true);
 
 	const changeGoal = async (event) => {
         event.preventDefault();
@@ -62,29 +115,15 @@ const Header = ({title, page}) => {
 				<div className="flex items-center">                
 					<h1>{title}</h1>
 					<div className="float flex flex-row gap-2 float-right ml-auto">
-						<button 
-							className={page=="dashboard" ? "linkActive" : "linkInactive"}
-							onClick={toDashboard}
-						>
-							Speech Analysis
-						</button>
-						<button 
-							className={page=="schedule" ? "linkActive" : "linkInactive"}
-							onClick={toSchedule}>
-								Calendar
-						</button>
+
+
 						<button 
 							onClick={toSettings}
 							className="px-2"
 						>
 							<GoGear size={25} style={{ marginRight: '2px' }}/>
 						</button>
-						<button 
-							className="flex bg-violet-600 rounded h-fit p-2 text-white self-center hover:bg-violet-700 duration-200" 
-							onClick={() => logoutUser()}
-						>
-							Log Out
-						</button>
+
 					</div>
 				</div>
 			</div>
@@ -96,26 +135,16 @@ const Header = ({title, page}) => {
 			<div className="float flex flex-row m-[2rem]">
                 <p className="text-5xl font-semibold">{title}</p>
                 <div className="float-right flex items-center ml-auto gap-4">
-					<Link className={page=="chat" ? "plwd-link-active" : "plwd-link-inactive"} to="/chat">
-						Chat
-					</Link>
+
 					<Link className={page=="progress" ? "plwd-link-active" : "plwd-link-inactive"} to="/progress">
 						Progress Summary
 					</Link>
 					<Link className={page=="today" ? "plwd-link-active" : "plwd-link-inactive"} to="/today">
 						Review Today
 					</Link>
-                    <Link className={page=="history" ? "plwd-link-active" : "plwd-link-inactive"} to='/history'>
-                        Chat History
-                    </Link>
-                    <Link className={page=="schedule" ? "plwd-link-active" : "plwd-link-inactive"} to='/schedule'>
-                        Schedule
-                    </Link>
-					<button onClick={handleShow}>
-						<GoGear size={25} />
-					</button>
-                    <button className="plwd-button-fill flex rounded h-fit p-2 text-white self-center" onClick={() => logoutUser()}>Log Out</button>
-                </div>  
+     
+
+                 </div>  
             </div>
 
 			<Modal show={showModal} onHide={handleClose} centered backdrop="static" keyboard={false}>
@@ -168,3 +197,5 @@ const Header = ({title, page}) => {
 }
 
 export default Header;
+
+*/
