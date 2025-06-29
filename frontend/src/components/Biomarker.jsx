@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { cardStyle, buttStyle } from "../styles/sharedStyles";
+import { cardStyle, buttStyle } from "@/utils/styling/sharedStyles";
 
 // --------------------------------------------------------------------
 // Helper Function
