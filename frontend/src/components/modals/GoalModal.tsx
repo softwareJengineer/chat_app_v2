@@ -1,50 +1,34 @@
-import { useState } from "react";
-import { Button, Modal, Form } from "react-bootstrap";
+import { Button, Modal } from "react-bootstrap";
+import { h3 } from "@/utils/styling/sharedStyles";
+import GoalForm from "@/components/forms/GoalForm";
 
-// --------------------------------------------------------------------
+
 // Goal Modal
-// --------------------------------------------------------------------
 export default function GoalModal({show, onHide}: {show: boolean; onHide: () => void;}) {
-    const [target,   setTarget  ] = useState(5);
-    const [startDay, setStartDay] = useState(0);
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // call mutation here
+        console.log("GoalModal button pressed");
         onHide();
     };
 
     // Return UI component
     return (
     <Modal show={show} onHide={onHide} centered backdrop="static">
-        <Modal.Header closeButton><Modal.Title> Set Goal </Modal.Title></Modal.Header>
+        <Modal.Header closeButton><span className={h3}> Patient Goal </span></Modal.Header>
 
-        <Form onSubmit={handleSubmit}>
-            <Modal.Body>
-                 {/* Set Goal target number */}
-                <Form.Group controlId="formTarget">
-                    <Form.Label>Target chats per week</Form.Label>
-                    <Form.Control type="number" value={target} onChange={(e) => setTarget(+e.target.value)}/>
-                </Form.Group>
+        <div className="m-[1rem]">
 
-                {/* Select the goal start day */}
-                <Form.Group controlId="formStartDay" className="mt-3">
-                    <Form.Label>Start Day</Form.Label>
-                    <Form.Select value={startDay} onChange={(e) => setStartDay(+e.target.value)} >
-                    {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
-                        (d, i) => (<option key={i} value={i}> {d} </option>)
-                    )}
-                    </Form.Select>
-                </Form.Group>
-            </Modal.Body>
+            {/* Goal Form */}
+            <GoalForm onSave={() => {}} onCancel={() => {}} /> 
 
-            {/* Cancel or Submit Buttons */}
-            <Modal.Footer>
-                <Button variant="outline-secondary" onClick={onHide}> Cancel </Button>
-                <Button type="submit">Save</Button>
-            </Modal.Footer>
+        </div>
 
-        </Form>
+        {/* Cancel or Submit Buttons */}
+        <Modal.Footer>
+            <Button variant="outline-secondary" onClick={handleSubmit}> Cancel </Button>
+            <Button type="submit"               onClick={handleSubmit}> Save  </Button>
+        </Modal.Footer>
+
     </Modal>
     );
 }
