@@ -2,6 +2,54 @@
 Vite/React based frontend for the speech system.
 
 
+## Page Reworks (high level, still components missing on some):
+```diff
+  General
+-  * Home
++  * Login
+-  * Signup  
+
+  Caregiver
++  * Dashboard ("Speech Analysis" Page)
++      - ChatHistory
++      - PerformanceTrack (mostly to where it was...)
+-  * Settings Modal
+-      - Patient UserSettings
++      - Goal
+
+  Patient 
+-  * Chat Page
++  * Goal Modal (kind of)
+-  * Progress
+!  * Today
+
+  Shared
+!  * Schedule / Calendar
+!  * Analysis (single chat analysis, some stuff different between caregiver/patient)
++  * Goal Form
+-      - add useImperativeHandle so you can actually submit
+-  * CurrentGoalProgressBar component
+```
+
+<br>
+
+### ToDo:
+* Do all the color stuff/ green or purple
+* Need to add role to the user model -> do this when i do the sign in page
+* Goal/UserSettings Modal
+
+* Add "auto_renew" to Goal in the database
+    - means we have to do this in a few spots: `models.py, serializers.py, models.ts`
+
+* Can I set a value for if the user is a patient inside AuthContext or whatever and then import it...?
+
+
+
+
+
+
+<br>
+
 ### ToDo:
 * Go back through the models.ts file and the serializers/views files to make sure everything is right
     - Add comments about the format of stuff, especially the timestamps.
@@ -13,6 +61,20 @@ Vite/React based frontend for the speech system.
 * Where/when does the refresh behavior from auth.ts happen?
     - Add another profile fetch after refreshes?
 * Constants and styles should probably go in utils
+
+
+
+Okay when we pass whatever stuff to the api/token
+we get token, user stuff back
+
+
+
+
+
+
+
+
+
 
 
 
