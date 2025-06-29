@@ -1,4 +1,4 @@
-import { API_URL } from "../utils/constants";
+import { API_URL } from "@/utils/constants";
 import { Tokens  } from "./models"
 
 // --------------------------------------------------------------------
