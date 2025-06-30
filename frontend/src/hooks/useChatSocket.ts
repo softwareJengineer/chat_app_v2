@@ -1,27 +1,19 @@
-// src/hooks/useBackendConnection.js
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect } from "react";
 
 // ==================================================================== ==================================
 // Handle the WebSocket Connection to the Backend
 // ==================================================================== ==================================
 // Open and close the websocket connection on change of the "recording" flag
+// Receive things from the backend: LLM messages, Biomarker scores (sometimes)
 export default function useBackendConnection({
     recording,
     onLLMResponse = () => {},
     onScores      = () => {},   // Biomarker scores
 }) {
-    // --------------------------------------------------------------------
-    // Initial Setup 
-    // --------------------------------------------------------------------
     // Backend WebSocket URL 
-    /* const wsUrl = "wss://dementia.ngrok.app";
-    const wsUrl = window.location.hostname === 'localhost'
-        ? `ws://${window.location.hostname}:8000/ws/chat/`
-        : `ws://${window.location.hostname}/ws/chat/`;
-    */
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl    = `${protocol}//${window.location.host}/ws/chat/`;
-
+    const protocol = window.location.protocol === "https:"    ? "wss:"  : "ws:";
+    const hostName = window.location.hostname === "localhost" ? ":8000" : ""   ;
+    const wsUrl    = `${protocol}//${window.location.host}${hostName}/ws/chat/`;
 
     // Message reception helper
     const onMessage = (event) => {
@@ -47,10 +39,12 @@ export default function useBackendConnection({
         return () => wsRef.current?.close(); // (clean up on unmount)
     }, [recording]);
 
-    // --------------------------------------------------------------------
-    // Utility Functions
-    // --------------------------------------------------------------------
-    const sendToServer = (payload) => {const ws = wsRef.current; if (ws && ws.readyState === WebSocket.OPEN) {ws.send(JSON.stringify(payload));}};
+    
+    // Send helper
+    const sendToServer = (payload) => {
+        const ws = wsRef.current; 
+        if (ws && ws.readyState === WebSocket.OPEN) {ws.send(JSON.stringify(payload));}
+    };
 
     // Expose
     return {sendToServer};
