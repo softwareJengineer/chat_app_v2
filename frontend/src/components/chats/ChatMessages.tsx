@@ -1,11 +1,13 @@
-import React, { useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
+import { CAREGIVER_HEX, PATIENT_HEX} from "@/utils/styling/colors";
+import { ChatMessage } from "@/api";
 
 const ChatHistory = ({messages}) => {
     // --------------------------------------------------------------------
     // Automatically scroll to bottom when messages change
     // --------------------------------------------------------------------
     const scrollContainerRef = useRef(null);
-    const bottomRef = useRef(null);
+    const bottomRef          = useRef(null);
 
     // Only auto scroll to the bottom if the user is already at/close to the bottom already
     useEffect(() => {
@@ -13,9 +15,9 @@ const ChatHistory = ({messages}) => {
 
         // Check if they are close enough
         const threshold      = 100;  // (pixels from bottom)
-        const scrollPosition = container.scrollTop + container.clientHeight;
+        const scrollPosition = container.scrollTop    + container.clientHeight;
         const isAtBottom     = container.scrollHeight - scrollPosition < threshold;
-        if (isAtBottom) {bottomRef.current?.scrollIntoView({ behavior: 'smooth' });}
+        if (isAtBottom) {bottomRef.current?.scrollIntoView({ behavior: "smooth" });}
 
     }, [messages]);
 
