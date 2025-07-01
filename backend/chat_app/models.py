@@ -145,6 +145,7 @@ class Goal(models.Model):
     """
     user       = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name="goal")
     target     = models.IntegerField(default=5)
+    #auto_renew = models.BooleanField(default=True)
     startDay   = models.IntegerField(default=0, choices=DAYS_OF_WEEK)
     current    = models.IntegerField(default=0)
     last_reset = models.DateField   (**init_args)

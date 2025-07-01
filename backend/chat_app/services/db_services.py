@@ -99,6 +99,6 @@ class ChatService:
     @staticmethod
     def add_biomarkers_bulk(user, scores: dict):
         session = ChatService.get_or_create_active_session(user)
-        ChatBiomarkerScore.objects.bulk_create([ChatBiomarkerScore(session=session, scoreType=k, score=v) for k, v in scores.items()])
+        ChatBiomarkerScore.objects.bulk_create([ChatBiomarkerScore(session=session, score_type=k, score=v) for k, v in scores.items()])
 
   

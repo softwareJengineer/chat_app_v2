@@ -1,20 +1,29 @@
 from urllib.parse                    import parse_qs
 from django.contrib.auth.models      import AnonymousUser
-from rest_framework.authtoken.models import Token
+#from rest_framework.authtoken.models import Token
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from channels.middleware             import BaseMiddleware
 from asgiref.sync                    import sync_to_async
 
 ALLOWED_SOURCES = {"webapp", "mobile", "qtrobot", "buddyrobot"}
 
+jwt_auth = JWTAuthentication() # re-use a single instance
+
 # =======================================================================
 # Authentication  
 # =======================================================================
-@sync_to_async
-def _get_user(token_key):
-    """ Turns token=<key> into scope["user"] """
-    try:                       return Token.objects.select_related("user").get(key=token_key).user
-    except Token.DoesNotExist: return AnonymousUser()
+#@sync_to_async
+#def _get_user(token_key):
+#    """ Turns token=<key> into scope["user"] """
+#    try:                       return Token.objects.select_related("user").get(key=token_key).user
+#    except Token.DoesNotExist: return AnonymousUser()
 
+@sync_to_async
+def _get_user(token_str: str):
+    """Validate JWT and return the associated user (or AnonymousUser)."""
+    try:              return jwt_auth.get_user(jwt_auth.get_validated_token(token_str))
+    except Exception: return AnonymousUser()
+    
 
 # =======================================================================
 # Middleware: parse & validate

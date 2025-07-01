@@ -12,7 +12,7 @@ def load_model(model_path):
 
 # Load Prosody & Pronunciation Models
 rf_model_path = "/app/chat_app/websocket/biomarkers/rf_models"
-PROSODY_MODEL       = load_model(f"{rf_model_path}/pronunciation_rf_v4.pkl")
-PRONUNCIATION_MODEL = load_model(f"{rf_model_path}/prosody_rf_v1.pkl"      )
+PROSODY_MODEL       = load_model(f"{rf_model_path}/prosody_rf_v1.pkl"      )
+PRONUNCIATION_MODEL = load_model(f"{rf_model_path}/pronunciation_rf_v4.pkl")
 
 logger.info("Loaded Prosody & Pronunciation Models")

@@ -68,14 +68,16 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         self.user   = self.scope["user"]
         self.source = self.scope.get("source", "unknown")
         await self.accept()
+        print(self.user)
+        print(self.source)
 
         # I don't think any frontend uses these during the chat right now, but I'll leave this option in
-        self.return_biomarkers = (self.source in ["webapp"])
+        self.return_biomarkers = False # (self.source in ["webapp"])
 
         # -----------------------------------------------------------------------
         # 2) Load or create an active session
         # -----------------------------------------------------------------------
-        self.session = await database_sync_to_async(ChatService.get_or_create_active_session)(self.user, self.source)
+        self.session = await database_sync_to_async(ChatService.get_or_create_active_session)(self.user, source=self.source)
         recent = await database_sync_to_async(lambda: list(self.session.messages.all().order_by("-start_ts")[: self.MAX_CONTEXT])[::-1])()
 
         # ToDo: Check if the incoming source matches or doesn't match the source of the loaded session
@@ -110,12 +112,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         await asyncio.gather(*getattr(self, "_bg_tasks", []), return_exceptions=True)
 
         # Reset some properties for the next connection
-        self.context_buffer.clear()
+        self.context_buffer = []
         self.overlapped_speech_count  = 0.0
         self.audio_windows_count      = 0.0
-        self.overlapped_speech_events.clear()
+        self.overlapped_speech_events = []
 
-        logger.info(f"Client disconnected: {self.user} {code}") 
+        logger.info(f"Client disconnected:  {code}") 
 
 
     # ======================================================================= ===================================
