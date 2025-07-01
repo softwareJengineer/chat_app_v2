@@ -8,7 +8,6 @@ import Login           from "@/pages/Login";
 import SignUp          from "@/pages/SignUp";
 import Schedule        from "@/pages/Schedule";
 import Dashboard       from "@/pages/Dashboard";
-import Home            from "@/pages/Home";
 import ChatDetails     from "@/pages/ChatDetails";
 import Analysis        from "@/pages/Analysis";
 import ProgressSummary from "@/pages/ProgressSummary";
@@ -22,8 +21,7 @@ export default function App() {
       <Routes>
         <Route element={<AppLayout />}> 
 
-            {/* Public Routes */}
-            <Route path="/"        element={<Home   />} />
+            {/* Public Routes (ToDo: Wrap these with something that forces the user to the dashboard page if logged in) */}
             <Route path="/login"   element={<Login  />} />
             <Route path="/signup"  element={<SignUp />} />
 
@@ -44,7 +42,7 @@ export default function App() {
             </Route>
 
             {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
             
         </Route>
 
