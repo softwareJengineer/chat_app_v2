@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Button, Modal, Form } from "react-bootstrap";
 import Header from "../components/Header";
-import AuthContext from '../context/AuthContext';
+
 import { createReminder, createRepeatReminder, getReminders, deleteReminder } from "../functions/apiRequests";
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -10,7 +10,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 
 function Schedule() {
-    const { authTokens, profile } = useContext(AuthContext);
+
     const [reminders, setReminders] = useState([]);
     const [showNewReminder, setShowNewReminder] = useState(false);
     const [showNewRepeatReminder, setShowNewRepeatReminder] = useState(false);

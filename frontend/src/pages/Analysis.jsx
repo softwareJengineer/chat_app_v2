@@ -1,14 +1,14 @@
 import React, { useContext, useState } from "react"
-import AuthContext from '../context/AuthContext';
+
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import ChatLog from "../components/ChatLog";
 import Descriptions from "../data/descriptions.json";
 import Header from "../components/Header";
 
 function Analysis() {
-    const {profile} = useContext(AuthContext);
+
     const location = useLocation();
-    const navigate = useNavigate();
+
     const chatData = location.state.chatData;
     const [biomarker, setBiomarker] = useState(location.state.biomarker ? location.state.biomarker : "Pragmatic");
     

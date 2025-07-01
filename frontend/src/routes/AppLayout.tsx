@@ -1,9 +1,7 @@
-// src/layout/AppLayout.tsx
-import { Outlet } from "react-router-dom";
-import { useAuth } from "../context/AuthProvider";
-import { RUN_ENV } from "../utils/constants";
-
-import Header from "@/components/Header";
+import { Outlet  } from "react-router-dom";
+import { useAuth } from "@/context/AuthProvider";
+import { RUN_ENV } from "@/utils/constants";
+import   Header    from "@/components/Header";
 
 export default function AppLayout() {
     const { user, profile } = useAuth();

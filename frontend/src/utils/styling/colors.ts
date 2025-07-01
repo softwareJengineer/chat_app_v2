@@ -1,8 +1,9 @@
 // These are
 export const ACCENT_COLOR = "violet-600";
 
-export const CAREGIVER_HEX  = "#8b5cf6"; // #8b5cf6 | rgb(139,92,246)
-export const PATIENT_HEX    = "#229954"; // #229954
+export const CAREGIVER_HEX  = "#8b5cf6"; // #8b5cf6
+export const PATIENT_HEX    = "#0ac945"; // #0ac945
+//export const PATIENT_HEX    = "#5cf68b"; // #5cf68b
 
 
 

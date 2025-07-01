@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+
 import Header from "../components/Header";
 import { FaUser } from "react-icons/fa";
 import { GiPartyPopper, GiAlarmClock, GiRobotAntennas, GiChatBubble } from "react-icons/gi";
@@ -7,20 +7,17 @@ import MyWordCloud from "../components/WordCloud";
 import Avatar from "../components/Avatar";
 import GoalProgress from "../components/GoalProgress";
 import { Button } from "react-bootstrap";
-import { FcCalendar, FcClock, FcSms } from "react-icons/fc";
-import { IoThumbsUp } from "react-icons/io5";
-import daysInARow from "../functions/daysInARow";
-import AuthContext from '../context/AuthContext';
+
 import ScoreRadarChart from "../components/ScoreRadarChart";
 import getExercises from "../functions/getExercises";
 import { Icon } from '@iconify/react';
 
 
-import { cardStyle } from "../styles/sharedStyles";
+import { cardStyle } from "@/utils/styling/sharedStyles";
 import   Biomarker   from "../components/Biomarker";
 
 function ChatDetails() {
-    const { profile, goal } = useContext(AuthContext);
+
     const location = useLocation();
     const chatData = location.state?.chatData;
     const prevChatData = location.state?.prevChatData ? 
