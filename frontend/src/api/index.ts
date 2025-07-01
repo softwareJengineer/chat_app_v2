@@ -1,4 +1,4 @@
-export { request, setAccess } from "./client";
+export { request, setAccess, getAccess } from "./client";
 export * from "./models"
 
 export * from "./endpoints/settings";

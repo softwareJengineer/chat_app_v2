@@ -3,6 +3,7 @@ import { API_URL } from "../utils/constants";
 // API acess/authorization token
 let access: string | undefined;
 export const setAccess = (newToken?: string) => (access = newToken);
+export const getAccess = () => { return access; };
 
 // --------------------------------------------------------------------
 // Fetch/request wrapper with token auto-refresh

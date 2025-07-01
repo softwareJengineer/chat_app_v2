@@ -1,24 +1,34 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 
+import { getAccess } from "@/api";
+
 interface WSMessage { type: string; data: unknown; }
 
 // ====================================================================
 // Handle the WebSocket Connection to the Backend
 // ====================================================================
-export default function useBackendConnection({ 
+// ws://localhost:8000/ws/chat/?token=<ACCESS>&source=webapp
+// ToDo: change typing to be done like in useAudioStreamer (do I actually NEED to ?)
+export default function useChatSocket({ 
     recording, 
     onLLMResponse = (unknown)   => {}, 
     onScores      = (WSMessage) => {} 
 }) {
-    // WebSocket setup
-    const wsRef = useRef<WebSocket>();   // persists across renders
+    // WebSocket setup    
     const [connected, setConnected] = useState(false);
 
     // Backend WebSocket URL 
     // ToDo: Need to add the token stuff to this (I think?)
+    /*
     const protocol = window.location.protocol === "https:"    ? "wss:"  : "ws:";
     const hostName = window.location.hostname === "localhost" ? ":8000" : ""   ;
     const wsUrl    = `${protocol}//${window.location.host}${hostName}/ws/chat/`;
+    */
+    const wsUrlBase =
+        location.hostname === "localhost"
+            ? `ws://localhost:8000/ws/chat/`
+            : `wss://${location.host}/ws/chat/`;
+    const wsUrl = `${wsUrlBase}?token=${getAccess()}&source=webapp`;
 
     // Receive things from the backend: LLM messages, Biomarker scores (sometimes)
     const onMessage = useCallback((event: MessageEvent) => {
@@ -30,6 +40,7 @@ export default function useBackendConnection({
     }, [onLLMResponse, onScores]);
 
     // Open and close the websocket connection on change of the "recording" flag
+    const wsRef = useRef<WebSocket | null>(null); 
     useEffect(() => {
         if (!recording) {wsRef.current?.close(); return;}
 
@@ -50,5 +61,5 @@ export default function useBackendConnection({
     }, []);
 
     // Expose
-    return {send, connected};
+    return { send, connected };
 }
