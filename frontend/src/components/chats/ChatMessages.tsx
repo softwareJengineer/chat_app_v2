@@ -1,8 +1,40 @@
 import { useRef, useEffect } from "react";
 import { CAREGIVER_HEX, PATIENT_HEX} from "@/utils/styling/colors";
-import { ChatMessage } from "@/api";
 
-const ChatHistory = ({messages}) => {
+//import { ChatMessage } from "@/api";
+import { LocalChatMessage } from "@/hooks/live-chat";
+
+// ====================================================================
+// Render a single chat message from the user or the robot
+// ====================================================================
+// ToDo: Probably need to format the time
+// function getMessageTime() {const msgDate = new Date(); return msgDate.getUTCHours() + ':' + msgDate.getUTCMinutes() + ':' + msgDate.getUTCSeconds();}
+
+// ToDo: Make it easier to adjust the size of the text -- put that as a part of the user settings?
+function MessageBubble({ msg }: { msg: LocalChatMessage }) {
+    // Style differentiation between the user and the system
+    const messageStyle = {user:    { sender: "You",      marginFar: "ml-auto", marginClose: "mr-[1em]", bubbleColor: "bg-purple-200" },
+                          default: { sender: "Cognibot", marginFar: "mr-auto", marginClose: "ml-[1em]", bubbleColor: "bg-green-200"  },};
+    const { sender, marginFar, marginClose, bubbleColor } = messageStyle[msg.role] || messageStyle.default;
+
+    // Styles
+    const messageBubbleStyle = `flex flex-col ${marginFar} ${marginClose}`;
+    const messageTextStyle   = `${bubbleColor} p-[1em] w-fit rounded-sm`;
+    const messageTimeStyle   = `${marginFar} text-gray-400 text-xs`;
+
+    // UI elment for a text bubble & timestamp
+    return (
+        <div key={msg.id} className={messageBubbleStyle}>
+            <p className={messageTextStyle}> <b>{sender}:</b> {msg.content} </p>
+            <p className={messageTimeStyle}>                  {msg.ts     } </p>
+        </div>
+    );
+}
+
+// ====================================================================
+// ChatMessages (scroll view)
+// ====================================================================
+export default function ChatMessages({ messages }: { messages: LocalChatMessage[] }) {
     // --------------------------------------------------------------------
     // Automatically scroll to bottom when messages change
     // --------------------------------------------------------------------
@@ -21,37 +53,15 @@ const ChatHistory = ({messages}) => {
 
     }, [messages]);
 
-    // --------------------------------------------------------------------
-    // Single Message UI Component (added "key" argument for react, maybe should be IDs though?)
-    // --------------------------------------------------------------------
-    function renderMessage(sender, message, time, key) {
-        // Style differentiation between the user and the system
-        const messageStyle = {You:     { marginFar: "ml-auto", marginClose: "mr-[1em]", bubbleColor: "bg-purple-200" },
-                              default: { marginFar: "mr-auto", marginClose: "ml-[1em]", bubbleColor: "bg-green-200"  },};
 
-        const { marginFar, marginClose, bubbleColor } = messageStyle[sender] || messageStyle.default;
-
-        // UI elment for a text bubble & timestamp
-        return (
-            <div key={key} className={`flex flex-col ${marginFar} ${marginClose}`}>
-                <p className={`${bubbleColor} p-[1em] w-fit rounded-sm`}> <b>{sender}:</b> {message} </p>
-                <p className={`${marginFar} text-gray-400 text-xs`}>{time}</p>
-            </div>
-        );
-    }
-
-    // --------------------------------------------------------------------
-    // ChatHistory UI Component
-    // --------------------------------------------------------------------
+    // Return UI component
     return (
         <>
             <h2 className="flex justify-center">Chat History</h2>
             <div ref={scrollContainerRef} className="overflow-y-auto flex flex-col">
-                    {messages.map(({sender, message, time}, i) => (renderMessage(sender, message, time, i)))}
+                    {messages.map((msg) => (<MessageBubble msg={msg}/>))}
                     <div ref={bottomRef} />
             </div>
         </>
-    )
+    );
 }
-
-export default ChatHistory;

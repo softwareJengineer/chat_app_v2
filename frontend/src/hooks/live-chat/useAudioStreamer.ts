@@ -43,4 +43,10 @@ export default function useAudioStreamer({
         });
         return () => audioRef.current?.stop(); // (clean up on unmount)
     }, [sendToServer]);
+
+    // Start & Stop
+    const start = () => { audioRef.current?.start(); }
+    const  stop = () => { audioRef.current?.stop (); }
+
+    return { start, stop };
 }
