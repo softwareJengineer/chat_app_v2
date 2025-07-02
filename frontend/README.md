@@ -2,70 +2,66 @@
 Vite/React based frontend for the speech system.
 
 
+To run it just do `npm run dev` in the frontend folder. Might need to install stuff first though.
+
+
 ## Page Reworks (high level, still components missing on some):
 ```diff
-  General
--  * Home
-+  * Login
--  * Signup  
-
-  Caregiver
+Pages
+-  * Analysis
++  * Chat
++  * ChatDetails
 +  * Dashboard ("Speech Analysis" Page)
-+      - ChatHistory
-+      - PerformanceTrack (mostly to where it was...)
--  * Settings Modal
--      - Patient UserSettings
-+      - Goal
++  * Login
+-  * ProgressSummary (robot, prog bar, info, games)
+-  * Schedule
+-  * Signup
 
-  Patient 
--  * Chat Page
-+  * Goal Modal (kind of)
--  * Progress
-!  * Today
-
-  Shared
-!  * Schedule / Calendar
-!  * Analysis (single chat analysis, some stuff different between caregiver/patient)
-+  * Goal Form
--      - add useImperativeHandle so you can actually submit
--  * CurrentGoalProgressBar component
 ```
 
 <br>
 
-### ToDo:
-* Do all the color stuff/ green or purple
-* Need to add role to the user model -> do this when i do the sign in page
-* Goal/UserSettings Modal
 
+### ToDo:
+
+<details closed> <summary> <b>To Do</b> </summary>
+
+* Remove/disable links to pages that don't work
+
+Differentiation between patient and caregiver profiles
+* Add a bootstrap "theme" to switch things from blue or purple
+* Header when signed in as a patient
+* Modals
+    - Goal/UserSettings modal for caregivers
+    - Goal modal for patients
+* Make it so that if the profile is loaded in already and we have our tokens that we cant be on the signup or login pages
+    - This but also for the different page access
+
+Database related stuff
+* "sentiment" field of the ChatSession model isn't correct
 * Add "auto_renew" to Goal in the database
     - means we have to do this in a few spots: `models.py, serializers.py, models.ts`
-
 * Can I set a value for if the user is a patient inside AuthContext or whatever and then import it...?
-
-
-
-
-
-
-<br>
-
-### ToDo:
-* Go back through the models.ts file and the serializers/views files to make sure everything is right
-    - Add comments about the format of stuff, especially the timestamps.
-* Profile model for sure, I need to decide like how goal/settings/reminder are done.
-    - Maybe since goal/settings are one-to-one keep them loaded in with the profile?
-    - Just not sure if the serializer is actually sending them...
 * Tokens should go in models.ts maybe? (currently is in auth.ts)
-* AuthProvider.tsx still needs some clearing up for a bunch of things
-* Where/when does the refresh behavior from auth.ts happen?
-    - Add another profile fetch after refreshes?
-* Constants and styles should probably go in utils
+
+Misc.
+* Add a refresh chats utility
+    - call it when leaving the Chat page to make sure the new chat is on the Dashboard
+    - add a button to the dashboard to also call the refresh thing
+* Add more toast stuff ?
+    - "Chat saved", "chats refreshed", etc.
+* Chat Page
+    - Fix the stuff going on top of the buttons
+    - Buttons could be a lot cleaner
+* Move files
+    - functions
+    - components
+
+</details>
 
 
 
-Okay when we pass whatever stuff to the api/token
-we get token, user stuff back
+
 
 
 
