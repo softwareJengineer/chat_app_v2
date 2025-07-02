@@ -16,7 +16,7 @@ export default function ChatHistory() {
     const { data, isLoading } = useChatSessions();
 
     // Sort chats utility
-    const sortChats = () => {console.log("sortChats() not implemented yet...")}
+    const sortChats = () => { console.log("sortChats() not implemented yet..."); }
 
     // Return UI component
     if (isLoading) { return <p>Loading chat history...</p>; }

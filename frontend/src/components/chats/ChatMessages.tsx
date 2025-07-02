@@ -53,13 +53,12 @@ export default function ChatMessages({ messages }: { messages: LocalChatMessage[
 
     }, [messages]);
 
-
     // Return UI component
     return (
         <>
             <h2 className="flex justify-center">Chat History</h2>
             <div ref={scrollContainerRef} className="overflow-y-auto flex flex-col">
-                    {messages.map((msg) => (<MessageBubble msg={msg}/>))}
+                    {messages.map((msg) => (<MessageBubble msg={msg} key={msg.id} />))}
                     <div ref={bottomRef} />
             </div>
         </>

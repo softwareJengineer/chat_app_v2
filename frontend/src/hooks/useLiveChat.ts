@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useQueryClient      } from "@tanstack/react-query";
 import { useChatSocket, useAudioStreamer, useASR, useTTS } from "@/hooks/live-chat";
 
 import   useLatencyLogger      from "@/hooks/useLatencyLogger";
@@ -19,6 +20,7 @@ export default function useLiveChat({
     onScores          : (            ) => void;
 }) {
     // Misc. setup
+    const qc = useQueryClient();
     const { asrStart, asrEnd, llmEnd, ttsStart, ttsEnd } = useLatencyLogger();
     const onLLMres = (text: string) => { llmEnd(); logText(`[LLM] Response:   ${text}`); onSystemUtterance(text); };
     const [recording, setRecording] = useState(false);
@@ -35,9 +37,13 @@ export default function useLiveChat({
     }}, [systemSpeakingRef.current, userSpeakingRef.current]); 
 
     // Start, Stop, & Save
-    const start = () => { setRecording(true ); startAud(); startASR();  };
-    const  stop = () => { setRecording(false);  stopAud();  stopASR();  };
-    const  save = () => { send({ type: "end_chat", data: Date.now() }); };
+    const start = () => { setRecording(true ); startAud(); startASR(); };
+    const  stop = () => {                       stopAud();  stopASR(); };
+    const  save = () => {
+        setRecording(false); 
+        send({ type: "end_chat", data: Date.now() }); 
+        qc.invalidateQueries({ queryKey: ["chatSessions"] });
+    };
 
     // Exposes start, stop & save
     return { start, stop, save }; 

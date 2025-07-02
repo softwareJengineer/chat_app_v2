@@ -21,6 +21,7 @@ export function useModelQuery<T>({queryKey, queryFn, empty, staleTime=DEFAULT_ST
         queryKey : [queryKey], // Cache key
         queryFn  : queryFn,    // Returns Promise<T>
         staleTime: staleTime,  // Cache cleared X ms after component unloads
+        refetchOnWindowFocus: true,
     });
 
     // Error handling
