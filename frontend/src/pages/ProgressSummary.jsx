@@ -6,7 +6,7 @@ import Avatar from "../components/Avatar";
 import { FcCalendar, FcClock, FcSms } from "react-icons/fc";
 import daysInARow from "../functions/daysInARow";
 import { getChats, getGoal } from "../functions/apiRequests";
-import GoalProgress from "../components/GoalProgress";
+//import GoalProgress from "../components/GoalProgress";
 import { IoThumbsUp } from "react-icons/io5";
 import Header from "../components/Header";
 import BlankChat from "../data/blankChat.json";
