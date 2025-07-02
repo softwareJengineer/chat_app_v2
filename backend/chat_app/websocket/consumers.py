@@ -133,7 +133,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         # Audio data or text transcription
         elif data["type"] == "audio_data"   : await self._handle_audio_data   (data)
         elif data["type"] == "transcription": await self._handle_transcription(data)
-        elif data["type"] == "end_chat"     : await database_sync_to_async(ChatService.close_session)(self.user, self.source)
+        elif data["type"] == "end_chat"     : await database_sync_to_async(ChatService.close_session)(self.user, source=self.source)
 
     # =======================================================================
     # Text Transcriptions

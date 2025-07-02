@@ -48,26 +48,32 @@ class Command(BaseCommand):
     # Seed ChatSessions into the DB for a user
     # ====================================================================
     def seed_chats(self, plwd_user, days_back=6):
-        # Times for everything will override "auto_now_add" field properties
+        # Times for everything need to override "auto_now_add" field properties
         now_utc = timezone.now()
-        for i in range(days_back):
+        for i in range(1, days_back+1):
             day_offset = timedelta(days=i)
             started_at = (now_utc - day_offset).replace(hour=9, minute=0, second=0, microsecond=0)
             ended_at   = started_at + timedelta(minutes=5)
 
             # 1) Create a ChatSession object
-            session = ChatSession.objects.create(user=plwd_user, source="webapp", is_active=False, date=started_at, end_ts=ended_at)
+            session = ChatSession.objects.create(user=plwd_user, source="webapp", is_active=False, end_ts=ended_at)
+            session.date = started_at
+            session.save(update_fields=["date"])
 
             # 2) Add ChatMessages to the ChatSession (message timestamps spaced 20 seconds apart)
             for idx, text in enumerate(DEMO_MESSAGES):
                 ts   = started_at + timedelta(seconds=20 * idx)
                 role = "user" if idx % 2 == 0 else "assistant"
-                ChatMessage.objects.create(session=session, role=role, content=text, ts=ts)
+                message = ChatMessage.objects.create(session=session, role=role, content=text, start_ts=ts, end_ts=(ts + timedelta(seconds=20)))
+                message.ts = ts
+                message.save(update_fields=["ts"])
 
             # 3) Add ChatBiomarkerScores to the ChatSession (random scores)
             for j in range(3):
                 ts = started_at + timedelta(seconds=40 * j + 20)
                 for score_type in BIOMARKERS:
-                    ChatBiomarkerScore.objects.create(session=session, score_type = score_type, score=round(random(), 3), ts=ts)
+                    score = ChatBiomarkerScore.objects.create(session=session, score_type=score_type, score=round(random(), 3), ts=ts)
+                    score.ts = ts
+                    score.save(update_fields=["ts"])
 
             print(f"Seeded ChatSession for {(now_utc - day_offset).date()}")

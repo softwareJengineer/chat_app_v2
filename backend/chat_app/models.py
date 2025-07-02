@@ -28,7 +28,7 @@ class ChatSession(models.Model):
     # Initialized on chat creation
     user       = models.ForeignKey   (settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="chat_sessions")
     source     = models.CharField    (max_length=32, choices=SOURCE_CHOICES, default="webapp")
-    date       = models.DateTimeField(auto_now_add=True, blank=True)
+    date       = models.DateTimeField(auto_now_add=True)
 
     # Updated on chat end
     is_active = models.BooleanField (default=True)
@@ -45,8 +45,11 @@ class ChatSession(models.Model):
 
     @property
     def duration(self):
-        end = self.end_ts or models.functions.Now()
-        return (end - self.start_ts).total_seconds()
+        start = self.start_ts
+        if not start: return 0
+
+        end = self.end_ts or timezone.now()
+        return (end - start).total_seconds()
     
     @property
     def average_scores(self) -> dict[str, float]:
