@@ -7,6 +7,15 @@ export const biomarkerKeys = [
     "Turntaking",
 ] as const;
 
+export const biomarkerKeysLower = [
+    "alteredgrammar",
+    "anomia",
+    "pragmatic",
+    "pronunciation",
+    "prosody",
+    "turntaking",
+] as const;
+
 export const biomarkerColors = {
     AlteredGrammar:  "#9ca3af",
     Anomia:          "#805ad5",
