@@ -3,7 +3,7 @@ import { useAuth } from "@/context/AuthProvider";
 import { RUN_ENV } from "@/utils/constants";
 import   Header    from "@/components/Header";
 
-export default function AppLayout() {
+export function AppLayout() {
     const { user, profile } = useAuth();
     
     // Header & small info bar for development

@@ -1,8 +1,8 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider            } from "@/context/AuthProvider";
 
-import Protected       from "@/routes/Protected";
-import AppLayout       from "@/routes/AppLayout";
+import { Unprotected, Protected, AppLayout } from "@/routes";
+
 import Chat            from "@/pages/Chat";
 import Login           from "@/pages/Login";
 import SignUp          from "@/pages/SignUp";
@@ -15,22 +15,24 @@ import ProgressSummary from "@/pages/ProgressSummary";
 // --------------------------------------------------------------------
 // Routes and Pages
 // --------------------------------------------------------------------
+// ToDo: Add a patient/caregiver Route to this as well
 export default function App() {
   return (
     <AuthProvider>
       <Routes>
         <Route element={<AppLayout />}> 
 
-            {/* Public Routes (ToDo: Wrap these with something that forces the user to the dashboard page if logged in) */}
-            <Route path="/login"   element={<Login  />} />
-            <Route path="/signup"  element={<SignUp />} />
+            {/* Public Routes */}
+            <Route element={ <Unprotected/> }> 
+                <Route path="/login"   element={<Login  />} />
+                <Route path="/signup"  element={<SignUp />} />
+            </Route>
 
             {/* Protected Routes */}
-            <Route element={<Protected />}>
+            <Route element={ <Protected/> }>
                 {/* Patient */}
                 <Route path="/chat"     element={<Chat            />} />
                 <Route path="/progress" element={<ProgressSummary />} />
-                {/* ChatHistory is just the dashboard without the performance graphs showing */}
 
                 {/* Caregiver */}
                 <Route path="/dashboard"   element={<Dashboard   />} />
