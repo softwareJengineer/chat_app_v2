@@ -14,7 +14,7 @@ Pages
 +  * Dashboard ("Speech Analysis" Page)
 +  * Login
 -  * ProgressSummary (robot, prog bar, info, games)
--  * Schedule
++  * Schedule
 -  * Signup
 
 ```
@@ -22,20 +22,47 @@ Pages
 <br>
 
 
+ProgressSummary should be a page they both have, and it should be very component based, similar-ish to ChatDetails. 
+I think some of the stuff from ChatDetails needs to go
+
+So instead of 
+* ProgressSummary
+    - prog bar, fluff
+* ChatDetails (single chat)
+    - Progress bar, Radar chart, misc fluff
+* Analysis (child of ChatDetails)
+    - shows transcript with highlights for different biomarkers
+
+We just have
+* ProgressSummary
+    - Progress bar
+    - Misc fluff
+* ChatDetails
+    - Radar Chart
+    - Analysis transcripts
+
+
+
+
+
 ### ToDo:
 
 <details closed> <summary> <b>To Do</b> </summary>
 
 * Remove/disable links to pages that don't work
+* Theme 
+    - universal color sources (change depending on patient/caregiver)
+    - font size - throughout the project font size should be relative and then there should be like a global font size we can adjust
+
 
 Differentiation between patient and caregiver profiles
 * Add a bootstrap "theme" to switch things from blue or purple
 * Header when signed in as a patient
-* Modals
-    - Goal/UserSettings modal for caregivers
-    - Goal modal for patients
+
 * Make it so that if the profile is loaded in already and we have our tokens that we cant be on the signup or login pages
     - This but also for the different page access
+
+
 
 Database related stuff
 * "sentiment" field of the ChatSession model isn't correct
@@ -43,6 +70,8 @@ Database related stuff
     - means we have to do this in a few spots: `models.py, serializers.py, models.ts`
 * Can I set a value for if the user is a patient inside AuthContext or whatever and then import it...?
 * Tokens should go in models.ts maybe? (currently is in auth.ts)
+
+
 
 Misc.
 * Add a refresh chats utility

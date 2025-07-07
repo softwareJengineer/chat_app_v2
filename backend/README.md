@@ -9,7 +9,8 @@ Django based backend. Provides database access via an API and provides the chat 
 
 ### ToDo:
 * This will be a big task, and needs to be done across a lot of files... Change "plwd" references to just "patient." (database, views, etc.)
-* In ```db_services.py``` add functionality to calculate topics and analysis and save them when the session is closed. Also get/create the user's goal and add 1 to it.
+* In ```db_services.py``` add functionality to calculate topics and analysis and save them when the session is closed. 
+    - Also get/create the user's goal and add 1 to it. --- **probably dont need this, just check how many inactive ChatSessions come after the goal start date**
     - There is some old sample code in a comment at the top that can be used as a reference.
 * Biomarker calculations need to be looked over. Specific inputs like time ranges, single words, full conversation, etc.
 * Django secret key moved to ```.env``` file or config. Turn debug mode on and off via environment variables as well.
