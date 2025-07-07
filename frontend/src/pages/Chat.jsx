@@ -45,7 +45,7 @@ function Chat() {
     const silenceTimeoutRef = useRef(null);
     const userSpeakingRef = useRef(false); // Mirror of state for logic inside callback
 
-    const API_KEY = "AIzaSyA2l08-aWnXxS_ajb5nZCXDCJNzsN6BdSA";
+    const API_KEY = "";
     
     const MODEL_NAME = "gemini-2.0-flash-live-001"; // Realtime/Live model
     const TARGET_SAMPLE_RATE = 16000; // Gemini requires 16kHz audio
