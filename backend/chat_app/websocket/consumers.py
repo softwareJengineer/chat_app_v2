@@ -126,7 +126,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             input_text += f"\n<|user|>\n{user_utt}<|end|>\n<|assistant|>\n"
             
             # Generate response using LLM
-            output = cf.llm(input_text, max_tokens=cf.max_length, stop=["<|end|>",".", "?"], echo=True)
+            output = cf.llm(input_text, max_tokens=cf.max_length, stop=["<|end|>","*"], echo=True)
             system_utt = (output['choices'][0]['text'].split("<|assistant|>")[-1]).strip()
             
             # Update chat history

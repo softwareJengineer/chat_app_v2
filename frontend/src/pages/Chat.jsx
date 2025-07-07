@@ -30,6 +30,8 @@ function Chat() {
     // const [viewMode, setViewMode] = useState(3);
     const [chatbotMessage, setChatbotMessage] = useState("Hello, user. Press the Start button to begin chatting with me.");
     const [start, setStart] = useState(null);
+    const [transcription, setTranscription] = useState("");
+    const [utt, setUtt] = useState([]);
     const speechConfig = useRef(null);
     const audioConfig = useRef(null);
     const recognizer = useRef(null);
@@ -40,8 +42,10 @@ function Chat() {
     const processorNode = useRef(null);
     const date = new Date();
     const navigate = useNavigate();
+    const silenceTimeoutRef = useRef(null);
+    const userSpeakingRef = useRef(false); // Mirror of state for logic inside callback
 
-    const API_KEY = "";
+    const API_KEY = "AIzaSyA2l08-aWnXxS_ajb5nZCXDCJNzsN6BdSA";
     
     const MODEL_NAME = "gemini-2.0-flash-live-001"; // Realtime/Live model
     const TARGET_SAMPLE_RATE = 16000; // Gemini requires 16kHz audio
@@ -136,7 +140,6 @@ function Chat() {
     }, [recording]);
 
     async function speakResponse(text) {
-        setSystemSpeaking(true);
         console.log("Speaking response: ", text)
         const ai = new GoogleGenAI({ apiKey: API_KEY });
         const response = await ai.models.generateContent({
@@ -152,8 +155,7 @@ function Chat() {
             },
         });
         const data = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-        const audioBuffer = Buffer.from(data, 'base64');
-
+        setSystemSpeaking(true);
         playL16Audio(data);
         setSystemSpeaking(false);
     }
@@ -241,6 +243,19 @@ function Chat() {
         return window.btoa(binary);
     }
 
+    useEffect(() => {
+        if (utt.length === 0) return;
+        if (!!utt[utt.length - 1].match(/.*[.:!?]$/) ) {
+            const transcription = utt.join('');
+            const date = new Date();
+            const msgTime = date.getUTCHours() + ':' + date.getUTCMinutes() + ':' + date.getUTCSeconds();
+            console.log("Sending transcription to server: ", transcription);
+            addMessageToChat('You', transcription, msgTime);
+            sendTranscriptionToServer(transcription);
+            setUtt([]);
+        }
+    }, [utt])
+
     async function startStreaming() {
         setRecording(true);
         try {
@@ -258,7 +273,7 @@ function Chat() {
                 audio: {
                     sampleRate: TARGET_SAMPLE_RATE,
                     echoCancellation: true,
-                    noiseSuppression: true
+                    noiseSuppression: true,
                 }
             });
                 
@@ -313,6 +328,7 @@ function Chat() {
             // Assign to liveSession *after* connection is successful
             const config = {
                 responseModalities: [Modality.TEXT],
+                speechConfig: { languageCode: "en-US" },
                 inputAudioTranscription: {},
                 maxOutputTokens: 1,
             };
@@ -328,12 +344,8 @@ function Chat() {
                     onmessage: (message) => {
                         // Handle transcript text
                         if (message.serverContent && message.serverContent.inputTranscription) {
-                            const date = new Date();
-                            const msgTime = date.getUTCHours() + ':' + date.getUTCMinutes() + ':' + date.getUTCSeconds();
-                            const transcription = message.serverContent.inputTranscription.text;
-                            console.log("Sending transcription to server: ", transcription);
-                            addMessageToChat('You', transcription, msgTime);
-                            sendTranscriptionToServer(transcription);
+                            const text = message.serverContent.inputTranscription.text;
+                            setUtt((prevUtt) => [...prevUtt, text]);
                         }
 
                         if (message.error) {
@@ -395,9 +407,9 @@ function Chat() {
 
             // Handle volume events
             volumeWorkletNode.current.port.onmessage = (event) => {
-                if (event.data.volume !== undefined) {
-                //    console.log(event.data.volume);
-                }
+                // if (event.data.volume !== undefined) {
+                //     console.log(event.data.volume);
+                // }
             };
 
         } catch (error) {
@@ -585,15 +597,15 @@ function Chat() {
                     <button className="flex plwd-button-fill rounded h-fit p-2 self-center" onClick={() => logoutUser()}>Log Out</button>
                 </div>  
             </div>
-            <div className="h-[65vh] mb-[2rem]">
-                <div className="my-[1rem] flex justify-center border-1 border-black p-[1em] rounded-lg mx-[25%]">
+            <div className="h-fit mb-[2rem]">
+                <div className="my-[1rem] flex justify-center border-1 border-black p-[1em] rounded-lg mx-[25%] overflow-y-scroll h-[10vh]">
                     {chatbotMessage}
                 </div>
                 <div className="h-full mt-[1em] w-full">
                     <Avatar />
                 </div>
             </div>
-            <div className="flex flex-row justify-center mb-[2em] pt-[3em] gap-[4em] items-center">
+            <div className="flex flex-row justify-center my-[2em] gap-[4em] items-center">
                 <button 
                     className="flex flex-col gap-2 items-center"
                     onClick={() => setRecording(!recording) }

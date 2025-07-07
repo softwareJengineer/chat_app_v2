@@ -70,7 +70,7 @@ speech_config.speech_synthesis_voice_name = voice
 current_path = os.path.dirname(os.path.abspath(__file__))
 
 max_length = 256
-prompt = "You are an assistant for dementia patients. Provide any response as much short as possible."
+prompt = "You are an assistant for dementia patients. Provide any response in American English as short as possible. Please end your responses with the character '*'."
 
 try:
     model_path = current_path + "/services/Phi-3_finetuned.gguf"
