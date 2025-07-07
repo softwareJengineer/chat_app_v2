@@ -45,7 +45,7 @@ function Chat() {
     const silenceTimeoutRef = useRef(null);
     const userSpeakingRef = useRef(false); // Mirror of state for logic inside callback
 
-    const API_KEY = "";
+    const API_KEY = import.meta.env.VITE_REACT_APP_GEMINI_KEY;
     
     const MODEL_NAME = "gemini-2.0-flash-live-001"; // Realtime/Live model
     const TARGET_SAMPLE_RATE = 16000; // Gemini requires 16kHz audio
@@ -601,7 +601,7 @@ function Chat() {
                 <div className="my-[1rem] flex justify-center border-1 border-black p-[1em] rounded-lg mx-[25%] overflow-y-scroll h-[10vh]">
                     {chatbotMessage}
                 </div>
-                <div className="h-full mt-[1em] w-full">
+                <div className="h-[55vh] mt-[1em] w-full">
                     <Avatar />
                 </div>
             </div>
