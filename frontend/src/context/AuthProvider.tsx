@@ -42,8 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Return AuthContext
     return (
         <AuthContext.Provider value={{ user, profile, login, logout }}>
-            {children}
-            {loading && <Spinner/>}
+            { loading ? <Spinner/> : children }
         </AuthContext.Provider>
     );
 };
