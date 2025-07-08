@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { Button, Modal } from "react-bootstrap";
+import { Button, Modal, ProgressBar } from "react-bootstrap";
 import Avatar from "../components/Avatar";
 import { BsStopCircle, BsPlayCircle, BsPauseCircle } from "react-icons/bs";
 import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
@@ -24,26 +24,14 @@ function Chat() {
     const location = useLocation();
     const {user, profile, goal, setGoal, authTokens, logoutUser} = useContext(AuthContext);
     const [recording, setRecording] = useState(false);
-    const [systemSpeaking, setSystemSpeaking] = useState(false);
     const [userSpeaking, setUserSpeaking] = useState(false);
+    const [systemSpeaking, setSystemSpeaking] = useState(false);
+    const [volume, setVolume] = useState(0);
     const [messages, setMessages] = useState(location.state ? location.state.messages : []);
-    // const [viewMode, setViewMode] = useState(3);
     const [chatbotMessage, setChatbotMessage] = useState("Hello, user. Press the Start button to begin chatting with me.");
     const [start, setStart] = useState(null);
-    const [transcription, setTranscription] = useState("");
     const [utt, setUtt] = useState([]);
-    const speechConfig = useRef(null);
-    const audioConfig = useRef(null);
-    const recognizer = useRef(null);
-    const synthesizer = useRef(null);
-    const audioProcessor = useRef(null);
-    const stream = useRef(null);
-    const source = useRef(null);
-    const processorNode = useRef(null);
-    const date = new Date();
     const navigate = useNavigate();
-    const silenceTimeoutRef = useRef(null);
-    const userSpeakingRef = useRef(false); // Mirror of state for logic inside callback
 
     const API_KEY = import.meta.env.VITE_REACT_APP_GEMINI_KEY;
     
@@ -244,17 +232,17 @@ function Chat() {
     }
 
     useEffect(() => {
-        if (utt.length === 0) return;
-        if (!!utt[utt.length - 1].match(/.*[.:!?]$/) ) {
-            const transcription = utt.join('');
-            const date = new Date();
-            const msgTime = date.getUTCHours() + ':' + date.getUTCMinutes() + ':' + date.getUTCSeconds();
-            console.log("Sending transcription to server: ", transcription);
-            addMessageToChat('You', transcription, msgTime);
-            sendTranscriptionToServer(transcription);
-            setUtt([]);
-        }
-    }, [utt])
+        if (utt.length === 0 || userSpeaking) return;
+        const transcription = utt.join('');
+        const date = new Date();
+        const msgTime = date.getUTCHours() + ':' + date.getUTCMinutes() + ':' + date.getUTCSeconds();
+        console.log("Sending transcription to server: ", transcription);
+        addMessageToChat('You', transcription, msgTime);
+        sendTranscriptionToServer(transcription);
+        setUtt([]);
+    }, [userSpeaking]);
+
+    const silenceTimeout = useRef(null);
 
     async function startStreaming() {
         setRecording(true);
@@ -377,13 +365,31 @@ function Chat() {
                 });
             }
 
+            // Handle volume events
+            volumeWorkletNode.current.port.onmessage = (event) => {
+                if (event.data.volume !== undefined) {
+                    setVolume(event.data.volume);
+                    if (event.data.volume > 0.15) {
+                        setUserSpeaking(true);
+                        clearTimeout(silenceTimeout.current);
+                        silenceTimeout.current = null;
+                    } else {
+                        if (!silenceTimeout.current) { 
+                            silenceTimeout.current = setTimeout(() => { 
+                                console.log("User stopped speaking");  
+                                setUserSpeaking(false);
+                            }, 1000);
+                        }
+                    }
+                }
+            };
+
             // Step 6: Handle Audio Data from Worklet
             audioWorkletNode.current.port.onmessage = (event) => {
                 // Check if it's audio data, if the session exists, and if we are still streaming
                 if (event.data.eventType === 'audioData' && liveSession.current && recording) {
                     const audioDataBuffer = event.data.audioData;
                     const base64AudioData = arrayBufferToBase64(audioDataBuffer);
-                    
                     try {
                         // Send audio chunk to Gemini
                         liveSession.current.sendRealtimeInput({
@@ -392,11 +398,6 @@ function Chat() {
                                 mimeType: `audio/pcm;rate=${TARGET_SAMPLE_RATE}`
                             }
                         });
-                        setTotalBytesSent(totalBytesSent + audioDataBuffer.byteLength);
-                        if ((totalBytesSent - 4096) % 163840 === 0) { // every ~5 seconds
-                            // console.log("Audio sent", totalBytesSent, "bytes,",
-                            //     Math.round(totalBytesSent / 32000), "seconds");
-                        }
                     } catch (sendError) {
                         console.log(`Error sending audio data: ${sendError.message}`, 'error');
                         // Optionally stop streaming if sending fails repeatedly
@@ -405,22 +406,11 @@ function Chat() {
                 }
             };
 
-            // Handle volume events
-            volumeWorkletNode.current.port.onmessage = (event) => {
-                // if (event.data.volume !== undefined) {
-                //     console.log(event.data.volume);
-                // }
-            };
-
         } catch (error) {
             console.log(`Error starting stream: ${error.message || error}`, 'error');
             setRecording(false);
             await stopStreaming(); // Ensure cleanup happens even on startup error
         }
-
-        return () => {
-            stopStreaming();       
-        };
     }
 
     async function stopStreaming() {
@@ -429,9 +419,8 @@ function Chat() {
                 console.log("Stop called but already stopped/cleaned up.");
                 return;
             } 
-            const wasStreaming = recording; // Keep track if we were actively streaming
+            setUserSpeaking(false);
             setRecording(false); // Set flag immediately to stop sending data
-
             // Step 7: Close Gemini Session
             if (liveSession.current) {
                 try {
@@ -474,12 +463,6 @@ function Chat() {
                 }
             }
         }
-    
-    function sendTranscriptionToServer(transcription) {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: 'transcription', data: transcription }));
-        }
-    }
 
     function updateScores(scores) {
         var prevData = biomarkerData;
@@ -601,6 +584,7 @@ function Chat() {
                 <div className="my-[1rem] flex justify-center border-1 border-black p-[1em] rounded-lg mx-[25%] overflow-y-scroll h-[10vh]">
                     {chatbotMessage}
                 </div>
+                User speaking: {userSpeaking ? "true" : "false"} Volume: {volume}
                 <div className="h-[55vh] mt-[1em] w-full">
                     <Avatar />
                 </div>
