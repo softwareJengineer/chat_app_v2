@@ -1,0 +1,10 @@
+# ====================================================================
+# Nginx
+# ====================================================================
+FROM nginx:1.27-alpine
+
+# Remove the default site just to make sure it doesn’t interfere
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Copy the sandbox file (should this filename be pulled form an .env variable?)
+COPY default.conf.sandbox /etc/nginx/conf.d/default.conf

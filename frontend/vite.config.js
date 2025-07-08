@@ -21,15 +21,15 @@ export default defineConfig({
         })
     ],
     server: {
-        host         : '0.0.0.0',      // listen on all interfaces (not just localhost)
+        host         : "0.0.0.0",      // listen on all interfaces (not just localhost)
         port         : 5173,
         strictPort   : true,           // make sure it uses 5173
         cors         : true,           // allow cross-origin access if needed
         proxy        : {
-            '/ws'  : {target: 'http://127.0.0.1:8000', ws: true}, //backend
-            '/api' : {target: 'http://127.0.0.1:8000', }, // changeOrigin: true,
+            '/ws'  : {target: 'http://127.0.0.1:8000', ws: true}, // backend
+            '/api' : {target: 'http://127.0.0.1:8000', },         // changeOrigin: true,
         },
-        allowedHosts : ['localhost', '127.0.0.1', 'cognibot.org', "deployment.cognibot.org", "sandbox.cognibot.org"], 
+        allowedHosts : ["localhost", "127.0.0.1", "cognibot.org", "deployment.cognibot.org", "sandbox.cognibot.org"], 
     },
-    resolve: { alias: {"@": path.resolve(__dirname, "src"),},}, // sets the "@" symbol to the src directory, makes things quicker sometimes
+    resolve: { alias: { "@": path.resolve(__dirname, "src"), },}, // sets the "@" symbol to the src directory, makes things quicker sometimes
 })

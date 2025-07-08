@@ -10,10 +10,10 @@ services:
     image: postgres
     container_name: db
     env_file: [.env]
+    networks: [appnet]
     volumes:
       - db_data:/var/lib/postgresql/data
-    networks: [appnet]
-
+    
   # -------------------------------------------------------------------- 
   # 2) Django Backend Server
   # --------------------------------------------------------------------
@@ -38,8 +38,14 @@ services:
     ports:                    # expose 8000 to host for Vite
       - "8000:8000"
 
+# --------------------------------------------------------------------
+# Declared, not created. Root file will create these.
+# --------------------------------------------------------------------
+# Docker will also create them automatically if this file is run individually.
 volumes:
   db_data:
+    external: true
 
 networks:
   appnet:
+    external: true

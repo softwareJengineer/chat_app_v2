@@ -1,33 +1,44 @@
 # ====================================================================
-# Three Services
+# Volumes & Networks
 # ====================================================================
-#  1) Database (postgres)
-#  2) Llama API
-#  3) Backend  (websocket server, LLM calls, biomarker logic)
-#  4) Frontend (vite, react) 
+# Single definition of shared infrastructure
+volumes:
+  db_data:
+
+networks:
+  appnet:
+
+# ====================================================================
+# Services
+# ====================================================================
 services:
   # -------------------------------------------------------------------- 
-  # 1) Database
+  # 1) Database (postgres)
   # --------------------------------------------------------------------
-  # Backend/Database are only accessable inside the Docker network.
   db:
-    image: postgres 
-    container_name: db
-    env_file: 
-      - .env
-      - .env.deploy
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      #- POSTGRES_USER=${POSTGRES_USER}
-      #- POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - TZ=UTC
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - appnet
+    extends: { file: ./backend/docker-compose.backend.yaml, service: db }
+    networks: [appnet]
+
+  # --------------------------------------------------------------------
+  # 2) Backend (websocket server, LLM calls, biomarker logic)
+  # --------------------------------------------------------------------
+  # Nginx/Vite proxies traffic here using the container name over the Docker network
+  backend:
+    extends: { file: ./backend/docker-compose.backend.yaml, service: backend }
+    networks: [appnet]
+    depends_on: [llama_api]
+    env_file: [./.env]      # optional global override
+
+  # --------------------------------------------------------------------
+  # 3) Frontend (vite, react) 
+  # --------------------------------------------------------------------
+  frontend:
+    extends: { file: ./frontend/docker-compose.frontend.yaml, service: frontend }
+    networks: [appnet]
+    env_file: [./.env]
 
   # -------------------------------------------------------------------- 
-  # 2) Llama API (included)  
+  # 4) Llama API
   # --------------------------------------------------------------------
   # Could probably share more between the two compose files and put it here (port, network, volumes, etc.)
   llama_api:
@@ -38,63 +49,15 @@ services:
       - ../deployment-files/models:/models
       - ./llama_api:/config
 
-
   # --------------------------------------------------------------------
-  # 3) Backend (private, no ports exposed)
+  # 5) Proxy with Nginx & Certbot
   # --------------------------------------------------------------------
-  # Nginx/Vite proxies traffic here using the container name over the Docker network
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile-backend
-    container_name: backend
-    command: >
-      sh -c "
-        python manage.py collectstatic --noinput &&
-        python manage.py makemigrations &&
-        python manage.py migrate &&
-        python manage.py seed_demo &&
-        daphne -b 0.0.0.0 -p 8000 backend.asgi:application
-      "
-    volumes:
-      - ./backend:/app                          # general project mount
-      - ../deployment-files/logs:/app/logs      # log folder mounted separately
-    env_file: 
-      - .env
-      - .env.deploy
-    environment:
-      - TZ=UTC
-    depends_on:
-      - db
-      - llama_api
-    networks:
-      - appnet
+  nginx:
+    extends: { file: ./nginx/docker-compose.proxy.yaml, service: nginx }
+    networks: [appnet]
+    env_file: [./.env]
 
-  # --------------------------------------------------------------------
-  # 4) Frontend
-  # --------------------------------------------------------------------
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile-frontend
-    container_name: frontend
-    depends_on:
-      - backend
-    env_file: 
-      - .env
-      - .env.deploy
-    environment:
-      - TZ=UTC
-    ports:
-      - "5173:5173"
-    networks:
-      - appnet
-
-# ====================================================================
-# Volumes & Networks
-# ====================================================================
-volumes:
-  postgres_data:
-
-networks:
-  appnet:
+  certbot:
+    extends: { file: ./nginx/docker-compose.proxy.yaml, service: certbot }
+    networks: [appnet]
+    env_file: [./.env]
