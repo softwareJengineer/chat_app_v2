@@ -1,6 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 
-
+# Mark lock files as generated so GitHub hides them in diffs
 frontend/package-lock.json linguist-generated=true
-
+frontend/package.json linguist-generated=true

@@ -1,8 +1,8 @@
 from django.contrib import admin
-from .models import Profile, Chat, Reminder, UserSettings
+from .models import Profile, ChatSession, Reminder, UserSettings
 
-# Register your models here.
-admin.site.register(Profile)
-admin.site.register(Chat)
-admin.site.register(Reminder)
+# Register models
+admin.site.register(Profile     )
+admin.site.register(ChatSession )
+admin.site.register(Reminder    )
 admin.site.register(UserSettings)

@@ -10,3 +10,9 @@ export const Providers = {
   gemini: { ASR: GeminiASR, TTS: GeminiTTS },
   test  : { ASR: TestASR,   TTS: TestTTS   },
 };
+
+const PROVIDER = import.meta.env.VITE_SPEECH_PROVIDER || 'azure'; // 'azure' | 'gemini' | 'test'
+export const { ASR: ASRClass, TTS: TTSClass } = Providers[PROVIDER];
+
+
+

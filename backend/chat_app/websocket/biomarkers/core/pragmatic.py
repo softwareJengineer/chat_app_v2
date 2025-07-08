@@ -28,9 +28,9 @@ bm_stop_list = pd.read_table(f"{bm_path}/stoplist.txt", header=None)
 # Pragmatic Score
 # -----------------------------------------------------------------------
 # Uses saved models on given features (score defaults to 1.0 on error)
-def generate_pragmatic_score(user_utt: str, llm_response: str):
+def generate_pragmatic_score(context_buffer):
     # Get a DataFrame for the given speech
-    try:                   speech_df = get_speech_df(user_utt, llm_response)
+    try:                   speech_df = get_speech_df(context_buffer)
     except Exception as e: logger.error(f"Error preparing speech data for coherence calculation: {e}"); return 1
     
     # Calculate the pragmatic score
@@ -53,26 +53,18 @@ def generate_pragmatic_score(user_utt: str, llm_response: str):
 # -----------------------------------------------------------------------
 # Creates a DataFrame for the given speech
 # -----------------------------------------------------------------------
-def get_speech_df(user_utt, global_llm_response):
-    # Split the sentence into words & flatten it
-    utter_list  = [i.split() for i in list(user_utt)]
-    words = [word for utt in utter_list for word in utt]
+def get_speech_df(context_buffer):
+    """
+    Roles are: "user" "assistant"
+    The function expects user and robot, but robot isn't used anymore so...
+    """
+    word_vector, role_vector = [], []
+    for utterance in context_buffer:
+        words =  utterance[1].split()
+        roles = [utterance[0]] * len(words)
 
-    # Get and flatten the list of LLM responses
-    response_list = [i.split() for i in [global_llm_response]]
-    resp_words = [word for resp in response_list for word in resp]
-
-    # Create columns for "user" and "robot", repeated for each word
-    user_column  = ['user' ] * sum(len(utt ) for utt  in utter_list   )
-    robot_column = ['robot'] * sum(len(resp) for resp in response_list)
-
-    # Prepare the speech data - 'user' or 'robot' repeated for each word in the sentence + words from the utterances
-    new_speech_dict = {'V1': user_column+robot_column, 'V2': words+resp_words}
-    #print("new_speech_dict", new_speech_dict)    
-    #logger.info(f"new_speech_dict conversation: {new_speech_dict}")
-    
-    # Create the speech DataFrame
-    speech_df = pd.DataFrame(new_speech_dict)
-    #logger.info(f"created new history speech dataframe: {speech_df}")
-
+        word_vector += words
+        role_vector += roles
+ 
+    speech_df = pd.DataFrame({"V1": role_vector, "V2": word_vector})
     return speech_df

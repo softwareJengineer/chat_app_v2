@@ -1,49 +1,54 @@
-import React from "react";
-import { Routes, Route } from 'react-router-dom';
-import { AuthProvider  } from './context/AuthContext';
+import { Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider            } from "@/context/AuthProvider";
 
-import PrivateRoute    from './utils/PrivateRoute';
-import Chat            from './pages/Chat';
-import Login           from "./pages/Login";
-import SignUp          from "./pages/SignUp";
-import Schedule        from "./pages/Schedule";
-import Dashboard       from "./pages/Dashboard";
-import Settings        from "./pages/Settings";
-import Home            from "./pages/Home";
-import ChatDetails     from "./pages/ChatDetails";
-import ChatHistory     from "./pages/ChatHistory";
-import Analysis        from "./pages/Analysis";
-import LoadingPage     from "./pages/LoadingPage";
-import Today           from "./pages/Today";
-import ProgressSummary from "./pages/ProgressSummary";
+import { Unprotected, Protected, AppLayout } from "@/routes";
 
-function App() {    
-        return (
-        <AuthProvider>
-            <Routes>
-                <Route exact path='/' element={<Home/>}></Route>
-                <Route path='/login' element={<Login/>}></Route>
-                <Route path='/signup' element={<SignUp/>}></Route>
-                <Route path='/loading' element={<LoadingPage/>}></Route>
+import Chat            from "@/pages/Chat";
+import Login           from "@/pages/Login";
+import SignUp          from "@/pages/SignUp";
+import Schedule        from "@/pages/Schedule";
+import Dashboard       from "@/pages/Dashboard";
+import ChatDetails     from "@/pages/ChatDetails";
+import Analysis        from "@/pages/Analysis";
+import ProgressSummary from "@/pages/ProgressSummary";
 
-                {/* PLwD routes */}
-                <Route path='/chat' element={<PrivateRoute><Chat/></PrivateRoute>}></Route>
-                <Route path='/progress' element={<PrivateRoute><ProgressSummary/></PrivateRoute>}></Route>
-                <Route path='/today' element={<PrivateRoute><Today/></PrivateRoute>}></Route>
+// --------------------------------------------------------------------
+// Routes and Pages
+// --------------------------------------------------------------------
+// ToDo: Add a patient/caregiver Route to this as well
+export default function App() {
+  return (
+    <AuthProvider>
+      <Routes>
+        <Route element={<AppLayout />}> 
 
-                {/* Caregiver Routes */}
-                <Route path='/dashboard' element={<PrivateRoute><Dashboard/></PrivateRoute>}></Route>
-                <Route path='/settings' element={<PrivateRoute><Settings/></PrivateRoute>}></Route>
-                <Route path='/chatdetails' element={<PrivateRoute><ChatDetails/></PrivateRoute>}></Route>
+            {/* Public Routes */}
+            <Route element={ <Unprotected/> }> 
+                <Route path="/login"   element={<Login  />} />
+                <Route path="/signup"  element={<SignUp />} />
+            </Route>
 
-                {/* Shared Routes */}
-                <Route path='/schedule' element={<PrivateRoute><Schedule/></PrivateRoute>}></Route>
-                <Route path="/analysis" element={<PrivateRoute><Analysis/></PrivateRoute>}></Route>
-                <Route path="/history" element={<PrivateRoute><ChatHistory/></PrivateRoute>}></Route>
+            {/* Protected Routes */}
+            <Route element={ <Protected/> }>
+                {/* Patient */}
+                <Route path="/chat"     element={<Chat            />} />
+                <Route path="/progress" element={<ProgressSummary />} />
 
-            </Routes>
-           </AuthProvider>
-        );
+                {/* Caregiver */}
+                <Route path="/dashboard"   element={<Dashboard   />} />
+                <Route path="/chatdetails" element={<ChatDetails />} />
+
+                {/* Shared */}
+                <Route path="/schedule" element={<Schedule    />} />
+                <Route path="/analysis" element={<Analysis    />} />
+            </Route>
+
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            
+        </Route>
+
+      </Routes>
+    </AuthProvider>
+  );
 }
-
-export default App;

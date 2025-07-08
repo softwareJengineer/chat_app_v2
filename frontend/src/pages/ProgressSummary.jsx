@@ -2,17 +2,17 @@ import React, { useContext, useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import Avatar from "../components/Avatar";
-import AuthContext from '../context/AuthContext';
+
 import { FcCalendar, FcClock, FcSms } from "react-icons/fc";
 import daysInARow from "../functions/daysInARow";
 import { getChats, getGoal } from "../functions/apiRequests";
-import GoalProgress from "../components/GoalProgress";
+//import GoalProgress from "../components/GoalProgress";
 import { IoThumbsUp } from "react-icons/io5";
 import Header from "../components/Header";
 import BlankChat from "../data/blankChat.json";
 
 const ProgressSummary = () => {
-    const { authTokens, goal } = useContext(AuthContext);
+    
     const [chats, setChats] = useState([]);
     const [chatCount, setChatCount] = useState(0);
     const [chatData, setChatData] = useState(BlankChat)
@@ -30,53 +30,7 @@ const ProgressSummary = () => {
         fetchChats();
     }, []);
 
-    //FOR TESTING
-    // const biomarkerData =  [
-    //     {
-    //         name: "Pragmatic",
-    //         data: []
-    //     },
-    //     {
-    //         name: "Grammar",
-    //         data: []
-    //     },
-    //     {
-    //         name: "Prosody",
-    //         data: []
-    //     },
-    //     {
-    //         name: "Pronunciation",
-    //         data: []
-    //     },
-    //     {
-    //         name: "Anomia",
-    //         data: []
-    //     },
-    //     {
-    //         name: "Turn Taking",
-    //         data: []
-    //     },
-    // ];
-    // const avg = {
-    //     "Pragmatic": 0,
-    //     "Grammar": 0,
-    //     "Prosody": 0,
-    //     "Pronunciation": 0,
-    //     "Anomia": 0,
-    //     "Turn Taking": 0
-    // };
-    // const chatData = {
-    //     user: user,
-    //     date: new Date(),
-    //     scores: biomarkerData,
-    //     avgScores: avg,
-    //     notes: "",
-    //     messages: [],
-    //     duration: 5,
-    //     sentiment: "Positive",
-    //     topics: "Holiday, daughter, dog"
-    // }
-    //END FOR TESTING
+
 
     const calcGoal = () => {
         if (goal.current > goal.target) {

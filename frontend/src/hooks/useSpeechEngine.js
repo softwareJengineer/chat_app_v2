@@ -1,4 +1,3 @@
-// src/hooks/useSpeechEngine.js
 import { useRef, useState, useEffect } from 'react';
 
 import AudioStreamer            from '../utils/AudioStreamer'; // --- needs to be updated to have 2 simultaneous buffers for Gemini ---

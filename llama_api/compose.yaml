@@ -24,8 +24,7 @@ services:
           devices:
             - capabilities: [gpu]
     runtime: nvidia
-    networks:
-      - appnet
+    networks: [appnet]
     #command: ["python3", "-m", "llama_cpp.server", "--config", "/config/server.config"]
     command: >
       sh -c "
