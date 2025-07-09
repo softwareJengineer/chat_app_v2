@@ -35,17 +35,17 @@ services:
       - DOMAIN=${DOMAIN}
       - DOMAIN_WWW=${DOMAIN_WWW}
       - CERT_EMAIL=${CERT_EMAIL}
-    entrypoint: ["sh", "-c"]
+    #entrypoint: ["sh", "-c"]
     command: >
-      certbot certonly --webroot
+      certonly --webroot
         --webroot-path /var/www/certbot
         --email $CERT_EMAIL
         --agree-tos --non-interactive
         -d $DOMAIN -d $DOMAIN_WWW &&
 
-      echo '0 3 * * * certbot renew --webroot -w /var/www/certbot --quiet --post-hook "nginx -s reload"' \
-        | crontab - && \
-      crond -f
+    #  echo '0 3 * * * certbot renew --webroot -w /var/www/certbot --quiet --post-hook "nginx -s reload"' \
+    #    | crontab - && \
+    #  crond -f
 
 # ====================================================================
 # Volumes & Networks
