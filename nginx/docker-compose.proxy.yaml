@@ -35,15 +35,15 @@ services:
       - DOMAIN=${DOMAIN}
       - DOMAIN_WWW=${DOMAIN_WWW}
       - CERT_EMAIL=${CERT_EMAIL}
-    entrypoint: >
+    command: >
       sh -c "
         certbot certonly --webroot
           --webroot-path=/var/www/certbot
           --email $${CERT_EMAIL}
-          --agree-tos
-          --non-interactive
+          --agree-tos --non-interactive
           -d $${DOMAIN} -d $${DOMAIN_WWW} &&
-        echo '0 3 * * * certbot renew --webroot -w /var/www/certbot --quiet --post-hook \"docker kill -s HUP nginx\"' | crontab - &&
+          
+        echo '0 3 * * * certbot renew --webroot -w /var/www/certbot --quiet --post-hook \"nginx -s reload\"' | crontab - &&
         crond -f
       "
 
