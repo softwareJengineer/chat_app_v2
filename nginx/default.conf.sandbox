@@ -26,8 +26,7 @@ server {
 # Main Host
 # ====================================================================
 server {
-    listen 443 ssl;
-    http2;
+    listen 443 ssl http2;
     server_name sandbox.cognibot.org www.sandbox.cognibot.org;
 
     ssl_certificate     /etc/letsencrypt/live/sandbox.cognibot.org/fullchain.pem;
