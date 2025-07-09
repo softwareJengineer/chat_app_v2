@@ -11,6 +11,8 @@ services:
       dockerfile: Dockerfile-nginx
     container_name: nginx
     depends_on: [frontend, backend]
+    environment:
+      DOMAIN: ${DOMAIN}
     ports:
       - "80:80"
       - "443:443"
