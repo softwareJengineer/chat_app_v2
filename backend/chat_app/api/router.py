@@ -2,6 +2,7 @@ from rest_framework.routers         import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 from django.urls import path, include
 
+from .health import health
 from .views import (
     GoalView, UserSettingsView,              # One-off endpoints
     ProfileView, SignupView,                 # Auth / Profile
@@ -22,6 +23,9 @@ router.register(r"reminders",    ReminderViewSet,    basename="reminder"   )
 urlpatterns = [
     # /api/chatsessions/
     path("", include(router.urls)),
+
+    # Health check
+    path("health/", health, name="health"),
 
     # Single-row resources (one per user)
     path("goal/",             GoalView.as_view(), name="goal"    ),
