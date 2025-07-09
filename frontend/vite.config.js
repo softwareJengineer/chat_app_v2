@@ -17,7 +17,8 @@ export default defineConfig({
                 theme_color      : '#ffffff',
                 icons            : [{"src": "3d-icon-robot-1.png", "sizes": "192x192", "type": "image/png"},
                                     {"src": "3d-icon-robot-2.png", "sizes": "512x512", "type": "image/png"},]
-            }
+            },
+            workbox: { maximumFileSizeToCacheInBytes: 5 * 1024 * 1024 }, // 5MB
         })
     ],
     server: {
