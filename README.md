@@ -26,3 +26,6 @@ REQUIREMENTS
 5. new_LSA.csv
 6. stanford-parser models file
 7. Phi-3_finetuned.gguf
+
+
+Run commands in the Docker container with docker-compose run web [command]

@@ -16,11 +16,19 @@ import librosa
 import math
 from datetime import datetime, timezone
 from django.apps import apps
+import asyncio
 from channels.db import database_sync_to_async
 from .. import config as cf
 from .biomarker_models.altered_grammer import generate_grammar_score
 from .biomarker_models.coherence_function import coherence
 import os
+import pyaudio
+from google import genai
+from google.genai import types
+import speech_recognition as sr
+import sounddevice as sd
+from scipy.io.wavfile import write
+import wavio as wv
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -55,6 +63,13 @@ feature_extractor = opensmile.Smile(
     sampling_rate=SAMPLE_RATE,
 )
 
+model = "gemini-live-2.5-flash-preview"
+
+config = {
+    "response_modalities": ["TEXT"],
+    "input_audio_transcription": {},
+}
+
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -83,6 +98,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.periodic_scores_task = asyncio.create_task(self.send_periodic_scores())
             self.prosody_model = joblib.load(cf.prosody_model_path)
             self.pronunciation_model = joblib.load(cf.pronunciation_model_path)
+            self.client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
+            
         except Exception as e:
             logger.error(f"Failed to initialize consumer: {e}")
             return
@@ -162,11 +179,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.global_llm_response = response
                 
                 # Generate biomarker scores
-                biomarker_scores = self.generate_biomarker_scores(user_utt)
-                await self.send(json.dumps({
-                    'type': 'biomarker_scores',
-                    'data': biomarker_scores
-                })) 
+                # biomarker_scores = self.generate_biomarker_scores(user_utt)
+                # await self.send(json.dumps({
+                #     'type': 'biomarker_scores',
+                #     'data': biomarker_scores
+                # })) 
                 
                 self.global_llm_response = response
             
@@ -176,6 +193,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 
         except json.JSONDecodeError as e:
             logger.error(f"JSON decode error: {e}")
+        
 
     async def process_audio_data(self, base64_data, sample_rate):
         try:
@@ -191,6 +209,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
             
             # Convert to float32
             audio_array = librosa.util.buf_to_float(audio_array, n_bytes=2, dtype=np.float32)
+            
+            session = self.client.aio.live.connect(model=model, config=config)
+            
+            await session.send_realtime_input(
+                audio=types.Blob(data=audio_array, mime_type='audio/pcm;rate=16000')
+            )
+            print("Sent to gemini")
+
+            async for msg in session.receive():
+                if msg.server_content.input_transcription:
+                    print('Transcript:', msg.server_content.input_transcription.text)
             
         except Exception as e:
             logger.error(f"Error processing audio data: {e}")
@@ -208,6 +237,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         'Seperate features in 5-second non-overlapping chunks'
         return [features.iloc[i:i+chunk_size].values for i in range(0, len(features), chunk_size) if len(features.iloc[i:i+chunk_size]) == chunk_size]
 
+
+    ###############################
+    # SCORE HANDLING FUNCTIONS
+    ###############################
 
     def process_scores(self, features, chunk_size, model):
         'getting scores from file'

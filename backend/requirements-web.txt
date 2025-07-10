@@ -74,4 +74,10 @@ django-cors-headers==3.14.0
 djangorestframework
 rest_framework_simplejwt
 djangorestframework-simplejwt
+pyaudio
 vaderSentiment
+google-genai
+google-cloud-speech
+SpeechRecognition
+sounddevice
+wavio
