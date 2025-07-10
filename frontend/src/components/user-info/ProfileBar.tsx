@@ -4,7 +4,11 @@ import { toastMessage } from "@/utils/functions/toast_helper";
 
 // Profile info bar
 export default function ProfileBar() { 
-    const { profile } = useAuth();
+    const { user, profile } = useAuth();
+    
+    // Don't show it if not the caregiver
+    const isCare = user.id == profile.caregiver.id;
+    if (!isCare) { return null; }
 
     // Download report utility
     const downloadReport = () => { toastMessage("downloadReport() not implemented yet...", false); }

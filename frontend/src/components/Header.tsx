@@ -12,12 +12,14 @@ import CaregiverSettingsModal from "@/components/modals/CaregiverSettingsModal";
 
 // Page title
 const TITLES: Record<string, string> = {
-    "/"         : "Dashboard",
-    "/dashboard": "Dashboard",
-    "/chat"     : "Chat",
-    "/history"  : "Chat History",
-    "/schedule" : "Schedule",
-    default     : "Cognibot",
+    "/"             : "Dashboard",
+    "/dashboard"    : "Dashboard",
+    "/progress"     : "Progress Summary",
+    "/chatDetails"  : "Single Chat Analysis",
+    "/chat"         : "Chat",
+    "/history"      : "Chat History",
+    "/schedule"     : "Schedule",
+    default         : "Cognibot",
 };
 
 // --------------------------------------------------------------------
@@ -42,6 +44,7 @@ export default function Header() {
                 {/* Navigation Links */}
                 <nav className="flex gap-4 text-xl">
                     <NavLink to="/dashboard" className={navLinkCls}> Dashboard </NavLink>
+                    <NavLink to="/progress"  className={navLinkCls}> Progress  </NavLink>
                     <NavLink to="/chat"      className={navLinkCls}> Chat      </NavLink> {/* This is PLwD only (usually) */}
                     <NavLink to="/schedule"  className={navLinkCls}> Schedule  </NavLink>
                 </nav>
