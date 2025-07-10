@@ -71,4 +71,4 @@ const VolumeMeterWorklet = `
     registerProcessor('volume-meter', VolumeMeter);
     `;
 
-export const Worklets = { AudioRecordingWorklet, VolumeMeterWorklet };
+export { AudioRecordingWorklet, VolumeMeterWorklet };
