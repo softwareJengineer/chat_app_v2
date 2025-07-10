@@ -55,9 +55,9 @@ else:
 # =======================================================================
 # 1) On-Utterance Biomarkers
 def generate_utterance_biomarkers(context_buffer):
-    return {"pragmatic": gen_score(BioConfig.PRAG, prag, {"context_buffer": context_buffer}),
-            "grammar"  : gen_score(BioConfig.GRAM, gram, {"context_buffer": context_buffer}), 
-            "anomia"   : gen_score(BioConfig.ANOM, anom, {"context_buffer": context_buffer}),}
+    return {"pragmatic"      : gen_score(BioConfig.PRAG, prag, {"context_buffer": context_buffer}),
+            "alteredgrammar" : gen_score(BioConfig.GRAM, gram, {"context_buffer": context_buffer}), 
+            "anomia"         : gen_score(BioConfig.ANOM, anom, {"context_buffer": context_buffer}),}
 
 # 2) On-Audio Biomarkers
 def generate_audio_biomarkers(prosody_features, pronunciation_features, overlapped_speech_count):
