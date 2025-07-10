@@ -87,7 +87,7 @@ export interface ChatSession {
   date      : string;
   is_active : boolean;
 
-  start_ts  : string | null;
+  start_ts  : string;
   end_ts    : string | null;
   duration? : number;          // in seconds
 

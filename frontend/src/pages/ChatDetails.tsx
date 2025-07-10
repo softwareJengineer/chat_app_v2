@@ -1,24 +1,21 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { ChatSession } from "@/api";
+import { IoIosChatbubbles         } from "react-icons/io";
 
-import { dateFormatLong } from "@/utils/styling/numFormatting";
-import { PATIENT_HEX    } from "@/utils/styling/colors";
+import { ChatSession                     } from "@/api";
+import { useChatSessions                 } from "@/hooks/queries/useChatSessions";
+import { getSessionsBefore, averageScore } from "@/utils/misc/scores";
+import { dateFormatLong                  } from "@/utils/styling/numFormatting";
 
 import ProfileBar       from "@/components/user-info/ProfileBar";
-import ChatOverview     from "@/components/details/ChatOverview";
 import RadarTrack       from "@/components/details/RadarTrack";
 import DetailedAnalysis from "@/components/details/DetailedAnalysis";
+import ChatTranscript   from "@/components/chatDetails/ChatTranscript";
+import ChatBiomarkers   from "@/components/chatDetails/ChatBiomarkers";
 
 
-import { useChatSessions } from "@/hooks/queries/useChatSessions";
-import { getSessionsBefore, averageScore } from "@/utils/misc/scores";
-
-
-// --------------------------------------------------------------------
+// ====================================================================
 // ChatDetails
-// --------------------------------------------------------------------
-// ToDo: It's all inside a grid?
-// Radar track/recommended activities
+// ====================================================================
 export default function ChatDetails () {
     // If the page wasn't loaded with a ChatSession, reroute
     const { state } = useLocation() as { state?: { chatSession?: ChatSession } };
@@ -39,13 +36,14 @@ export default function ChatDetails () {
         <ProfileBar/>
         {chatOverview(dateFormatLong.format(chatDate))}
         
-
         <div className="flex flex-col mx-[1rem]">
 
             <div className="flex gap-4"> 
-                <div className="w-1/2"> <ChatOverview chatSession={ state?.chatSession } /> </div>
-                <div className="w-1/2"> <RadarTrack current={ state?.chatSession.average_scores} previous={prevScores}/> </div>
+                <div className="w-1/2"> <ChatBiomarkers chatSession={state?.chatSession}                prevScores={prevScores} /> </div>
+                <div className="w-1/2"> <RadarTrack     current    ={state?.chatSession.average_scores} previous  ={prevScores} /> </div>
             </div>
+
+            <ChatTranscript chatSession={state?.chatSession}/>
 
             <DetailedAnalysis session={ state?.chatSession } />
 
@@ -54,13 +52,14 @@ export default function ChatDetails () {
     );
 }
 
-
-// Header Helper (ToDo: Try it with a different color)
+// --------------------------------------------------------------------
+// Header Helper
+// --------------------------------------------------------------------
 function chatOverview(chatDate: string) {
-    const dateStyle = "text-purple-500 text-4xl";
+    const dateStyle = "text-violet-600 text-4xl";
     return (
-        <div className="flex flex-row mx-[1rem] mb-[1rem] gap-4">
-            <b className="text-4xl"> Single Chat Analysis: </b>
+        <div className="flex flex-row items-center mx-[1rem] mb-[1rem] gap-[1rem] mt-[1rem]">
+            <IoIosChatbubbles size={40} />
             <b className={dateStyle}>{chatDate}</b>
         </div>
     );

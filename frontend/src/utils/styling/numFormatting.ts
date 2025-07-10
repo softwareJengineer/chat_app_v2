@@ -19,4 +19,21 @@ export const dateFormatLong = new Intl.DateTimeFormat("en-US", {
     minute : "2-digit",
 });
 
+export const msgDateFormat = new Intl.DateTimeFormat("en-US", {
+    hour   : "2-digit",
+    minute : "2-digit",
+    second : "2-digit",
+});
 
+
+export function formatElapsed(ms: number) {
+    const totalSeconds = Math.floor(ms / 1000);
+    const h = Math.floor( totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+
+    // Show "MM:SS" while < 1 h, otherwise "H:MM:SS"
+    return h
+        ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
+        : `${m}:${String(s).padStart(2, "0")}`;
+}
