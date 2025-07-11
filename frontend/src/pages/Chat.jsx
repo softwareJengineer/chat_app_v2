@@ -96,7 +96,11 @@ function Chat() {
         if (!start) {
             setStart(new Date());
         }
-        initAudioProcessing();
+        if (recording) {
+            initAudioProcessing();
+        } else {
+            disconnect();
+        }
     }, [recording]);
 
     // Helper function to convert array buffer to base64
@@ -108,6 +112,10 @@ function Chat() {
             binary += String.fromCharCode(bytes[i]);
         }
         return btoa(binary);
+    }
+
+    function speakResponse(response) {
+        
     }
 
     async function initAudioProcessing() {
@@ -182,6 +190,25 @@ function Chat() {
         } catch (error) {
             console.log(`Error initializing audio: ${error.message}`);
         }
+    }
+
+    async function disconnect() {
+        if (audioContext.current) {
+            audioContext.current.close().then(() => {
+                console.log("Audio context closed");
+            }).catch((error) => {
+                console.error("Error closing audio context:", error);
+            });
+        }
+        if (stream.current) {
+            stream.current.getTracks().forEach(track => track.stop());
+            console.log("Audio stream stopped");
+        }
+        if (audioProcessor.current) {
+            audioProcessor.current.disconnect();
+            console.log("Audio processor disconnected");
+        }
+
     }
 
     function updateScores(scores) {

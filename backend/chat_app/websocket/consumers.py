@@ -164,7 +164,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 logger.info(f"Overlapped speech detected. Count: {self.overlapped_speech_count}")
             
             elif data['type'] == 'transcription':
-                user_utt = data['data'].lower()
+                pass
+            
+            elif data['type'] == 'audio_data':
+                print("AUDIO DATA RECEIVED")
+                user_utt = await self.process_audio_data(data['data'], data['sampleRate'])
                 logger.info(f"Received user utterance: {user_utt}")
                 
                 # Generate LLM response
@@ -186,10 +190,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 # })) 
                 
                 self.global_llm_response = response
-            
-            elif data['type'] == 'audio_data':
-                print("AUDIO DATA RECEIVED")
-                await self.process_audio_data(data['data'], data['sampleRate'])
                 
         except json.JSONDecodeError as e:
             logger.error(f"JSON decode error: {e}")
@@ -201,25 +201,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
             audio_bytes = base64.b64decode(base64_data)
             
             logger.info(f"Received audio data: {len(audio_bytes)} bytes at {sample_rate}Hz")
-        
-            audio_array = np.frombuffer(audio_bytes, dtype=np.int16)
-            
-            # Normalize audio data
-            audio_array = audio_array / np.max(np.abs(audio_array))
-            
-            # Convert to float32
-            audio_array = librosa.util.buf_to_float(audio_array, n_bytes=2, dtype=np.float32)
-            
-            session = self.client.aio.live.connect(model=model, config=config)
-            
-            await session.send_realtime_input(
-                audio=types.Blob(data=audio_array, mime_type='audio/pcm;rate=16000')
-            )
-            print("Sent to gemini")
+    
+            async with self.client.aio.live.connect(model=model, config=config) as session:
+                await session.send_realtime_input(
+                    audio=types.Blob(data=audio_bytes, mime_type='audio/pcm;rate=16000')
+                )
+                print("Sent to gemini")
 
-            async for msg in session.receive():
-                if msg.server_content.input_transcription:
-                    print('Transcript:', msg.server_content.input_transcription.text)
+                transcription = ""
+                async for msg in session.receive():
+                    if msg.server_content.input_transcription:
+                        transcription += msg.server_content.input_transcription.text
+                        print('Transcript:', msg.server_content.input_transcription.text)
+                print("Full transcription:", transcription)
+                return transcription
             
         except Exception as e:
             logger.error(f"Error processing audio data: {e}")
