@@ -6,3 +6,4 @@ export * from "./endpoints/goal";
 export * from "./endpoints/profile";
 export * from "./endpoints/chatsession";
 export * from "./endpoints/reminders";
+export * from "./endpoints/signup";

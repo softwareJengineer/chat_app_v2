@@ -8,19 +8,18 @@ To run it just do `npm run dev` in the frontend folder. Might need to install st
 ## Page Reworks (high level, still components missing on some):
 ```diff
 Pages
--  * Analysis
 +  * Chat
 +  * ChatDetails
 +  * Dashboard ("Speech Analysis" Page)
 +  * Login
 -  * ProgressSummary (robot, prog bar, info, games)
 +  * Schedule
--  * Signup
++  * Signup
 
 ```
 
 <br>
-
+Do stuff when there are no chats 
 
 ProgressSummary should be a page they both have, and it should be very component based, similar-ish to ChatDetails. 
 I think some of the stuff from ChatDetails needs to go
@@ -49,7 +48,6 @@ We just have
 
 <details closed> <summary> <b>To Do</b> </summary>
 
-* Remove/disable links to pages that don't work
 * Theme 
     - universal color sources (change depending on patient/caregiver)
     - font size - throughout the project font size should be relative and then there should be like a global font size we can adjust

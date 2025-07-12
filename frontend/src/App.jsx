@@ -3,12 +3,10 @@ import { AuthProvider            } from "@/context/AuthProvider";
 
 import { Unprotected, Protected, AppLayout } from "@/routes";
 
-import { Dashboard, ChatDetails } from "@/pages";
-import Chat            from "@/pages/Chat";
+import { Dashboard, ChatDetails, Chat, ProgressSummary } from "@/pages";
 import Login           from "@/pages/Login";
 import SignUp          from "@/pages/SignUp";
 import Schedule        from "@/pages/Schedule";
-import ProgressSummary from "@/pages/ProgressSummary";
 
 
 // --------------------------------------------------------------------

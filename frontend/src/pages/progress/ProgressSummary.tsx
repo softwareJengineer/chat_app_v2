@@ -2,7 +2,7 @@ import { useChatSessions } from "@/hooks/queries/useChatSessions";
 import   ChatOverview      from "./components/ChatOverview";
 
 // ToDo: ...
-export default function ProgressSummary() {
+export function ProgressSummary() {
     const { data, isLoading } = useChatSessions();
 
     if (isLoading) { return <p>Loading chat history...</p>; }
