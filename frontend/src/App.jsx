@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider            } from "@/context/AuthProvider";
 
-import { Unprotected, Protected, AppLayout } from "@/routes";
+import { Unprotected, Protected, AppLayout, IsCaregiver, IsPatient } from "@/routes";
 
 import { Dashboard, ChatDetails, Chat, ProgressSummary } from "@/pages";
 import Login           from "@/pages/Login";
@@ -12,7 +12,7 @@ import Schedule        from "@/pages/Schedule";
 // --------------------------------------------------------------------
 // Routes and Pages
 // --------------------------------------------------------------------
-// ToDo: Add a patient/caregiver Route to this as well
+// ToDo: Almost all of them are shared, we just don't show everything to patients... ?
 export default function App() {
   return (
     <AuthProvider>
@@ -28,15 +28,17 @@ export default function App() {
             {/* Protected Routes */}
             <Route element={ <Protected/> }>
                 {/* Patient */}
-                <Route path="/chat"     element={<Chat            />} />
-                <Route path="/progress" element={<ProgressSummary />} />
+                <Route element={ <IsPatient/> }>
+                    <Route path="/chat" element={<Chat />} />
+                </Route>
 
                 {/* Caregiver */}
                 <Route path="/dashboard"   element={<Dashboard   />} />
                 <Route path="/chatdetails" element={<ChatDetails />} />
 
                 {/* Shared */}
-                <Route path="/schedule" element={<Schedule    />} />
+                <Route path="/schedule" element={<Schedule        />} />
+                <Route path="/progress" element={<ProgressSummary />} />
                 
             </Route>
 
