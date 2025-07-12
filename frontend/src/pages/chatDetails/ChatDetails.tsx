@@ -16,7 +16,7 @@ import ChatBiomarkers   from "@/pages/chatDetails/components/ChatBiomarkers";
 // ====================================================================
 // ChatDetails
 // ====================================================================
-export default function ChatDetails () {
+export function ChatDetails () {
     // If the page wasn't loaded with a ChatSession, reroute
     const { state } = useLocation() as { state?: { chatSession?: ChatSession } };
     if (!state?.chatSession) { useNavigate()("/dashboard"); };

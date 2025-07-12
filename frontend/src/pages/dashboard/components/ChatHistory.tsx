@@ -1,6 +1,8 @@
 import { useChatSessions } from "@/hooks/queries/useChatSessions";
-import   ChatSummaryCard   from "@/components/chats/ChatSummaryCard";
 import { h3              } from "@/utils/styling/sharedStyles";
+
+import   ChatSummaryCard   from "./ChatSummaryCard";
+
 
 // ====================================================================
 // Chat History Panel (shown on Dashboard)
