@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { BsPlayCircle, BsPauseCircle, BsStopCircle } from "react-icons/bs";
 
 import useLiveChat   from "@/hooks/useLiveChat";
-import LiveChatView  from "@/components/chats/LiveChatView";
+import LiveChatView  from "./components/LiveChatView";
 import SaveChatModal from "@/components/modals/SaveChatModal";
 
 import { useLocalChatSession } from "@/hooks/live-chat";
@@ -14,7 +14,7 @@ import { useLocalChatSession } from "@/hooks/live-chat";
 // ====================================================================
 // ToDo: Move speech providers folder to utils, fix the index
 // ToDo: Might need to add the user/token stuff to the websocket
-export default function Chat() {
+export function Chat() {
     const navigate = useNavigate();
 
     // Local (frontend, view-related only) chat tracking

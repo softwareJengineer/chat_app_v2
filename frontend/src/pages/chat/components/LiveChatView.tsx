@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { ToggleButton, ToggleButtonGroup } from "react-bootstrap";
+
 import { LocalChatMessage } from "@/hooks/live-chat";
 
-import AvatarView   from "@/components/chat/AvatarView";
-import Avatar       from "@/components/Avatar";
-
-import ChatMessages from "@/components/chats/ChatMessages";
+import Avatar       from "@/pages/common/avatar/Avatar";
+import AvatarView   from "./AvatarView";
+import ChatMessages from "./ChatMessages";
 
 // --------------------------------------------------------------------
 // Get the most recent message from the system
@@ -78,4 +78,3 @@ export default function LiveChatView({ messages }: { messages: LocalChatMessage[
     </>
     );
 }
-

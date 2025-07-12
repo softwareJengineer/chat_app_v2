@@ -1,5 +1,4 @@
-
-import Avatar from "../Avatar";
+import Avatar from "@/pages/common//avatar/Avatar";
 
 // --------------------------------------------------------------------
 // AvatarView
