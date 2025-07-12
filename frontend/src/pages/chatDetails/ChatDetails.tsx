@@ -9,8 +9,8 @@ import { dateFormatLong                  } from "@/utils/styling/numFormatting";
 import ProfileBar       from "@/components/user-info/ProfileBar";
 import RadarTrack       from "@/components/details/RadarTrack";
 import DetailedAnalysis from "@/components/details/DetailedAnalysis";
-import ChatTranscript   from "@/components/chatDetails/ChatTranscript";
-import ChatBiomarkers   from "@/components/chatDetails/ChatBiomarkers";
+import ChatTranscript   from "@/pages/chatDetails/components/ChatTranscript";
+import ChatBiomarkers   from "@/pages/chatDetails/components/ChatBiomarkers";
 
 
 // ====================================================================
