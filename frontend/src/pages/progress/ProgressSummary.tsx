@@ -1,6 +1,5 @@
 import { useChatSessions } from "@/hooks/queries/useChatSessions";
-import ChatOverview     from "@/components/details/ChatOverview";
-
+import   ChatOverview      from "./components/ChatOverview";
 
 // ToDo: ...
 export default function ProgressSummary() {

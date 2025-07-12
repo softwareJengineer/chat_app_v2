@@ -7,10 +7,11 @@ import { getSessionsBefore, averageScore } from "@/utils/misc/scores";
 import { dateFormatLong                  } from "@/utils/styling/numFormatting";
 
 import ProfileBar       from "@/components/user-info/ProfileBar";
-import RadarTrack       from "@/components/details/RadarTrack";
 import DetailedAnalysis from "@/components/details/DetailedAnalysis";
-import ChatTranscript   from "@/pages/chatDetails/components/ChatTranscript";
-import ChatBiomarkers   from "@/pages/chatDetails/components/ChatBiomarkers";
+
+import RadarTrack       from "./components/RadarTrack";
+import ChatTranscript   from "./components/ChatTranscript";
+import ChatBiomarkers   from "./components/ChatBiomarkers";
 
 
 // ====================================================================

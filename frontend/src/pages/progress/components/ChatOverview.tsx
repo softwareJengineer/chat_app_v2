@@ -2,8 +2,8 @@ import { GiAlarmClock, GiRobotAntennas, GiChatBubble } from "react-icons/gi";
 import { useAuth      } from "@/context/AuthProvider";
 import { ChatSession  } from "@/api";
 import { h3           } from "@/utils/styling/sharedStyles";
-import   getExercises   from "@/functions/getExercises";
-import   Avatar         from "@/components/Avatar";
+import   getExercises   from "@/utils/functions/getExercises";
+import   Avatar         from "@/pages/common/avatar/Avatar";
 import   GoalProgress   from "@/components/graphics/GoalProgress";
 
 

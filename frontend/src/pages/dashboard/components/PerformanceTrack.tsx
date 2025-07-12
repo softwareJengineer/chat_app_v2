@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAuth  } from "@/context/AuthProvider";
 import { h3       } from "@/utils/styling/sharedStyles";
 
-import ScoreTrackGraph from "@/components/ScoreTrackGraph";
+import ScoreTrackGraph from "./ScoreTrackGraph";
 // ToDo: Biomarker graph
 
 // ====================================================================

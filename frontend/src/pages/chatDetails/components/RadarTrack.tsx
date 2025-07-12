@@ -1,6 +1,6 @@
 import { BiomarkerType } from "@/api";
 import { h3            } from "@/utils/styling/sharedStyles";
-import ScoreRadarChart   from "@/components/graphics/ScoreRadarChart";
+import ScoreRadarChart   from "./ScoreRadarChart";
 
 export default function RadarTrack ({ current, previous } : {
     current  : Record<BiomarkerType, number>,
