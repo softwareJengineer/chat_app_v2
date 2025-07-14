@@ -3,22 +3,30 @@ Django based backend. Provides database access via an API and provides the chat 
 
 ### To run the project locally:
 1. `cd` into the `backend` directory
-2. `docker compose -f docker-compose.backend.yaml up --build`
+2. ***<b>(Local only, don't commit this)</b>*** In `docker-compose.backend.yaml` comment out both `external: true` lines
+3. `docker compose -f docker-compose.backend.yaml up --build`
 
 <br>
 
 ### ToDo:
 * This will be a big task, and needs to be done across a lot of files... Change "plwd" references to just "patient." (database, views, etc.)
+
 * In ```db_services.py``` add functionality to calculate topics and analysis and save them when the session is closed. 
     - Also get/create the user's goal and add 1 to it. --- **probably dont need this, just check how many inactive ChatSessions come after the goal start date**
     - There is some old sample code in a comment at the top that can be used as a reference.
+
 * Biomarker calculations need to be looked over. Specific inputs like time ranges, single words, full conversation, etc.
+
 * Django secret key moved to ```.env``` file or config. Turn debug mode on and off via environment variables as well.
+
 * Make sure ```requirements-web.txt``` actually covers everything.
+
 * When we load a chat, check if X minutes have passed since the last interaction, and if so close it and create a new one.
     - Means we need to add in a "last interaction" timer... Or I guess I can use the same logic as start_ts for end_ts.
     - Probably should be done in ```db_services.py```.
+
 * Also add logic that checks if the source loading the chat is the same as the source that created the current chat.
+
     - If something is the first message or first biomarker added to the chat, set the source to that (an empty chat could have been made previously).
     - Do this in ```consumers.py``` or ```db_services.py```. Probably ```db_services.py``` though ?
     - This could be how to have 2 connections to a chat at once. If the chat was created on the robot and you are connecting from the webapp, do:...
@@ -81,8 +89,8 @@ Django based backend. Provides database access via an API and provides the chat 
 
 | User      | Username          | Password  |
 | --------- | ----------------- | --------- |
-| User      | `demo_patient`    | `dpu1`    |
-| Caregiver | `demo_caregiver`  | `dpu1`    |
+| User      | `demo_patient`    | `1`    |
+| Caregiver | `demo_caregiver`  | `1`    |
 <hr>
 </details>
 <br>
