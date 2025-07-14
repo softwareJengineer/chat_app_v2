@@ -10,7 +10,7 @@ services:
       context: .
       dockerfile: Dockerfile-nginx
       args:
-        FILE_VARIANT: ${CONF_FILE:-default.conf.sandbox}
+        CONF_FILE: ${CONF_FILE:-default.conf.sandbox}
     container_name: nginx
     depends_on: [frontend, backend]
     environment:
