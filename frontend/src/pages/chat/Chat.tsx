@@ -33,7 +33,7 @@ export function Chat() {
     // Modal control
     const [showModal, setShowModal] = useState(false);
     const endChatModal = () => {         setShowModal(true ); if (!recording) { pauseChat(); }; }; 
-    const saveChat     = () => { save(); setShowModal(false); navigate("/dashboard"); }; // use the stop speaking callback
+    const saveChat     = () => { save(); setShowModal(false); navigate("/progress"); }; // use the stop speaking callback
 
 
     // --------------------------------------------------------------------
@@ -42,14 +42,14 @@ export function Chat() {
     const stopStyle = "flex flex-col gap-2 items-center";
     return (
     <>
-        {/* View of the chatHistory and/or Avatar */}
-        <LiveChatView messages={session.messages}/> 
-
         {/* Buttons for starting/pausing the chat & saving the chat history/ending the chat */}
         <div className="flex flex-row justify-center mb-[2em] pt-[3em] gap-[4em] items-center">
             <RecordButton recording={recording} stopRecording={pauseChat} startRecording={startChat}/>
             <button className={stopStyle} onClick={endChatModal}> <BsStopCircle size={50} color={"black"} /> End Chat </button>
         </div>
+
+        {/* View of the chatHistory and/or Avatar */}
+        <LiveChatView messages={session.messages}/> 
 
         {/* SaveChatModal, controlled with props */}
         <SaveChatModal show={showModal} onClose={() => setShowModal(false)} saveChat={saveChat}/>
