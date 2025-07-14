@@ -7,8 +7,6 @@ import { getSessionsBefore, averageScore } from "@/utils/misc/scores";
 import { dateFormatLong                  } from "@/utils/styling/numFormatting";
 
 import ProfileBar       from "@/components/user-info/ProfileBar";
-import DetailedAnalysis from "@/components/details/DetailedAnalysis";
-
 import RadarTrack       from "./components/RadarTrack";
 import ChatTranscript   from "./components/ChatTranscript";
 import ChatBiomarkers   from "./components/ChatBiomarkers";
@@ -27,13 +25,11 @@ export function ChatDetails () {
     const { data, isLoading } = useChatSessions();
     const prevScores = averageScore(getSessionsBefore(data, chatDate));
 
-    //const outerStyle = "grid md:grid-cols-2 grid-cols-1 h-full justify-stretch mx-[2rem] items-center gap-4 mb-[2rem]";
-    const outerStyle = "flex flex-col";
 
     // Return UI Component
     if (isLoading) { return <p>Loading chat history...</p>; }
     return (
-    <div className={outerStyle}>
+    <div className="flex flex-col">
         <ProfileBar/>
         {chatOverview(dateFormatLong.format(chatDate))}
         
@@ -45,8 +41,6 @@ export function ChatDetails () {
             </div>
 
             <ChatTranscript chatSession={state?.chatSession}/>
-
-            <DetailedAnalysis session={ state?.chatSession } />
 
         </div>
     </div>
