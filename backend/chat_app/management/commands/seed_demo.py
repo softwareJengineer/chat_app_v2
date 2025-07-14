@@ -34,7 +34,7 @@ class Command(BaseCommand):
 
         # Create user entries for both the patient and caregiver
         plwd = User.objects.create_user("demo_patient",   password="1", first_name="John", last_name="Patient"  )
-        care = User.objects.create_user("demo_caregiver", password="1", first_name="Jane", last_name="Caregiver")
+        care = User.objects.create_user("demo_caregiver", password="1", first_name="Jane", last_name="Caregiver", is_staff=True)
         profile = Profile.objects.create(plwd=plwd, caregiver=care)
 
         # Also create settings and goal objects for the new Profile

@@ -146,8 +146,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     
     # Process and respond to the users utterance text
     async def _handle_transcription(self, data):
+        t0 = time()
         text = data["data"].lower()
         user = self.user
+        logger.info(f"{cf.YELLOW}[LLM] User utt received {text}  {cf.RESET}")
 
         # -----------------------------------------------------------------------
         # 1) Process the users message & reply with the LLM ASAP
@@ -164,6 +166,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         # Immediately send the response back through the websocket
         await self.send(json.dumps({'type': 'llm_response', 'data': system_utt, 'time': datetime.now(timezone.utc).strftime("%H:%M:%S")}))
+        logger.info(f"{cf.YELLOW}[LLM] Response sent in {(time()-t0):.4f}s. {system_utt}  {cf.RESET}")
 
         # -----------------------------------------------------------------------
         # 2) Background persistence & biomarkers
