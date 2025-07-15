@@ -1,0 +1,27 @@
+# ====================================================================
+# Web Proxy Services
+# ====================================================================
+# Will receive an environment file from the root
+services:
+  nginx:
+    build:
+      context: .
+    container_name: nginx
+    depends_on: [frontend, backend]
+    ports:
+      - "80:80"
+      - "443:443"
+    networks: [appnet]
+    volumes:
+      - letsencrypt:/etc/letsencrypt
+
+# ====================================================================
+# Volumes & Networks
+# ====================================================================
+volumes:
+  letsencrypt:
+
+# Declared, not created. Root file will create it.
+networks:
+  appnet:
+    external: true

@@ -5,7 +5,6 @@
 volumes:
   db_data:
   letsencrypt:
-  webroot:
 
 networks:
   appnet:
@@ -54,17 +53,8 @@ services:
   # --------------------------------------------------------------------
   # 5) Proxy with Nginx & Certbot
   # --------------------------------------------------------------------
-  certbot-init:
-    extends: { file: ./infra/docker-compose.proxy.yaml, service: certbot-init }
-    networks: [appnet]
-    env_file: [./.env]
-
   nginx:
-    extends: { file: ./infra/docker-compose.proxy.yaml, service: nginx }
+    extends: { file: ./nginx/docker-compose.proxy.yaml, service: nginx }
     networks: [appnet]
     env_file: [./.env]
 
-#  certbot:
-#    extends: { file: ./nginx/docker-compose.proxy.yaml, service: certbot }
-#    networks: [appnet]
-#    env_file: [./.env]
