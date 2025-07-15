@@ -7,10 +7,6 @@ services:
   # --------------------------------------------------------------------
   certbot-init:
     build: ./certbot-init
-    environment:
-      DOMAIN: ${DOMAIN}
-      DOMAIN_WWW: ${DOMAIN_WWW}
-      CERT_EMAIL: ${CERT_EMAIL}
     volumes:
       - letsencrypt:/etc/letsencrypt
       - webroot:/var/www/certbot
@@ -24,13 +20,12 @@ services:
     build:
       context: ./nginx
       dockerfile: Dockerfile-nginx
+    container_name: nginx
     depends_on:
       certbot-init:
         condition: service_completed_successfully
-    container_name: nginx
-    depends_on: [frontend, backend]
-    environment:
-      DOMAIN: ${DOMAIN}
+      frontend:
+      backend:
     ports:
       - "80:80"
       - "443:443"
