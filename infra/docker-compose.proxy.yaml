@@ -3,14 +3,30 @@
 # ====================================================================
 services:
   # --------------------------------------------------------------------
+  # Temporary, one-shot certbot container
+  # --------------------------------------------------------------------
+  certbot-init:
+    build: ./certbot-init
+    environment:
+      DOMAIN: ${DOMAIN}
+      DOMAIN_WWW: ${DOMAIN_WWW}
+      CERT_EMAIL: ${CERT_EMAIL}
+    volumes:
+      - letsencrypt:/etc/letsencrypt
+      - webroot:/var/www/certbot
+    ports: ["80:80"]  # expose only port 80 for the one-shot init
+    restart: "no"     # stop after success
+
+  # --------------------------------------------------------------------
   # Nginx (public entrypoint for the app)
   # --------------------------------------------------------------------
   nginx:
     build:
-      context: .
+      context: ./nginx
       dockerfile: Dockerfile-nginx
-      args:
-        CONF_FILE: ${CONF_FILE}
+    depends_on:
+      certbot-init:
+        condition: service_completed_successfully
     container_name: nginx
     depends_on: [frontend, backend]
     environment:
@@ -22,30 +38,30 @@ services:
     volumes:
       - letsencrypt:/etc/letsencrypt:ro                   # certs (read-only for Nginx)
       - webroot:/var/www/certbot:ro 
-      - ./${CONF_FILE}:/etc/nginx/conf.d/default.conf:ro  # Make sure CONF_FILE is defined before this is ran
+    # - ./${CONF_FILE}:/etc/nginx/conf.d/default.conf:ro  # Make sure CONF_FILE is defined before this is ran
 
   # --------------------------------------------------------------------
   # Certbot for HTTPS
   # --------------------------------------------------------------------
   # Runs certbot once, then cron keeps renewing. (renew daily and reload nginx if needed)
-  certbot:
-    image: certbot/certbot:latest
-    container_name: certbot
-    networks: [appnet]
-    volumes:
-      - letsencrypt:/etc/letsencrypt
-      - webroot:/var/www/certbot
-    environment:
-      - DOMAIN=${DOMAIN}
-      - DOMAIN_WWW=${DOMAIN_WWW}
-      - CERT_EMAIL=${CERT_EMAIL}
+  #certbot:
+  #  image: certbot/certbot:latest
+  #  container_name: certbot
+  #  networks: [appnet]
+  #  volumes:
+  #    - letsencrypt:/etc/letsencrypt
+  #    - webroot:/var/www/certbot
+  #  environment:
+  #    - DOMAIN=${DOMAIN}
+  #    - DOMAIN_WWW=${DOMAIN_WWW}
+  #    - CERT_EMAIL=${CERT_EMAIL}
     #entrypoint: ["sh", "-c"]
-    command: >
-      certonly --webroot
-        --webroot-path /var/www/certbot
-        --email $CERT_EMAIL
-        --agree-tos --non-interactive
-        -d $DOMAIN -d $DOMAIN_WWW &&
+  #  command: >
+  #    certonly --webroot
+  #      --webroot-path /var/www/certbot
+  #      --email $CERT_EMAIL
+  #      --agree-tos --non-interactive
+  #      -d $DOMAIN -d $DOMAIN_WWW &&
 
     #  echo '0 3 * * * certbot renew --webroot -w /var/www/certbot --quiet --post-hook "nginx -s reload"' \
     #    | crontab - && \
