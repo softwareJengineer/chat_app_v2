@@ -25,7 +25,9 @@ services:
       certbot-init:
         condition: service_completed_successfully
       frontend:
+        condition: service_started
       backend:
+        condition: service_started
     ports:
       - "80:80"
       - "443:443"
