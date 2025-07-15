@@ -8,7 +8,7 @@ envsubst '${DOMAIN} ${DOMAIN_WWW}' \
 
 # First-run: obtain cert if missing
 if [ ! -f "/etc/letsencrypt/live/${DOMAIN}/fullchain.pem" ]; then
-    certbot --non-interactive --nginx --agree-tos \
+    certbot certonly --standalone --non-interactive --agree-tos \
         -d "${DOMAIN}" -d "${DOMAIN_WWW}" \
         --email "${CERT_EMAIL}"
 fi
