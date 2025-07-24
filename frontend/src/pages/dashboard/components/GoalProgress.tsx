@@ -5,12 +5,10 @@ import { PATIENT_HEX } from "@/utils/styling/colors";
 // Patient Goal Progress Bar
 export default function GoalProgress () {
     const { profile } = useAuth();
-    const current = 2; // profile.goal.current;
-    const target  = 5; // profile.goal.target
+    const current = profile.goal.current;
+    const target  = profile.goal.target
 
     const percent = Math.round((current / target) * 100);
-
-
 
     return (
         <div className="d-flex flex-col mb-[0.5rem] gap-[0.25rem]">
