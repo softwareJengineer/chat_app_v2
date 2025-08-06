@@ -27,8 +27,8 @@ export default function useLiveChat({
 
     // Setup hooks: TTS, ChatSocket, AudioStreamer, ASR (order must be: TTS, ChatSocket, others)
     const { speak, systemSpeakingRef } = useTTS({ onStart: ttsStart, onDone: ttsEnd });
-    const { send } = useChatSocket({ recording, onLLMResponse: (text: string) => { onLLMres(text); speak(text); }, onScores });
-    const { start: startAud, stop: stopAud                  } = useAudioStreamer({                                           sendToServer: send });
+    const { send } = useChatSocket({ recording, onLLMResponse: (text: string) => { onLLMres(text); speak(text); }, onScores, onUserUtt: onUserUtterance });
+    const { start: startAud, stop: stopAud                  } = useAudioStreamer({ chunkMs: 64,                              sendToServer: send });
     const { start: startASR, stop: stopASR, userSpeakingRef } = useASR({ onStart: asrStart, onDone: asrEnd, onUserUtterance, sendToServer: send });
  
     // Speech overlap detection

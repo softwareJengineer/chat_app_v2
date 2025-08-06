@@ -3,7 +3,7 @@
 # =======================================================================
 from django.apps import apps
 
-import json, asyncio, logging
+import json, asyncio, logging, base64
 logger = logging.getLogger(__name__)
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
@@ -15,8 +15,9 @@ from datetime import datetime, timezone
 # From this project
 from ..                      import config as cf
 from ..services.db_services  import ChatService
-from  .services.chatHelpers  import generate_LLM_response
-from  .services.audioHelpers import extract_audio_biomarkers, extract_text_biomarkers
+from .services.chatHelpers  import generate_LLM_response
+from .services.audioHelpers import extract_audio_biomarkers, extract_text_biomarkers
+from .services.speechProvider import SpeechToTextProvider
 
 # ------------------------------------------------------------------
 # Helper: Start a background task and log any exception it raises --- put into another file
@@ -26,6 +27,9 @@ def fire_and_log(coro):
         try: await coro
         except Exception: logger.exception("Background task crashed")
     return asyncio.create_task(_runner())
+
+SECOND = 32_000 # How big a chunk of audio of one second is, in bytes
+CHUNK_SIZE = 4096 # How many bytes of audio we can send at a time
 
 
 # ======================================================================= ===================================
@@ -43,6 +47,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     """
     MAX_CONTEXT = 10  # (how many recent messages to keep for the LLM)
+    SECONDS = 3 # How often we want to send audio to calculate biomarkers
 
     # =======================================================================
     # Open WebSocket Connection
@@ -64,7 +69,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         # 1) Authentication Block 
         # -----------------------------------------------------------------------
         # Authenticate before accepting connection (uses custom "unauth" code)
-        if not self.scope["user"].is_authenticated: await self.close(code=4001); return
+        if not self.scope["user"].is_authenticated: 
+            await self.close(code=4001)
+            return
         self.user   = self.scope["user"]
         self.source = self.scope.get("source", "unknown")
         await self.accept()
@@ -91,12 +98,17 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         self.overlapped_speech_count  = 0.0
         self.audio_windows_count      = 0.0
         self.overlapped_speech_events = []  # List of timestamps (ToDo: Add this to the DB somehow)
+        # Create new speech provider instances
+        loop_stt = asyncio.get_event_loop()
+        self.stt_provider = SpeechToTextProvider(on_transcription_callback=self._handle_transcription, loop=loop_stt)
+        self.audio_buffer = bytearray()
 
         # -----------------------------------------------------------------------
         # 3) Send misc information to the frontend (ToDo: biomarkers, etc)
         # -----------------------------------------------------------------------
         # This is where we could potentially have a connection on the robot and web app and monitor the conversation in real time
         if self.return_biomarkers: await self.send_json({"type": "history", "messages": self.context_buffer})
+                
 
     # -----------------------------------------------------------------------
     # Close Connection 
@@ -117,6 +129,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         self.overlapped_speech_count  = 0.0
         self.audio_windows_count      = 0.0
         self.overlapped_speech_events = []
+        
+        self.stt_provider.stop()
 
         logger.info(f"Client disconnected:  {code}") 
 
@@ -135,7 +149,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         elif data["type"] == "audio_data"   : await self._handle_audio_data   (data)
         elif data["type"] == "transcription": await self._handle_transcription(data)
         elif data["type"] == "end_chat"     : await database_sync_to_async(ChatService.close_session)(self.user, self.session, source=self.source)
-
+        elif data["type"] == "toggle_stream": self._toggle_stream(data)
+ 
     # =======================================================================
     # Text Transcriptions
     # =======================================================================
@@ -145,11 +160,15 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         fire_and_log(database_sync_to_async(ChatService.add_biomarkers_bulk)(self.session, utterance_biomarkers))
         if self.return_biomarkers: await self.send(json.dumps({"type": "biomarker_scores", "data": utterance_biomarkers}))
     
-    # Process and respond to the users utterance text
+    # Process and respond to the user's utterance text
     async def _handle_transcription(self, data):
         t0 = time()
-        text = data["data"].lower()
-        logger.info(f"{cf.YELLOW}[LLM] User utt received {text}  {cf.RESET}")
+        text = data["data"]
+        logger.info(f"{cf.YELLOW}[LLM] User utt received {text.lower()}  {cf.RESET}")
+        
+        # Send the transcribed user utterance to the frontend; assumes the backend is handling all the STT
+        await self.send(json.dumps({'type': 'user_utt', 'data': text, 'time': datetime.now(timezone.utc).strftime("%H:%M:%S")}))
+        
 
         # -----------------------------------------------------------------------
         # 1) Process the users message & reply with the LLM ASAP
@@ -163,11 +182,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         # Get the LLMs response (awaited since it is the most important/longest process)
         system_utt = await generate_LLM_response(self.context_buffer)
-
+        
         # Immediately send the response back through the websocket
         await self.send(json.dumps({'type': 'llm_response', 'data': system_utt, 'time': datetime.now(timezone.utc).strftime("%H:%M:%S")}))
-        logger.info(f"{cf.YELLOW}[LLM] Response sent in {(time()-t0):.4f}s. {system_utt}  {cf.RESET}")
-
+                
         # -----------------------------------------------------------------------
         # 2) Background persistence & biomarkers
         # -----------------------------------------------------------------------
@@ -180,19 +198,34 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         # On-utterance biomarker scores (run in a thread so we don't block the loop)
         fire_and_log(self._on_utterance_biomarkers())
-
+        
     # =======================================================================
     # Audio Data
     # =======================================================================
     async def _handle_audio_data(self, data):
-        # Generate the audio-related biomarker scores
-        audio_biomarkers = await extract_audio_biomarkers(data, self.overlapped_speech_count)
-      
-        # Save biomarkers to the DB
-        fire_and_log(database_sync_to_async(ChatService.add_biomarkers_bulk)(self.session, audio_biomarkers))
-        if self.return_biomarkers: await self.send(json.dumps({"type": "audio_scores", "data": audio_biomarkers}))
+        
+         # Generate the transcript from the audio data
+        self.stt_provider.send_audio(data)
+                            
+        # # Generate the audio-related biomarker scores
+        self.audio_buffer.extend(base64.b64decode(data['data']))
+        if len(self.audio_buffer) >= (self.SECONDS * SECOND):
+            audio_data = {"data": bytes(self.audio_buffer), "sampleRate": data['sampleRate']}
+            audio_biomarkers = await extract_audio_biomarkers(audio_data, self.overlapped_speech_count)
+            self.audio_buffer.clear()
+
+            # Save biomarkers to the DB
+            fire_and_log(database_sync_to_async(ChatService.add_biomarkers_bulk)(self.user, audio_biomarkers))
+            if self.return_biomarkers: await self.send(json.dumps({"type": "audio_scores", "data": audio_biomarkers}))
 
         # Update turntaking (12 audio windows for 1 minute of data)
         self.audio_windows_count += 1
         self.overlapped_speech_count = self.overlapped_speech_count / (self.audio_windows_count / 12)
-     
+        
+        
+    def _toggle_stream(self, data):
+        cmd = data["data"]
+        if cmd == "start":
+            self.stt_provider.start()
+        elif cmd == "stop":
+            self.stt_provider.stop()
