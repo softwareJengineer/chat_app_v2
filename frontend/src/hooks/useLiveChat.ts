@@ -37,8 +37,15 @@ export default function useLiveChat({
     }}, [systemSpeakingRef.current, userSpeakingRef.current]); 
 
     // Start, Stop, & Save
-    const start = () => { setRecording(true ); startAud(); startASR(); };
-    const  stop = () => {                       stopAud();  stopASR(); };
+    const start = () => {
+		setRecording(true);
+		startAud();
+        send({ type: "toggle_stream", data: "start" });
+	};
+	const stop = () => {
+		stopAud();
+        send({ type: "toggle_stream", data: "stop" });
+	};
     const  save = () => {
         setRecording(false); 
         send({ type: "end_chat", data: Date.now() }); 
