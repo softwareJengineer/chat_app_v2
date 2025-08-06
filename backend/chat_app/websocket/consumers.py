@@ -164,6 +164,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def _handle_transcription(self, data):
         t0 = time()
         text = data["data"]
+        user = self.user
         logger.info(f"{cf.YELLOW}[LLM] User utt received {text.lower()}  {cf.RESET}")
         
         # Send the transcribed user utterance to the frontend; assumes the backend is handling all the STT
@@ -215,7 +216,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             self.audio_buffer.clear()
 
             # Save biomarkers to the DB
-            fire_and_log(database_sync_to_async(ChatService.add_biomarkers_bulk)(self.user, audio_biomarkers))
+            fire_and_log(database_sync_to_async(ChatService.add_biomarkers_bulk)(self.session, audio_biomarkers))
             if self.return_biomarkers: await self.send(json.dumps({"type": "audio_scores", "data": audio_biomarkers}))
 
         # Update turntaking (12 audio windows for 1 minute of data)
