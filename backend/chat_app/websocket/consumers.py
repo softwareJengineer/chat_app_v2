@@ -1,22 +1,20 @@
 # =======================================================================
 # Processes incoming messages, scores them, and responds
 # =======================================================================
-from django.apps import apps
-
-import json, asyncio, logging
-logger = logging.getLogger(__name__)
-
+from django.apps                import apps
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db                import database_sync_to_async
 
-from time     import time
-from datetime import datetime, timezone
+# Logging
+from time import time
+import json, asyncio, logging
+logger = logging.getLogger(__name__)
 
 # From this project
 from ..                      import config        as cf
 from ..services              import logging_utils as lu 
 from ..services.db_services  import ChatService
-from  .services.chatHelpers  import generate_LLM_response
+from  .services.chatHelpers  import handle_transcription
 from  .services.audioHelpers import extract_audio_biomarkers, extract_text_biomarkers
 
 # ------------------------------------------------------------------
@@ -92,8 +90,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         # Adding one default message at the start of the chat every time (so I have a reference timestamp before every user message)
         self.context_buffer = [("assistant", "How can I help you today?", time())] + self.context_buffer
 
-
-
         # Other misc. setup
         self.overlapped_speech_count  = 0.0
         self.audio_windows_count      = 0.0
@@ -141,62 +137,34 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             logger.info(f"{cf.YELLOW}Overlapped speech detected. Count: {self.overlapped_speech_count} {cf.RESET}")
     
         # Audio data or text transcription
-        elif data["type"] == "audio_data"   : await self._handle_audio_data   (data)
-        elif data["type"] == "transcription": await self._handle_transcription(data)
+        elif data["type"] == "audio_data"   : await self._handle_audio_data(data)
+        elif data["type"] == "transcription": await handle_transcription   (data, msg_callback=self._add_message_CB, send_callback=self.send, bio_callback=self._utt_bio)
         elif data["type"] == "end_chat"     : await database_sync_to_async(ChatService.close_session)(self.user, self.session, source=self.source)
 
     # =======================================================================
     # Text Transcriptions
     # =======================================================================
-    # On-Utterance Biomarkers (saves them to the DB as soon as we get them)
-    async def _on_utterance_biomarkers(self):
+    async def _utt_bio(self):
+        """ On-Utterance Biomarkers (saves them to the DB as soon as we get them). """
         utterance_biomarkers = await extract_text_biomarkers(self.context_buffer)
         fire_and_log(database_sync_to_async(ChatService.add_biomarkers_bulk)(self.session, utterance_biomarkers))
         if self.return_biomarkers: await self.send(json.dumps({"type": "biomarker_scores", "data": utterance_biomarkers}))
     
-    # Process and respond to the users utterance text
-    async def _handle_transcription(self, data):
-        t0 = time()
-        text = data["data"].lower()
-        logger.info(f"{lu.MAGENTA}[LLM] User utt received:\n{text} {lu.RESET}")
+    async def _add_message_CB(self, role, text, time):
+        """
+        Add messages to the database & update the local context.
+            - Role must be "user" or "assistant"
+        """
+        # Fire-and-forget DB write for the user message
+        fire_and_log(database_sync_to_async(ChatService.add_message)(self.session, role, text))
 
-        # -----------------------------------------------------------------------
-        # 1) Process the users message & reply with the LLM ASAP
-        # -----------------------------------------------------------------------
-        # Fire-and-forget DB write for the user message & update in-memory context
-        fire_and_log(database_sync_to_async(ChatService.add_message)(self.session, "user", text))
-        self.context_buffer.append(("user", text, time()))
+        # Update in memory context
+        self.context_buffer.append((role, text, time))
         if len(self.context_buffer) > self.MAX_CONTEXT: self.context_buffer.pop(0)
 
-        # -----------------------------------------------------------------------
-        # 2) Get the LLMs response (awaited since it is the most important/longest process)
-        # -----------------------------------------------------------------------
-        t1 = time()
-        logger.info(f"{lu.MAGENTA}[LLM] Sending LLM request. {lu.RESET}")
+        # Return the updated context (if the message was from the user, this will be used for the LLM)
+        if role == "user": return self.context_buffer
         
-        system_utt = await generate_LLM_response(self.context_buffer)
-
-        t2 = time()
-        logger.info(f"{lu.MAGENTA}[LLM] LLM response received: (in {(t2-t1):.4f}) \n{system_utt} {lu.RESET}")
-
-        # Immediately send the response back through the websocket
-        await self.send(json.dumps({'type': 'llm_response', 'data': system_utt, 'time': datetime.now(timezone.utc).strftime("%H:%M:%S")}))
-
-        t3 = time()
-        logger.info(f"{lu.MAGENTA}[LLM] Response sent {(t3-t2):.4f}s ({(t3-t0):.4f}s total). {lu.RESET}")
-
-        # -----------------------------------------------------------------------
-        # 3) Background persistence & biomarkers
-        # -----------------------------------------------------------------------
-        # LLM/Assistant message
-        fire_and_log(database_sync_to_async(ChatService.add_message)(self.session, "assistant", system_utt))
-
-        # Update the in-memory buffer again
-        self.context_buffer.append(("assistant", system_utt, time()))
-        if len(self.context_buffer) > self.MAX_CONTEXT: self.context_buffer.pop(0)
-
-        # On-utterance biomarker scores (run in a thread so we don't block the loop)
-        fire_and_log(self._on_utterance_biomarkers())
 
     # =======================================================================
     # Audio Data
@@ -212,4 +180,4 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         # Update turntaking (12 audio windows for 1 minute of data)
         self.audio_windows_count += 1
         self.overlapped_speech_count = self.overlapped_speech_count / (self.audio_windows_count / 12)
-        
+     
