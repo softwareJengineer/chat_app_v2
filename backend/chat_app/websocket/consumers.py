@@ -13,7 +13,8 @@ from time     import time
 from datetime import datetime, timezone
 
 # From this project
-from ..                      import config as cf
+from ..                      import config        as cf
+from ..services              import logging_utils as lu 
 from ..services.db_services  import ChatService
 from  .services.chatHelpers  import generate_LLM_response
 from  .services.audioHelpers import extract_audio_biomarkers, extract_text_biomarkers
@@ -157,28 +158,35 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def _handle_transcription(self, data):
         t0 = time()
         text = data["data"].lower()
-        logger.info(f"{cf.YELLOW}[LLM] User utt received: {text}  {cf.RESET}")
+        logger.info(f"{lu.MAGENTA}[LLM] User utt received:\n{text} {lu.RESET}")
 
         # -----------------------------------------------------------------------
         # 1) Process the users message & reply with the LLM ASAP
         # -----------------------------------------------------------------------
-        # Fire-and-forget DB write for the user message
+        # Fire-and-forget DB write for the user message & update in-memory context
         fire_and_log(database_sync_to_async(ChatService.add_message)(self.session, "user", text))
-
-        # Update in-memory context
         self.context_buffer.append(("user", text, time()))
         if len(self.context_buffer) > self.MAX_CONTEXT: self.context_buffer.pop(0)
 
-        # Get the LLMs response (awaited since it is the most important/longest process)
-        logger.info(f"{cf.YELLOW}[LLM] Sending LLM request. {cf.RESET}")
+        # -----------------------------------------------------------------------
+        # 2) Get the LLMs response (awaited since it is the most important/longest process)
+        # -----------------------------------------------------------------------
+        t1 = time()
+        logger.info(f"{lu.MAGENTA}[LLM] Sending LLM request. {lu.RESET}")
+        
         system_utt = await generate_LLM_response(self.context_buffer)
+
+        t2 = time()
+        logger.info(f"{lu.MAGENTA}[LLM] LLM response received: (in {(t2-t1):.4f}) \n{system_utt} {lu.RESET}")
 
         # Immediately send the response back through the websocket
         await self.send(json.dumps({'type': 'llm_response', 'data': system_utt, 'time': datetime.now(timezone.utc).strftime("%H:%M:%S")}))
-        logger.info(f"{cf.YELLOW}[LLM] Response sent in {(time()-t0):.4f}s. {system_utt}  {cf.RESET}")
+
+        t3 = time()
+        logger.info(f"{lu.MAGENTA}[LLM] Response sent {(t3-t2):.4f}s ({(t3-t0):.4f}s total). {lu.RESET}")
 
         # -----------------------------------------------------------------------
-        # 2) Background persistence & biomarkers
+        # 3) Background persistence & biomarkers
         # -----------------------------------------------------------------------
         # LLM/Assistant message
         fire_and_log(database_sync_to_async(ChatService.add_message)(self.session, "assistant", system_utt))
@@ -204,4 +212,4 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         # Update turntaking (12 audio windows for 1 minute of data)
         self.audio_windows_count += 1
         self.overlapped_speech_count = self.overlapped_speech_count / (self.audio_windows_count / 12)
-     
+        
