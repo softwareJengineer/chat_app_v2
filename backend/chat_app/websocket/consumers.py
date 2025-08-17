@@ -81,11 +81,17 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         self.session = await database_sync_to_async(ChatService.get_or_create_active_session)(self.user, source=self.source)
         recent = await database_sync_to_async(lambda: list(self.session.messages.all().order_by("-start_ts")[: self.MAX_CONTEXT])[::-1])()
 
-        # ToDo: Check if the incoming source matches or doesn't match the source of the loaded session
+        # TODO: Check if the incoming source matches or doesn't match the source of the loaded session
         # if not, do something....
 
-        # ToDo: I added the timestamps in just now for biomarker scores, but I actually don't really like how this works at the moment...
+        # TODO: I added the timestamps in just now for biomarker scores, but I actually don't really like how this works at the moment...
+        # Actually since I want to remove the "resume" chat thing, probably don't need to do this with the context buffer (loading in old data)
         self.context_buffer = [(m.role, m.content, m.ts.timestamp()) for m in recent]
+
+        # Adding one default message at the start of the chat every time (so I have a reference timestamp before every user message)
+        self.context_buffer = [("assistant", "How can I help you today?", time())] + self.context_buffer
+
+
 
         # Other misc. setup
         self.overlapped_speech_count  = 0.0
@@ -104,9 +110,11 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def disconnect(self, code):
         """
         # DO NOT close the session -- just clean local state.
+        --- Originally had pausing in here, but im just changing it so disconnects end the chat. ---
         """
         # 1) Close the ChatSession in the DB
-        
+        # TODO: Only IF it is still open -- maybe they did actually send the end chat command
+        await database_sync_to_async(ChatService.close_session)(self.user, self.session, source=self.source)
 
         # Cancel background tasks (if any -- none right now)
         for task in getattr(self, "_bg_tasks", []): task.cancel()
@@ -149,7 +157,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def _handle_transcription(self, data):
         t0 = time()
         text = data["data"].lower()
-        logger.info(f"{cf.YELLOW}[LLM] User utt received {text}  {cf.RESET}")
+        logger.info(f"{cf.YELLOW}[LLM] User utt received: {text}  {cf.RESET}")
 
         # -----------------------------------------------------------------------
         # 1) Process the users message & reply with the LLM ASAP
@@ -162,6 +170,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         if len(self.context_buffer) > self.MAX_CONTEXT: self.context_buffer.pop(0)
 
         # Get the LLMs response (awaited since it is the most important/longest process)
+        logger.info(f"{cf.YELLOW}[LLM] Sending LLM request. {cf.RESET}")
         system_utt = await generate_LLM_response(self.context_buffer)
 
         # Immediately send the response back through the websocket
